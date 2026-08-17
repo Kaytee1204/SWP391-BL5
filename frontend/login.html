@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In & Sign Up — JLMS</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- React 18 & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel Standalone for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    :root {
+      --primary-purple: #7C3AED;
+      --primary-purple-hover: #6D28D9;
+      --primary-orange: #f97316;
+      --bg-body: #fbf9f5;
+      --text-heading: #0f172a;
+      --text-body: #475569;
+      --border-color: #f2ede4;
+      --radius-xl: 16px;
+      --radius-2xl: 24px;
+      --radius-full: 9999px;
+      --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      color: var(--text-heading);
+      background: linear-gradient(180deg, #fff7ed 0%, #fff1f2 30%, #f5f3ff 65%, #ede9fe 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .bg-glow {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.18) 0%, rgba(244, 114, 182, 0.12) 40%, rgba(255, 255, 255, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .login-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 460px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: var(--radius-2xl);
+      padding: 2.5rem 2.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 0 25px 60px -15px rgba(124, 58, 237, 0.2), 0 0 1px 1px rgba(255, 255, 255, 0.9);
+      animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes scaleUp {
+      from { opacity: 0; transform: scale(0.96) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .brand-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #7C3AED 0%, #ec4899 100%);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+      margin-bottom: 0.75rem;
+    }
+
+    .brand-name {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--text-heading);
+      letter-spacing: -0.03em;
+    }
+    .brand-name span {
+      background: linear-gradient(135deg, #7C3AED 0%, #ec4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text-heading); }
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      font-size: 0.92rem;
+      font-family: inherit;
+      outline: none;
+      transition: var(--transition);
+    }
+    .form-control:focus {
+      border-color: var(--primary-purple);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.85rem;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+      color: white;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.45);
+      transition: var(--transition);
+      margin-top: 0.5rem;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px -5px rgba(124, 58, 237, 0.6);
+      background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+    }
+
+    .btn-back-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-body);
+      margin-bottom: 1.25rem;
+      transition: var(--transition);
+    }
+    .btn-back-home:hover { color: var(--primary-purple); }
+
+    .error-box {
+      padding: 0.75rem;
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-radius: 10px;
+      color: #e11d48;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const API_BASE = (function() {
+      if (window.location.port === '8080') {
+        return `${window.location.origin}/api/v1`;
+      }
+      const host = window.location.hostname === '127.0.0.1' ? '127.0.0.1' : 'localhost';
+      return `http://${host}:8080/api/v1`;
+    })();
+
+    async function apiRequest(endpoint, method = 'GET', body = null) {
+      const headers = { 'Content-Type': 'application/json' };
+      const config = { method, headers };
+      if (body) config.body = JSON.stringify(body);
+
+      const res = await fetch(`${API_BASE}${endpoint}`, config);
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        const errorMsg = data?.message || `System Error (${res.status})`;
+        const err = new Error(errorMsg);
+        throw err;
+      }
+      return data;
+    }
+
+    function LoginPage() {
+      const [isRegister, setIsRegister] = useState(false);
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [fullName, setFullName] = useState('');
+      const [jlptTargetLevel, setJlptTargetLevel] = useState('N5');
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState(null);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError(null);
+        setLoading(true);
+
+        try {
+          let res;
+          if (isRegister) {
+            res = await apiRequest('/auth/register', 'POST', {
+              email: email.trim(),
+              password: password.trim(),
+              fullName: fullName.trim(),
+              jlptTargetLevel,
+              avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Kenji',
+              role: 'Student'
+            });
+          } else {
+            res = await apiRequest('/auth/login', 'POST', {
+              email: email.trim(),
+              password: password.trim()
+            });
+          }
+
+          localStorage.setItem('jwt_token', res.data.accessToken);
+          localStorage.setItem('user_info', JSON.stringify(res.data.account));
+
+          window.location.href = 'index.html';
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="login-container">
+          <a href="index.html" className="btn-back-home">
+            <span>←</span>
+            <span>Back to Home</span>
+          </a>
+
+          <div className="brand-header">
+            <div className="brand-icon-box">⛩️</div>
+            <h1 className="brand-name"><span>JLMS</span></h1>
+            <p style={{ color: 'var(--text-body)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+              {isRegister ? 'Create your free Japanese learning account' : 'Sign in to your JLMS workspace'}
+            </p>
+          </div>
+
+          {error && <div className="error-box">⚠️ {error}</div>}
+
+          <form onSubmit={handleSubmit}>
+            {isRegister && (
+              <div className="form-group">
+                <label className="form-label">Full Name *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Alex Johnson"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  className="form-control"
+                  required
+                />
+              </div>
+            )}
+
+            <div className="form-group">
+              <label className="form-label">Email Address *</label>
+              <input
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="form-control"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Password *</label>
+              <input
+                type="password"
+                placeholder="Minimum 6 characters"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="form-control"
+                required
+              />
+            </div>
+
+            {isRegister && (
+              <div className="form-group">
+                <label className="form-label">Target JLPT Level</label>
+                <select
+                  value={jlptTargetLevel}
+                  onChange={e => setJlptTargetLevel(e.target.value)}
+                  className="form-control"
+                >
+                  <option value="N5">N5 - Beginner</option>
+                  <option value="N4">N4 - Elementary</option>
+                  <option value="N3">N3 - Intermediate</option>
+                  <option value="N2">N2 - Advanced</option>
+                  <option value="N1">N1 - Fluent</option>
+                </select>
+              </div>
+            )}
+
+            <button type="submit" disabled={loading} className="btn-submit">
+              {loading ? 'Processing...' : isRegister ? 'Create Account' : 'Sign In'}
+            </button>
+          </form>
+
+          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.88rem', color: 'var(--text-body)' }}>
+            {isRegister ? (
+              <span>
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsRegister(false)}
+                  style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  Sign In
+                </button>
+              </span>
+            ) : (
+              <span>
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsRegister(true)}
+                  style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  Sign Up Free
+                </button>
+              </span>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<LoginPage />);
+  </script>
+</body>
+</html>
