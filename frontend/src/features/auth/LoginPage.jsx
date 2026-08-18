@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
 import { apiRequest } from '../../api/apiRequest';
 import { JLPT_LEVELS } from '../../assets/constants';
+import ForgotPasswordModal from '../../components/auth/ForgotPasswordModal';
 
 export default function LoginPage({ onLoginSuccess, onBackHome }) {
   const [isRegister, setIsRegister] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [jlptTargetLevel, setJlptTargetLevel] = useState('N5');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  if (showForgot) {
+    return (
+      <ForgotPasswordModal
+        onClose={() => setShowForgot(false)}
+        onSwitchToLogin={() => setShowForgot(false)}
+      />
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -194,16 +205,27 @@ export default function LoginPage({ onLoginSuccess, onBackHome }) {
               </button>
             </span>
           ) : (
-            <span>
-              Don't have an account?{' '}
-              <button
-                type="button"
-                onClick={() => setIsRegister(true)}
-                style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                Sign up free
-              </button>
-            </span>
+            <div>
+              <div>
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsRegister(true)}
+                  style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  Sign up free
+                </button>
+              </div>
+              <div style={{ marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowForgot(true)}
+                  style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  Forgot your password?
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

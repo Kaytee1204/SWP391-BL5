@@ -4,13 +4,16 @@ import AuthModal from './components/auth/AuthModal';
 import MyProfileModal from './components/auth/MyProfileModal';
 
 // Features
-import LandingPage from './features/landing/LandingPage';
+import HomePage from './features/homepage/HomePage';
 import CultureSlangReaderPage from './features/culture-reader/CultureSlangReaderPage';
 import ArticleDetailPage from './features/culture-reader/ArticleDetailPage';
 import CultureArticleManagementView from './features/culture-articles/CultureArticleManagementView';
 import AuthorWorkspacePage from './features/culture-articles/AuthorWorkspacePage';
 import LearningMaterialsView from './features/materials/LearningMaterialsView';
 import ManagerDashboardPage from './features/dashboard/ManagerDashboardPage';
+import GrammarReaderPage from './features/grammar/GrammarReaderPage';
+import GrammarExercisePracticeView from './features/grammar/GrammarExercisePracticeView';
+import Navbar from './components/common/Navbar';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -22,7 +25,7 @@ export default function App() {
     }
   });
 
-  const [currentView, setCurrentView] = useState('landing');
+  const [currentView, setCurrentView] = useState('home');
   const [readingArticle, setReadingArticle] = useState(null);
   const [previousView, setPreviousView] = useState('culture_reader');
 
@@ -73,7 +76,7 @@ export default function App() {
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('user_info');
     setCurrentUser(null);
-    setCurrentView('landing');
+    setCurrentView('home');
   };
 
   const handleProfileUpdated = (updatedAccountOrAuthData) => {
@@ -93,9 +96,9 @@ export default function App() {
 
   return (
     <div>
-      {/* 1. Trang Chủ (Landing Page) */}
-      {currentView === 'landing' && (
-        <LandingPage
+      {/* 1. Trang Chủ (HomePage) */}
+      {(currentView === 'home' || currentView === 'landing') && (
+        <HomePage
           currentUser={currentUser}
           onNavigate={(view) => setCurrentView(view)}
           onOpenAuth={(mode) => setAuthModalMode(mode)}
@@ -114,6 +117,46 @@ export default function App() {
           onReadArticle={(article) => handleOpenArticleDetail(article, 'culture_reader')}
           onLogout={handleLogout}
         />
+      )}
+
+      {/* 2.5. Tra Cứu Ngữ Pháp JLPT (Japanese Grammar Reader) */}
+      {currentView === 'grammar_reader' && (
+        <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }}>
+          <Navbar
+            currentView="grammar_reader"
+            currentUser={currentUser}
+            onNavigate={(view) => setCurrentView(view)}
+            onOpenAuth={(mode) => setAuthModalMode(mode)}
+            onViewProfile={() => setShowProfileModal(true)}
+            onLogout={handleLogout}
+          />
+          <main style={{ paddingBottom: '3rem' }}>
+            <GrammarReaderPage
+              currentUser={currentUser}
+              onOpenAuth={(mode) => setAuthModalMode(mode)}
+            />
+          </main>
+        </div>
+      )}
+
+      {/* 2.6. Luyện Tập Trắc Nghiệm Ngữ Pháp JLPT (Grammar Exercise Practice Quiz) */}
+      {currentView === 'exercise_practice' && (
+        <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }}>
+          <Navbar
+            currentView="exercise_practice"
+            currentUser={currentUser}
+            onNavigate={(view) => setCurrentView(view)}
+            onOpenAuth={(mode) => setAuthModalMode(mode)}
+            onViewProfile={() => setShowProfileModal(true)}
+            onLogout={handleLogout}
+          />
+          <main>
+            <GrammarExercisePracticeView
+              currentUser={currentUser}
+              onOpenAuth={(mode) => setAuthModalMode(mode)}
+            />
+          </main>
+        </div>
       )}
 
       {/* 3. Trang Đọc Chi Tiết 1 Bài Viết (Full-Page Article Reader) */}

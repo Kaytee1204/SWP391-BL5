@@ -6,6 +6,9 @@ import CultureArticleManagementView from '../culture-articles/CultureArticleMana
 import PaymentReportView from './components/PaymentReportView';
 import RefundInfoView from './components/RefundInfoView';
 
+import GrammarManagementView from '../grammar/GrammarManagementView';
+import GrammarExerciseManagementView from '../grammar/GrammarExerciseManagementView';
+
 export default function ManagerDashboardPage({
   currentUser,
   onNavigate,
@@ -14,6 +17,7 @@ export default function ManagerDashboardPage({
   onLogout
 }) {
   const [activeTab, setActiveTab] = useState('accounts');
+  const [materialSubTab, setMaterialSubTab] = useState('grammar_patterns'); // 'grammar_patterns' | 'grammar_exercises'
   const [showProPopup, setShowProPopup] = useState(false);
 
   return (
@@ -121,12 +125,55 @@ export default function ManagerDashboardPage({
         )}
 
         {activeTab === 'materials' && (
-          <div className="content-card" style={{ textAlign: 'center', padding: '4.5rem 2rem' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '0.75rem' }}>📚</div>
-            <h3 style={{ fontSize: '1.35rem', fontWeight: 800 }}>Learning Materials Management</h3>
-            <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
-              There are currently no learning materials in the system.
-            </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{
+              display: 'flex',
+              gap: '0.75rem',
+              background: '#fff',
+              padding: '0.5rem',
+              borderRadius: '14px',
+              border: '1px solid #e2e8f0',
+              width: 'fit-content'
+            }}>
+              <button
+                onClick={() => setMaterialSubTab('grammar_patterns')}
+                style={{
+                  padding: '0.5rem 1.15rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  fontSize: '0.88rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  background: materialSubTab === 'grammar_patterns' ? '#7C3AED' : 'transparent',
+                  color: materialSubTab === 'grammar_patterns' ? '#fff' : 'var(--text-body)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                📖 Grammar Patterns
+              </button>
+              <button
+                onClick={() => setMaterialSubTab('grammar_exercises')}
+                style={{
+                  padding: '0.5rem 1.15rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  fontSize: '0.88rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  background: materialSubTab === 'grammar_exercises' ? '#0d9488' : 'transparent',
+                  color: materialSubTab === 'grammar_exercises' ? '#fff' : 'var(--text-body)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                📝 Grammar Exercises
+              </button>
+            </div>
+
+            {materialSubTab === 'grammar_patterns' ? (
+              <GrammarManagementView currentUser={currentUser} />
+            ) : (
+              <GrammarExerciseManagementView currentUser={currentUser} />
+            )}
           </div>
         )}
 

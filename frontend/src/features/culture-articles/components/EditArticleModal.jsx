@@ -54,12 +54,18 @@ export default function EditArticleModal({ article, onClose, onSaveSuccess }) {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.95rem' }}>
           <div>
-            <label style={{ fontSize: '0.82rem', fontWeight: 700 }}>Article Title *</label>
+            <label style={{ fontSize: '0.82rem', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
+              <span>Article Title *</span>
+              <span style={{ color: title.length > 180 ? '#e11d48' : 'var(--text-muted)', fontWeight: 600 }}>
+                {title.length}/200
+              </span>
+            </label>
             <input
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
               className="form-input"
+              maxLength={200}
               required
             />
           </div>
@@ -67,7 +73,7 @@ export default function EditArticleModal({ article, onClose, onSaveSuccess }) {
           <div>
             <label style={{ fontSize: '0.82rem', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
               <span>Cover Image:</span>
-              <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>or enter custom URL</span>
+              <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>or enter custom URL (max 500 chars)</span>
             </label>
             <div className="cover-preset-grid">
               {ARTICLE_COVER_PRESETS.map(p => (
@@ -88,6 +94,7 @@ export default function EditArticleModal({ article, onClose, onSaveSuccess }) {
               value={customUrl}
               onChange={e => setCustomUrl(e.target.value)}
               className="form-input"
+              maxLength={500}
               style={{ marginTop: '0.45rem' }}
             />
           </div>

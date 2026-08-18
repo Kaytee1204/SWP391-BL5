@@ -90,4 +90,22 @@ public class AuthController {
         authService.deleteMyAccount(currentUser.getEmail());
         return ResponseEntity.ok(ApiResponse.success("Tài khoản của bạn đã được xóa thành công", null));
     }
+
+    // 7. YÊU CẦU MÃ OTP QUÊN MẬT KHẨU (Bước 1 - Public API)
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Step 1: Request 6-digit OTP code for password reset")
+    public ResponseEntity<ApiResponse<com.example.base.dto.auth.ForgotPasswordResponse>> forgotPassword(
+            @Valid @RequestBody com.example.base.dto.auth.ForgotPasswordRequest request) {
+        com.example.base.dto.auth.ForgotPasswordResponse response = authService.forgotPassword(request);
+        return ResponseEntity.ok(ApiResponse.success("Mã OTP xác thực đã được tạo thành công", response));
+    }
+
+    // 8. XÁC THỰC MÃ OTP VÀ ĐẶT LẠI MẬT KHẨU MỚI (Bước 2 - Public API)
+    @PostMapping("/reset-password")
+    @Operation(summary = "Step 2: Verify 6-digit OTP code and set new password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @Valid @RequestBody com.example.base.dto.auth.ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.success("Đặt lại mật khẩu mới thành công! Bạn có thể đăng nhập ngay.", null));
+    }
 }
