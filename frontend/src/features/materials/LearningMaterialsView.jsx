@@ -34,6 +34,58 @@ export default function LearningMaterialsView({
               + Tải Lên Tài Liệu Mới
             </button>
           </div>
+
+          {/* Khu vực Danh mục từ vựng (Thay thế nút test cũ) */}
+          <div style={{
+            marginTop: '40px',
+            borderTop: '1px solid #f1f5f9',
+            paddingTop: '32px'
+          }}>
+            <div style={{
+              fontSize: '0.95rem',
+              fontWeight: '700',
+              color: 'var(--text-heading)',
+              marginBottom: '16px'
+            }}>
+              📚 Danh mục từ vựng
+            </div>
+
+            <div>
+              <button
+                onClick={() => {
+                  if (typeof onNavigate === 'function') {
+                    onNavigate('vocabulary_category'); // Đã bỏ chữ 's' để khớp 100% với App.jsx
+                  }
+                }}
+                style={{
+                  padding: '12px 28px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '9999px',
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  fontSize: '0.95rem',
+                  boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.25), 0 4px 6px -4px rgba(16, 185, 129, 0.25)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  transition: 'all 0.25s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 14px 20px -3px rgba(16, 185, 129, 0.35)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(16, 185, 129, 0.25)';
+                }}
+              >
+                <span style={{ fontSize: '1.1rem' }}>📥</span>
+                Tải từ vựng mới
+              </button>
+            </div>
+          </div>
         </div>
       </main>
     </div>
