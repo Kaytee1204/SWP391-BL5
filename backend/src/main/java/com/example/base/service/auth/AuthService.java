@@ -1,10 +1,10 @@
-package com.example.base.service;
+package com.example.base.service.auth;
 
-import com.example.base.dto.request.LoginRequest;
-import com.example.base.dto.request.RegisterRequest;
-import com.example.base.dto.request.UpdateProfileRequest;
-import com.example.base.dto.response.AccountResponse;
-import com.example.base.dto.response.AuthResponse;
+import com.example.base.dto.account.AccountResponse;
+import com.example.base.dto.auth.AuthResponse;
+import com.example.base.dto.auth.LoginRequest;
+import com.example.base.dto.auth.RegisterRequest;
+import com.example.base.dto.auth.UpdateProfileRequest;
 
 public interface AuthService {
 

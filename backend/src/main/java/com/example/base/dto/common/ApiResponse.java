@@ -1,23 +1,23 @@
-package com.example.base.dto.response;
+package com.example.base.dto.common;
 
-import com.example.base.exception.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
 
-    private int code;
+    @Builder.Default
+    private int code = 200;
+
     private String message;
+
     private T data;
 
     @Builder.Default
@@ -28,7 +28,6 @@ public class ApiResponse<T> {
                 .code(200)
                 .message("Success")
                 .data(data)
-                .timestamp(Instant.now())
                 .build();
     }
 
@@ -37,7 +36,6 @@ public class ApiResponse<T> {
                 .code(200)
                 .message(message)
                 .data(data)
-                .timestamp(Instant.now())
                 .build();
     }
 
@@ -45,15 +43,29 @@ public class ApiResponse<T> {
         return ApiResponse.<T>builder()
                 .code(code)
                 .message(message)
-                .timestamp(Instant.now())
                 .build();
     }
 
-    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
+    public static <T> ApiResponse<T> error(int code, String message, T data) {
+        return ApiResponse.<T>builder()
+                .code(code)
+                .message(message)
+                .data(data)
+                .build();
+    }
+
+    public static <T> ApiResponse<T> error(com.example.base.exception.ErrorCode errorCode) {
         return ApiResponse.<T>builder()
                 .code(errorCode.getCode())
                 .message(errorCode.getMessage())
-                .timestamp(Instant.now())
+                .build();
+    }
+
+    public static <T> ApiResponse<T> error(com.example.base.exception.ErrorCode errorCode, T data) {
+        return ApiResponse.<T>builder()
+                .code(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .data(data)
                 .build();
     }
 }

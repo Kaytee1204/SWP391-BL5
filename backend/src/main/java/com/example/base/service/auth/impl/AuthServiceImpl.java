@@ -1,10 +1,10 @@
-package com.example.base.service.impl;
+package com.example.base.service.auth.impl;
 
-import com.example.base.dto.request.LoginRequest;
-import com.example.base.dto.request.RegisterRequest;
-import com.example.base.dto.request.UpdateProfileRequest;
-import com.example.base.dto.response.AccountResponse;
-import com.example.base.dto.response.AuthResponse;
+import com.example.base.dto.account.AccountResponse;
+import com.example.base.dto.auth.AuthResponse;
+import com.example.base.dto.auth.LoginRequest;
+import com.example.base.dto.auth.RegisterRequest;
+import com.example.base.dto.auth.UpdateProfileRequest;
 import com.example.base.entity.Account;
 import com.example.base.entity.AccountStatus;
 import com.example.base.exception.AppException;
@@ -13,7 +13,7 @@ import com.example.base.exception.ResourceNotFoundException;
 import com.example.base.mapper.AccountMapper;
 import com.example.base.repository.AccountRepository;
 import com.example.base.security.JwtTokenProvider;
-import com.example.base.service.AuthService;
+import com.example.base.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;

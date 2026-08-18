@@ -1,6 +1,5 @@
-package com.example.base.dto.request;
+package com.example.base.dto.culture;
 
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,13 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CultureArticleUpdateRequest {
 
-    @Size(max = 200, message = "Title cannot exceed 200 characters")
     private String title;
 
     private String content;
 
-    @Size(max = 500, message = "Cover image URL cannot exceed 500 characters")
     private String coverImageUrl;
 
-    private String status; // "published" or "draft"
+    private String status;
 }

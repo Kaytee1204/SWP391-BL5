@@ -28,7 +28,7 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
       };
 
       const res = await apiRequest('/accounts', 'POST', body);
-      alert('Tạo tài khoản thành công!');
+      alert('Account created successfully!');
       onCreateSuccess(res.data);
       onClose();
     } catch (err) {
@@ -43,7 +43,7 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-heading)' }}>
-            + Thêm Tài Khoản Mới
+            + Add New Account
           </h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#94a3b8' }}>✕</button>
         </div>
@@ -56,7 +56,7 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
           <div style={{ textAlign: 'center' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-body)' }}>Chọn Avatar:</label>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-body)' }}>Choose Avatar:</label>
             <div style={{ margin: '0.4rem auto' }}>
               <img src={avatarUrl} alt="prev" style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid var(--primary-orange)', background: '#fff7ed' }} />
             </div>
@@ -70,30 +70,30 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
           </div>
 
           <div>
-            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Họ và tên *</label>
-            <input type="text" placeholder="Ví dụ: Alex Johnson" value={fullName} onChange={e => setFullName(e.target.value)} className="form-input" required />
+            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Full Name *</label>
+            <input type="text" placeholder="e.g. Alex Johnson" value={fullName} onChange={e => setFullName(e.target.value)} className="form-input" required />
           </div>
 
           <div>
-            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Email *</label>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Email Address *</label>
             <input type="email" placeholder="user@japanlearning.com" value={email} onChange={e => setEmail(e.target.value)} className="form-input" required />
           </div>
 
           <div>
-            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Mật khẩu ban đầu *</label>
-            <input type="password" placeholder="Tối thiểu 6 ký tự" value={password} onChange={e => setPassword(e.target.value)} className="form-input" required />
+            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Initial Password *</label>
+            <input type="password" placeholder="Minimum 6 characters" value={password} onChange={e => setPassword(e.target.value)} className="form-input" required />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Vai trò (Role) *</label>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Role *</label>
               <select value={role} onChange={e => setRole(e.target.value)} className="form-select">
                 {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
 
             <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Mục tiêu JLPT</label>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>JLPT Target Level</label>
               <select value={jlptTargetLevel} onChange={e => setJlptTargetLevel(e.target.value)} className="form-select">
                 {JLPT_LEVELS.map(lvl => <option key={lvl.value} value={lvl.value}>{lvl.label}</option>)}
               </select>
@@ -101,9 +101,9 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-            <button type="button" className="btn-dash btn-dash-secondary" onClick={onClose}>Hủy</button>
+            <button type="button" className="btn-dash btn-dash-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" disabled={loading} className="btn-dash btn-dash-primary">
-              {loading ? 'Đang tạo...' : '+ Tạo Tài Khoản'}
+              {loading ? 'Creating...' : '+ Create Account'}
             </button>
           </div>
         </form>

@@ -23,10 +23,10 @@ export default function AuthorWorkspacePage({
       <main style={{ maxWidth: '1240px', margin: '2.5rem auto', padding: '0 1.5rem' }}>
         <div style={{ marginBottom: '1.5rem' }}>
           <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--text-heading)' }}>
-            Không Gian Làm Việc Của Tác Giả (Author Workspace)
+            Author Workspace
           </h2>
           <p style={{ color: 'var(--text-body)', fontSize: '0.92rem' }}>
-            Tạo mới, xuất bản và quản lý các bài viết văn hóa, tiếng lóng giới trẻ cho học viên tiếng Nhật.
+            Create, publish, and manage Japanese cultural articles and youth slang for learners worldwide.
           </p>
         </div>
 

@@ -13,9 +13,9 @@ export default function ArticleDetailPage({
   if (!article) {
     return (
       <div style={{ textAlign: 'center', padding: '6rem 2rem' }}>
-        <h2>Không tìm thấy bài viết</h2>
+        <h2>Article not found</h2>
         <button className="btn-primary-purple" style={{ marginTop: '1rem' }} onClick={() => onNavigate('culture_reader')}>
-          ← Quay lại danh sách bài viết
+          ← Back to Articles
         </button>
       </div>
     );
@@ -29,7 +29,7 @@ export default function ArticleDetailPage({
 
   return (
     <div className="article-detail-page">
-      {/* Top Navbar Chuẩn Hóa */}
+      {/* Top Navbar */}
       <Navbar
         currentView="culture_reader"
         currentUser={currentUser}
@@ -38,7 +38,7 @@ export default function ArticleDetailPage({
         onLogout={onLogout}
         extraAction={
           <button className="btn-secondary-glass" onClick={() => onNavigate(returnTarget)}>
-            ← Quay lại danh sách
+            ← Back to list
           </button>
         }
       />
@@ -46,7 +46,7 @@ export default function ArticleDetailPage({
       <main className="article-detail-container">
         <button className="article-back-btn" onClick={() => onNavigate(returnTarget)}>
           <span>←</span>
-          <span>Quay lại danh sách bài viết</span>
+          <span>Back to Articles</span>
         </button>
 
         {article.coverImageUrl && (
@@ -58,7 +58,7 @@ export default function ArticleDetailPage({
         <div className="article-header-block">
           <div className="culture-badge">
             <span>⛩️</span>
-            <span>Văn Hóa & Phong Cách Sống Nhật Bản</span>
+            <span>Japanese Culture & Lifestyle</span>
           </div>
 
           <h1 className="article-main-title">
@@ -77,17 +77,17 @@ export default function ArticleDetailPage({
                   {article.authorName}
                 </div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                  {article.authorEmail || 'Tác giả JLMS'} • Vai trò: Author
+                  {article.authorEmail || 'JLMS Author'} • Role: Author
                 </div>
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
               <div>
-                📅 <strong>{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' }) : (article.createdAt ? new Date(article.createdAt).toLocaleDateString('vi-VN') : 'Mới đăng')}</strong>
+                📅 <strong>{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : (article.createdAt ? new Date(article.createdAt).toLocaleDateString('en-US') : 'Recent')}</strong>
               </div>
               <span>•</span>
-              <div>📖 4 phút đọc</div>
+              <div>📖 4 min read</div>
               <span className={`status-badge ${article.status}`}>
                 {article.status}
               </span>
@@ -115,13 +115,13 @@ export default function ArticleDetailPage({
             <div>
               <h4 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{article.authorName}</h4>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-body)' }}>
-                Tác giả chuyên mục Văn hóa & Tiếng lóng Nhật Bản tại JLMS.
+                Author & Educator in Japanese Culture & Slang at JLMS.
               </p>
             </div>
           </div>
 
           <button className="btn-primary-purple" onClick={() => onNavigate('culture_reader')}>
-            Khám phá thêm các bài viết khác →
+            Explore More Articles →
           </button>
         </div>
       </main>

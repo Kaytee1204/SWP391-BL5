@@ -1,14 +1,14 @@
-package com.example.base.controller;
+package com.example.base.controller.account;
 
-import com.example.base.dto.request.AccountCreateRequest;
-import com.example.base.dto.request.AccountStatusUpdateRequest;
-import com.example.base.dto.request.AccountUpdateRequest;
-import com.example.base.dto.response.AccountResponse;
-import com.example.base.dto.response.ApiResponse;
-import com.example.base.dto.response.PageResponse;
+import com.example.base.dto.account.AccountCreateRequest;
+import com.example.base.dto.account.AccountResponse;
+import com.example.base.dto.account.AccountStatusUpdateRequest;
+import com.example.base.dto.account.AccountUpdateRequest;
+import com.example.base.dto.common.ApiResponse;
+import com.example.base.dto.common.PageResponse;
 import com.example.base.entity.AccountStatus;
 import com.example.base.entity.Role;
-import com.example.base.service.AccountManagementService;
+import com.example.base.service.account.AccountManagementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

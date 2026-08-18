@@ -1,9 +1,9 @@
-package com.example.base.service;
+package com.example.base.service.account;
 
-import com.example.base.dto.request.AccountCreateRequest;
-import com.example.base.dto.request.AccountUpdateRequest;
-import com.example.base.dto.response.AccountResponse;
-import com.example.base.dto.response.PageResponse;
+import com.example.base.dto.account.AccountCreateRequest;
+import com.example.base.dto.account.AccountResponse;
+import com.example.base.dto.account.AccountUpdateRequest;
+import com.example.base.dto.common.PageResponse;
 import com.example.base.entity.AccountStatus;
 import com.example.base.entity.Role;
 import org.springframework.data.domain.Pageable;

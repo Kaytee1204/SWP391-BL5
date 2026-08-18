@@ -26,7 +26,7 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
       };
 
       const res = await apiRequest('/culture-articles', 'POST', body);
-      alert('Đăng bài viết văn hóa thành công!');
+      alert('Cultural article published successfully!');
       onCreateSuccess(res.data);
       onClose();
     } catch (err) {
@@ -41,7 +41,7 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
       <div className="modal-card modal-card-large" onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-heading)' }}>
-            🌸 Đăng Bài Viết Văn Hóa & Tiếng Lóng Mới
+            🌸 Publish New Cultural & Slang Article
           </h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#94a3b8' }}>✕</button>
         </div>
@@ -54,10 +54,10 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.95rem' }}>
           <div>
-            <label style={{ fontSize: '0.82rem', fontWeight: 700 }}>Tiêu đề bài viết *</label>
+            <label style={{ fontSize: '0.82rem', fontWeight: 700 }}>Article Title *</label>
             <input
               type="text"
-              placeholder="Ví dụ: Bí quyết ứng xử & viết email chuẩn doanh nghiệp Nhật Bản"
+              placeholder="e.g. Essential Japanese Business Etiquette & Email Guidelines"
               value={title}
               onChange={e => setTitle(e.target.value)}
               className="form-input"
@@ -67,8 +67,8 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
 
           <div>
             <label style={{ fontSize: '0.82rem', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
-              <span>Chọn ảnh bìa bài viết:</span>
-              <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>hoặc nhập URL ảnh bên dưới</span>
+              <span>Choose Cover Image:</span>
+              <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>or enter a custom URL below</span>
             </label>
             <div className="cover-preset-grid">
               {ARTICLE_COVER_PRESETS.map(p => (
@@ -85,7 +85,7 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
 
             <input
               type="url"
-              placeholder="Hoặc dán URL ảnh tùy chỉnh (https://...)"
+              placeholder="Or paste custom image URL (https://...)"
               value={customUrl}
               onChange={e => setCustomUrl(e.target.value)}
               className="form-input"
@@ -94,17 +94,17 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
           </div>
 
           <div>
-            <label style={{ fontSize: '0.82rem', fontWeight: 700 }}>Trạng thái xuất bản *</label>
+            <label style={{ fontSize: '0.82rem', fontWeight: 700 }}>Publication Status *</label>
             <select value={status} onChange={e => setStatus(e.target.value)} className="form-select">
-              <option value="published">Published (Công khai cho toàn bộ học viên & độc giả)</option>
-              <option value="draft">Draft (Bản nháp - chỉ tác giả và quản trị viên xem)</option>
+              <option value="published">Published (Public to all learners & readers)</option>
+              <option value="draft">Draft (Private - visible only to author and managers)</option>
             </select>
           </div>
 
           <div>
-            <label style={{ fontSize: '0.82rem', fontWeight: 700 }}>Nội dung bài viết *</label>
+            <label style={{ fontSize: '0.82rem', fontWeight: 700 }}>Article Content *</label>
             <textarea
-              placeholder="Viết nội dung kiến thức văn hóa, từ lóng giới trẻ, kinh nghiệm thực tế tại Nhật Bản..."
+              placeholder="Write cultural insights, youth slangs, everyday Japanese etiquette, or life tips..."
               value={content}
               onChange={e => setContent(e.target.value)}
               className="form-textarea"
@@ -114,9 +114,9 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', marginTop: '0.75rem' }}>
-            <button type="button" className="btn-dash btn-dash-secondary" onClick={onClose}>Hủy</button>
+            <button type="button" className="btn-dash btn-dash-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" disabled={loading} className="btn-dash btn-dash-primary">
-              {loading ? 'Đang xuất bản...' : '✨ Xuất Bản Bài Viết'}
+              {loading ? 'Publishing...' : '✨ Publish Article'}
             </button>
           </div>
         </form>

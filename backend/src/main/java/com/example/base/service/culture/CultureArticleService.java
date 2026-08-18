@@ -1,9 +1,9 @@
-package com.example.base.service;
+package com.example.base.service.culture;
 
-import com.example.base.dto.request.CultureArticleCreateRequest;
-import com.example.base.dto.request.CultureArticleUpdateRequest;
-import com.example.base.dto.response.CultureArticleResponse;
-import com.example.base.dto.response.PageResponse;
+import com.example.base.dto.common.PageResponse;
+import com.example.base.dto.culture.CultureArticleCreateRequest;
+import com.example.base.dto.culture.CultureArticleResponse;
+import com.example.base.dto.culture.CultureArticleUpdateRequest;
 import com.example.base.security.UserPrincipal;
 import org.springframework.data.domain.Pageable;
 

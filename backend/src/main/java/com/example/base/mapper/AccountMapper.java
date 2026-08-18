@@ -1,9 +1,9 @@
 package com.example.base.mapper;
 
-import com.example.base.dto.request.AccountCreateRequest;
-import com.example.base.dto.request.AccountUpdateRequest;
-import com.example.base.dto.request.RegisterRequest;
-import com.example.base.dto.response.AccountResponse;
+import com.example.base.dto.account.AccountCreateRequest;
+import com.example.base.dto.account.AccountResponse;
+import com.example.base.dto.account.AccountUpdateRequest;
+import com.example.base.dto.auth.RegisterRequest;
 import com.example.base.entity.Account;
 import com.example.base.entity.AccountStatus;
 import com.example.base.entity.Role;

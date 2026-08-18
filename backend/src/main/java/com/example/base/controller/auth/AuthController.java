@@ -1,13 +1,14 @@
-package com.example.base.controller;
+package com.example.base.controller.auth;
 
-import com.example.base.dto.request.LoginRequest;
-import com.example.base.dto.request.RegisterRequest;
-import com.example.base.dto.request.UpdateProfileRequest;
-import com.example.base.dto.response.AccountResponse;
-import com.example.base.dto.response.ApiResponse;
-import com.example.base.dto.response.AuthResponse;
+import com.example.base.dto.account.AccountResponse;
+import com.example.base.dto.auth.AuthResponse;
+import com.example.base.dto.auth.LoginRequest;
+import com.example.base.dto.auth.RegisterRequest;
+import com.example.base.dto.auth.UpdateProfileRequest;
+import com.example.base.dto.common.ApiResponse;
+import com.example.base.security.JwtTokenProvider;
 import com.example.base.security.UserPrincipal;
-import com.example.base.service.AuthService;
+import com.example.base.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-    private final com.example.base.security.JwtTokenProvider tokenProvider;
+    private final JwtTokenProvider tokenProvider;
 
     // 1. ĐĂNG NHẬP (Trả về chuỗi JWT Token)
     @PostMapping("/login")

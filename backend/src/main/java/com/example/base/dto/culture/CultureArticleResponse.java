@@ -1,4 +1,4 @@
-package com.example.base.dto.response;
+package com.example.base.dto.culture;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +22,6 @@ public class CultureArticleResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Author metadata
     private Long authorId;
     private String authorName;
     private String authorEmail;

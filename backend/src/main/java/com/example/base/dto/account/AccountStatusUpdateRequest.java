@@ -1,4 +1,4 @@
-package com.example.base.dto.request;
+package com.example.base.dto.account;
 
 import com.example.base.entity.AccountStatus;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AccountStatusUpdateRequest {
 
-    @NotNull(message = "Trạng thái tài khoản không được để trống (active, inactive, deleted)")
+    @NotNull(message = "Status is required")
     private AccountStatus status;
 }

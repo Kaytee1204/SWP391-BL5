@@ -1,8 +1,8 @@
 package com.example.base.mapper;
 
-import com.example.base.dto.request.CultureArticleCreateRequest;
-import com.example.base.dto.request.CultureArticleUpdateRequest;
-import com.example.base.dto.response.CultureArticleResponse;
+import com.example.base.dto.culture.CultureArticleCreateRequest;
+import com.example.base.dto.culture.CultureArticleResponse;
+import com.example.base.dto.culture.CultureArticleUpdateRequest;
 import com.example.base.entity.Account;
 import com.example.base.entity.CultureArticle;
 import org.springframework.stereotype.Component;

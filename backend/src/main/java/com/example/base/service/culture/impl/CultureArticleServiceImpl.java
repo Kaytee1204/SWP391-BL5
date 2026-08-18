@@ -1,9 +1,9 @@
-package com.example.base.service.impl;
+package com.example.base.service.culture.impl;
 
-import com.example.base.dto.request.CultureArticleCreateRequest;
-import com.example.base.dto.request.CultureArticleUpdateRequest;
-import com.example.base.dto.response.CultureArticleResponse;
-import com.example.base.dto.response.PageResponse;
+import com.example.base.dto.common.PageResponse;
+import com.example.base.dto.culture.CultureArticleCreateRequest;
+import com.example.base.dto.culture.CultureArticleResponse;
+import com.example.base.dto.culture.CultureArticleUpdateRequest;
 import com.example.base.entity.Account;
 import com.example.base.entity.CultureArticle;
 import com.example.base.exception.AppException;
@@ -13,7 +13,7 @@ import com.example.base.mapper.CultureArticleMapper;
 import com.example.base.repository.AccountRepository;
 import com.example.base.repository.CultureArticleRepository;
 import com.example.base.security.UserPrincipal;
-import com.example.base.service.CultureArticleService;
+import com.example.base.service.culture.CultureArticleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

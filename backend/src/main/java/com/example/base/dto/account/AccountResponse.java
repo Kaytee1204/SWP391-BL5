@@ -1,4 +1,4 @@
-package com.example.base.dto.response;
+package com.example.base.dto.account;
 
 import com.example.base.entity.AccountStatus;
 import com.example.base.entity.JlptLevel;

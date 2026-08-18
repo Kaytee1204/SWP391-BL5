@@ -46,7 +46,7 @@ export default function EditAccountModal({ account, onClose, onSaveSuccess }) {
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-heading)' }}>
-            Chỉnh Sửa Tài Khoản #{account.accountId}
+            Edit Account #{account.accountId}
           </h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#94a3b8' }}>✕</button>
         </div>
@@ -73,25 +73,25 @@ export default function EditAccountModal({ account, onClose, onSaveSuccess }) {
           </div>
 
           <div>
-            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Họ và tên *</label>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Full Name *</label>
             <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} className="form-input" required />
           </div>
 
           <div>
-            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Email *</label>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Email Address *</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="form-input" required />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Vai trò (Role) *</label>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Role *</label>
               <select value={role} onChange={e => setRole(e.target.value)} className="form-select">
                 {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
 
             <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Trạng thái *</label>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Status *</label>
               <select value={status} onChange={e => setStatus(e.target.value)} className="form-select">
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -100,21 +100,21 @@ export default function EditAccountModal({ account, onClose, onSaveSuccess }) {
           </div>
 
           <div>
-            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Mục tiêu JLPT</label>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>JLPT Target Level</label>
             <select value={jlptTargetLevel} onChange={e => setJlptTargetLevel(e.target.value)} className="form-select">
               {JLPT_LEVELS.map(lvl => <option key={lvl.value} value={lvl.value}>{lvl.label}</option>)}
             </select>
           </div>
 
           <div>
-            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Mật khẩu mới (Để trống nếu không đổi)</label>
-            <input type="password" placeholder="Nhập mật khẩu mới..." value={newPassword} onChange={e => setNewPassword(e.target.value)} className="form-input" />
+            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>New Password (Leave blank to keep unchanged)</label>
+            <input type="password" placeholder="Enter new password..." value={newPassword} onChange={e => setNewPassword(e.target.value)} className="form-input" />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-            <button type="button" className="btn-dash btn-dash-secondary" onClick={onClose}>Hủy</button>
+            <button type="button" className="btn-dash btn-dash-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" disabled={loading} className="btn-dash btn-dash-primary">
-              {loading ? 'Đang lưu...' : '💾 Lưu Thay Đổi'}
+              {loading ? 'Saving...' : '💾 Save Changes'}
             </button>
           </div>
         </form>

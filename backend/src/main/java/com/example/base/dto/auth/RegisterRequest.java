@@ -1,9 +1,9 @@
-package com.example.base.dto.request;
+package com.example.base.dto.auth;
 
-import com.example.base.entity.AccountStatus;
 import com.example.base.entity.JlptLevel;
 import com.example.base.entity.Role;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,21 +14,22 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountUpdateRequest {
+public class RegisterRequest {
 
-    @Email(message = "Email không đúng định dạng")
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    @Size(min = 2, max = 150, message = "Họ và tên từ 2 đến 150 ký tự")
+    @NotBlank(message = "Full name is required")
     private String fullName;
 
     private String avatarUrl;
 
-    private Role role; // Student, Lecturer, Manager, Author
+    private Role role;
 
     private JlptLevel jlptTargetLevel;
-
-    private AccountStatus status;
 }

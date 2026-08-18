@@ -50,16 +50,16 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
     <div className="content-card">
       <div className="card-header-row">
         <div>
-          <h3 style={{ fontSize: '1.35rem', fontWeight: 800 }}>Quản Lý Tất Cả Tài Khoản</h3>
+          <h3 style={{ fontSize: '1.35rem', fontWeight: 800 }}>Account Management</h3>
           <div style={{ color: '#10b981', fontWeight: 600, fontSize: '0.85rem' }}>
-            Tổng cộng: {pageInfo.totalElements} tài khoản ({accounts.filter(a => a.status === 'active').length} đang hoạt động trên trang này)
+            Total: {pageInfo.totalElements} accounts ({accounts.filter(a => a.status === 'active').length} active on this page)
           </div>
         </div>
 
         <div className="card-actions-group">
           <input
             type="text"
-            placeholder="Tìm tên hoặc email..."
+            placeholder="Search name or email..."
             value={keyword}
             onChange={e => { setKeyword(e.target.value); setPage(0); }}
             className="search-pill-input"
@@ -69,7 +69,7 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
             onChange={e => { setRoleFilter(e.target.value); setPage(0); }}
             className="select-pill"
           >
-            <option value="">Role: Tất cả</option>
+            <option value="">Role: All</option>
             {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
           <select
@@ -77,12 +77,12 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
             onChange={e => { setStatusFilter(e.target.value); setPage(0); }}
             className="select-pill"
           >
-            <option value="">Trạng thái: Tất cả</option>
+            <option value="">Status: All</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
           <button className="btn-dash btn-dash-primary" onClick={() => setShowCreateModal(true)}>
-            + Thêm Tài Khoản
+            + Add Account
           </button>
         </div>
       </div>
@@ -91,20 +91,20 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
         <table className="clean-table">
           <thead>
             <tr style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              <th>Tài khoản</th>
-              <th>Vai trò</th>
-              <th>Mục tiêu JLPT</th>
+              <th>Account</th>
+              <th>Role</th>
+              <th>JLPT Level</th>
               <th>Email</th>
-              <th>Ngày tạo</th>
-              <th style={{ textAlign: 'center' }}>Trạng thái</th>
-              <th style={{ textAlign: 'center' }}>Hành động</th>
+              <th>Created At</th>
+              <th style={{ textAlign: 'center' }}>Status</th>
+              <th style={{ textAlign: 'center' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {accounts.length === 0 ? (
               <tr>
                 <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
-                  Không tìm thấy tài khoản nào khớp với tiêu chí tìm kiếm.
+                  No accounts found matching your search criteria.
                 </td>
               </tr>
             ) : (
@@ -126,12 +126,12 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
                   <td><span className={`role-badge role-${acc.role?.toLowerCase()}`}>{acc.role}</span></td>
                   <td style={{ color: 'var(--primary-orange)', fontWeight: 700 }}>{acc.jlptTargetLevel || '-'}</td>
                   <td style={{ color: 'var(--text-body)' }}>{acc.email}</td>
-                  <td style={{ color: 'var(--text-muted)' }}>{acc.createdAt ? new Date(acc.createdAt).toLocaleDateString('vi-VN') : '-'}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{acc.createdAt ? new Date(acc.createdAt).toLocaleDateString('en-US') : '-'}</td>
                   <td style={{ textAlign: 'center' }}>
                     <button
                       onClick={() => handleToggleStatus(acc)}
                       className={`status-badge ${acc.status}`}
-                      title="Nhấp để bật/tắt trạng thái (Active / Inactive)"
+                      title="Click to toggle status (Active / Inactive)"
                     >
                       {acc.status}
                     </button>
@@ -140,7 +140,7 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
                     <button
                       className="btn-action-edit"
                       onClick={() => setEditingAccount(acc)}
-                      title="Chỉnh sửa hồ sơ và avatar"
+                      title="Edit profile and avatar"
                     >
                       ✏️ Edit
                     </button>
@@ -163,7 +163,7 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
           account={editingAccount}
           onClose={() => setEditingAccount(null)}
           onSaveSuccess={() => {
-            alert('Cập nhật tài khoản thành công!');
+            alert('Account updated successfully!');
             fetchAccounts();
           }}
         />
@@ -173,7 +173,7 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
         <CreateAccountModal
           onClose={() => setShowCreateModal(false)}
           onCreateSuccess={() => {
-            alert('Tạo tài khoản mới thành công!');
+            alert('New account created successfully!');
             fetchAccounts();
           }}
         />

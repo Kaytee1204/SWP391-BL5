@@ -1,9 +1,9 @@
-package com.example.base.service.impl;
+package com.example.base.service.account.impl;
 
-import com.example.base.dto.request.AccountCreateRequest;
-import com.example.base.dto.request.AccountUpdateRequest;
-import com.example.base.dto.response.AccountResponse;
-import com.example.base.dto.response.PageResponse;
+import com.example.base.dto.account.AccountCreateRequest;
+import com.example.base.dto.account.AccountResponse;
+import com.example.base.dto.account.AccountUpdateRequest;
+import com.example.base.dto.common.PageResponse;
 import com.example.base.entity.Account;
 import com.example.base.entity.AccountStatus;
 import com.example.base.entity.Role;
@@ -12,7 +12,7 @@ import com.example.base.exception.ErrorCode;
 import com.example.base.exception.ResourceNotFoundException;
 import com.example.base.mapper.AccountMapper;
 import com.example.base.repository.AccountRepository;
-import com.example.base.service.AccountManagementService;
+import com.example.base.service.account.AccountManagementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
