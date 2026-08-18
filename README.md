@@ -1,17 +1,9 @@
 # Japanese Learning Platform - Backend API (Spring Boot 3 + SQL Server)
 
-Dự án Backend chuẩn doanh nghiệp cho **Nền tảng Học tiếng Nhật (Japanese Learning Platform)** sử dụng **Spring Boot 3.3.x**, **Java 17+**, **Spring Security 6**, **JWT**, **Spring Data JPA**, **Microsoft SQL Server (Database: DemoCourse)**, và **Swagger OpenAPI 3 (KhanhTB)**.
+Dự án  **Nền tảng Học tiếng Nhật (Japanese Learning Platform)** sử dụng **Spring Boot 3.3.x**, **Java 17+**, **Spring Security 6**, **JWT**, **Spring Data JPA**, **Microsoft SQL Server (Database: DemoCourse)**, và **Swagger OpenAPI 3 (KhanhTB)**.
 
 ---
 
-## 🗄️ Cấu hình Microsoft SQL Server
-
-- **Database:** `DemoCourse`
-- **Tài khoản:** `sa`
-- **Mật khẩu:** `123`
-- **Chế độ JPA:** `spring.jpa.hibernate.ddl-auto: none` (Chỉ kết nối đọc/ghi với database sẵn có, không tự tạo hay can thiệp vào schema DB).
-
----
 
 ## 🚀 Các Feature chính đang hoạt động
 
