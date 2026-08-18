@@ -24,13 +24,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/accounts")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('Manager', 'ROLE_Manager')")
-@Tag(name = "Account Management", description = "APIs for Managers to manage system accounts (Students, Lecturers, Managers, Authors)")
+@Tag(name = "Account Management", description = "APIs for Managers and Users to manage accounts")
 public class AccountManagementController {
 
     private final AccountManagementService accountManagementService;
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     @Operation(summary = "View Account List with filters by role, status, and keyword")
     public ResponseEntity<ApiResponse<PageResponse<AccountResponse>>> getAccountList(
             @RequestParam(required = false) String keyword,
@@ -42,6 +42,7 @@ public class AccountManagementController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager') or authentication.principal.id == #id or authentication.principal.username == #id")
     @Operation(summary = "View Account Details by ID")
     public ResponseEntity<ApiResponse<AccountResponse>> getAccountById(@PathVariable Long id) {
         AccountResponse response = accountManagementService.getAccountById(id);
@@ -49,6 +50,7 @@ public class AccountManagementController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     @Operation(summary = "Create Account manually (Student, Lecturer, Manager, Author)")
     public ResponseEntity<ApiResponse<AccountResponse>> createAccount(@Valid @RequestBody AccountCreateRequest request) {
         AccountResponse response = accountManagementService.createAccount(request);
@@ -57,6 +59,7 @@ public class AccountManagementController {
     }
 
     @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.POST})
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager') or authentication.principal.id == #id or authentication.principal.username == #id")
     @Operation(summary = "Update Account details, Avatar, and Role")
     public ResponseEntity<ApiResponse<AccountResponse>> updateAccount(
             @PathVariable Long id,
@@ -66,6 +69,7 @@ public class AccountManagementController {
     }
 
     @RequestMapping(value = "/{id}/status", method = {RequestMethod.PATCH, RequestMethod.PUT, RequestMethod.POST})
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     @Operation(summary = "Active / Deactivate Account status")
     public ResponseEntity<ApiResponse<AccountResponse>> updateAccountStatus(
             @PathVariable Long id,
@@ -75,6 +79,7 @@ public class AccountManagementController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     @Operation(summary = "Remove / Soft delete an account from the system")
     public ResponseEntity<ApiResponse<Void>> deleteAccount(@PathVariable Long id) {
         accountManagementService.deleteAccount(id);

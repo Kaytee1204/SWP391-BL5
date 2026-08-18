@@ -28,7 +28,7 @@ public class CultureArticle {
     @Column(name = "cover_image_url", length = 500)
     private String coverImageUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id", nullable = false)
     private Account author;
 

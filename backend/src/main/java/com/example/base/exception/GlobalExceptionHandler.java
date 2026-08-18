@@ -73,10 +73,38 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(405, msg));
     }
 
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMessageNotReadable(org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        log.warn("JSON parse error: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.<Void>builder()
+                        .code(ErrorCode.BAD_REQUEST.getCode())
+                        .message("Dữ liệu JSON gửi lên không hợp lệ hoặc sai định dạng chuỗi")
+                        .build());
+    }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(org.springframework.dao.DataIntegrityViolationException ex) {
+        log.error("Database constraint/integrity violation: ", ex);
+        String msg = "Lỗi ràng buộc cơ sở dữ liệu: " + (ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.<Void>builder()
+                        .code(ErrorCode.BAD_REQUEST.getCode())
+                        .message(msg)
+                        .build());
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGlobalException(Exception ex) {
+    public ResponseEntity<ApiResponse<String>> handleGlobalException(Exception ex) {
         log.error("Unhandled Exception caught: ", ex);
+        String detailedMsg = ex.getMessage() != null && !ex.getMessage().isBlank()
+                ? ex.getMessage()
+                : ErrorCode.INTERNAL_SERVER_ERROR.getMessage();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
+                .body(ApiResponse.<String>builder()
+                        .code(ErrorCode.INTERNAL_SERVER_ERROR.getCode())
+                        .message(detailedMsg)
+                        .data(ex.getClass().getSimpleName())
+                        .build());
     }
 }

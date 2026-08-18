@@ -26,6 +26,7 @@ public class AuthController {
     private final AuthService authService;
     private final com.example.base.security.JwtTokenProvider tokenProvider;
 
+    // 1. ĐĂNG NHẬP (Trả về chuỗi JWT Token)
     @PostMapping("/login")
     @Operation(summary = "Account Login (Returns JWT Access Token)")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
@@ -33,6 +34,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Đăng nhập thành công", authResponse));
     }
 
+    // 2. ĐĂNG KÝ TỰ DO DÀNH CHO HỌC VIÊN (Student)
     @PostMapping("/register")
     @Operation(summary = "Student Registration (Self register)")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
@@ -41,6 +43,7 @@ public class AuthController {
                 .body(ApiResponse.success("Đăng ký tài khoản thành công", authResponse));
     }
 
+    // 3. ĐĂNG XUẤT (Xóa session bảo mật)
     @RequestMapping(value = "/logout", method = {RequestMethod.POST, RequestMethod.GET})
     @Operation(summary = "Account Logout (Invalidate session/context)")
     public ResponseEntity<ApiResponse<Void>> logout() {
@@ -48,6 +51,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Đăng xuất thành công", null));
     }
 
+    // 4. LẤY THÔNG TIN PROFILE CỦA CHÍNH MÌNH (Dựa vào Token gửi kèm)
     @GetMapping("/me")
     @Operation(summary = "Get current authenticated account profile")
     public ResponseEntity<ApiResponse<AccountResponse>> getCurrentProfile(@AuthenticationPrincipal UserPrincipal currentUser) {
@@ -55,13 +59,16 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    // 5. CẬP NHẬT PROFILE CÁ NHÂN (Cho tất cả các role: Student, Lecturer, Author, Manager)
     @RequestMapping(value = "/me", method = {RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.POST})
     @Operation(summary = "Update current authenticated account profile (Email, Name, Password, Avatar, JLPT Level)")
     public ResponseEntity<ApiResponse<AuthResponse>> updateCurrentProfile(
             @AuthenticationPrincipal UserPrincipal currentUser,
             @Valid @RequestBody UpdateProfileRequest request) {
+        // Cập nhật thông tin trong Database
         AccountResponse response = authService.updateCurrentProfile(currentUser.getEmail(), request);
 
+        // Sinh token mới (phòng trường hợp user đổi email)
         String newAccessToken = tokenProvider.generateAccessToken(response.getEmail());
         String newRefreshToken = tokenProvider.generateRefreshToken(response.getEmail());
 
@@ -75,6 +82,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin cá nhân thành công", authResponse));
     }
 
+    // 6. TỰ XÓA / ĐÓNG TÀI KHOẢN CỦA CHÍNH MÌNH
     @DeleteMapping("/me")
     @Operation(summary = "Self-delete / Close current account")
     public ResponseEntity<ApiResponse<Void>> deleteMyAccount(@AuthenticationPrincipal UserPrincipal currentUser) {
