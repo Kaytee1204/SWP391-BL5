@@ -4,6 +4,7 @@ import com.example.base.entity.JlptLevel;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +22,9 @@ public class VocabularyCategoryCreateRequest {
     private JlptLevel jlptLevel;
 
     @NotBlank(message = "Name is required")
+    @Size(max = 200, message = "Title must not exceed 200 characters")
     private String name;
+
 
     private String description;
 
