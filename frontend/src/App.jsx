@@ -13,6 +13,7 @@ import LearningMaterialsView from './features/materials/LearningMaterialsView';
 import ManagerDashboardPage from './features/dashboard/ManagerDashboardPage';
 import GrammarReaderPage from './features/grammar/GrammarReaderPage';
 import GrammarExercisePracticeView from './features/grammar/GrammarExercisePracticeView';
+import QuestionBankManagementView from './features/question-bank/QuestionBankManagementView';
 import Navbar from './components/common/Navbar';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { KanjiPage } from './pages/KanjiPage';
@@ -204,6 +205,22 @@ export default function App() {
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
         />
+      )}
+
+      {/* 5.5. Ngân Hàng Câu Hỏi (Question Bank) */}
+      {currentView === 'question_bank' && (
+        <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }}>
+          <Navbar
+            currentView="question_bank"
+            currentUser={currentUser}
+            onNavigate={(view) => setCurrentView(view)}
+            onViewProfile={() => setShowProfileModal(true)}
+            onLogout={handleLogout}
+          />
+          <main style={{ maxWidth: '1180px', margin: '2rem auto', padding: '0 1.5rem 4rem' }}>
+            <QuestionBankManagementView currentUser={currentUser} />
+          </main>
+        </div>
       )}
 
       {/* 6. Cổng Quản Trị Hệ Thống (Manager Dashboard) */}
