@@ -105,24 +105,14 @@ export default function Navbar({
             </li>
           )}
           {currentUser?.role === 'Lecturer' && (
-            <>
-              <li>
-                <a
-                  className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}
-                  onClick={() => onNavigate('materials')}
-                >
-                  📚 Learning Materials
-                </a>
-              </li>
-              <li>
-                <a
-                  className={`nav-link highlight-tab ${currentView === 'question_bank' ? 'active' : ''}`}
-                  onClick={() => onNavigate('question_bank')}
-                >
-                  🗂️ Question Bank
-                </a>
-              </li>
-            </>
+            <li>
+              <a
+                className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}
+                onClick={() => onNavigate('materials')}
+              >
+                Learning Materials
+              </a>
+            </li>
           )}
           {currentUser?.role === 'Manager' && (
             <li>
