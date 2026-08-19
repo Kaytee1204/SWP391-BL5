@@ -28,6 +28,10 @@ public class QuestionBankServiceImpl implements QuestionBankService {
     private final QuestionBankRepository questionBankRepository;
     private final AccountRepository accountRepository;
     private final QuestionBankMapper questionBankMapper;
+//    Ba tham số:
+//            - root: đại diện entity QuestionBank.
+//            - query: câu query đang được xây dựng.
+//            - cb: CriteriaBuilder, dùng tạo điều kiện SQL.
     @Override
     @Transactional(readOnly = true)
     public PageResponse<QuestionResponse> searchQuestions(String keyword, QuestionSkillType skillType, JlptLevel jlptLevel, QuestionType questionType, Pageable pageable) {
