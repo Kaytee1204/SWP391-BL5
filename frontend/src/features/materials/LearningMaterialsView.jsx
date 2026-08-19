@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Navbar from '../../components/common/Navbar';
 import GrammarManagementView from '../grammar/GrammarManagementView';
 import GrammarExerciseManagementView from '../grammar/GrammarExerciseManagementView';
+import QuestionBankManagementView from '../question-bank/QuestionBankManagementView';
 
 export default function LearningMaterialsView({
   currentUser,
@@ -9,7 +10,7 @@ export default function LearningMaterialsView({
   onViewProfile,
   onLogout
 }) {
-  const [materialTab, setMaterialTab] = useState('grammar_patterns'); // 'grammar_patterns' | 'grammar_exercises'
+  const [materialTab, setMaterialTab] = useState('grammar_patterns');
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }}>
@@ -65,13 +66,31 @@ export default function LearningMaterialsView({
           >
             📝 Grammar Exercises (Bài tập trắc nghiệm)
           </button>
+          <button
+            onClick={() => setMaterialTab('question_bank')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'question_bank' ? '#d97706' : 'transparent',
+              color: materialTab === 'question_bank' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            🗂️ Question Bank (Ngân hàng câu hỏi)
+          </button>
         </div>
 
         {/* Tab Content */}
         {materialTab === 'grammar_patterns' ? (
           <GrammarManagementView currentUser={currentUser} />
-        ) : (
+        ) : materialTab === 'grammar_exercises' ? (
           <GrammarExerciseManagementView currentUser={currentUser} />
+        ) : (
+          <QuestionBankManagementView currentUser={currentUser} />
         )}
       </main>
     </div>

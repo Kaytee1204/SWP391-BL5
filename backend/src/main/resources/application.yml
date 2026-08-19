@@ -9,12 +9,12 @@ spring:
 
   # Microsoft SQL Server Database Configuration
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=JapaneseLearningDB;encrypt=false;trustServerCertificate=true;characterEncoding=UTF-8
+    url: jdbc:sqlserver://localhost:1433;databaseName=SWP391;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     username: sa
     password: 123
 
-  # JPA Configuration: ddl-auto: none (CHI KET NOI, KHONG TU DONG TAO/SUA BANG)
+  # JPA Configuration: ddl-auto: none (CHỈ KẾT NỐI, KHÔNG TỰ ĐỘNG TẠO/SỬA BẢNG)
   jpa:
     database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:

@@ -8,6 +8,7 @@ import RefundInfoView from './components/RefundInfoView';
 
 import GrammarManagementView from '../grammar/GrammarManagementView';
 import GrammarExerciseManagementView from '../grammar/GrammarExerciseManagementView';
+import QuestionBankManagementView from '../question-bank/QuestionBankManagementView';
 
 export default function ManagerDashboardPage({
   currentUser,
@@ -17,7 +18,7 @@ export default function ManagerDashboardPage({
   onLogout
 }) {
   const [activeTab, setActiveTab] = useState('accounts');
-  const [materialSubTab, setMaterialSubTab] = useState('grammar_patterns'); // 'grammar_patterns' | 'grammar_exercises'
+  const [materialSubTab, setMaterialSubTab] = useState('grammar_patterns'); // 'grammar_patterns' | 'grammar_exercises' | 'question_bank'
   const [showProPopup, setShowProPopup] = useState(false);
 
   return (
@@ -47,6 +48,13 @@ export default function ManagerDashboardPage({
             onClick={() => setActiveTab('materials')}
           >
             <div className="nav-item-left"><span>📚</span><span>Learning Materials</span></div>
+            <span>›</span>
+          </div>
+          <div
+            className={`nav-item ${activeTab === 'question_bank' ? 'active' : ''}`}
+            onClick={() => setActiveTab('question_bank')}
+          >
+            <div className="nav-item-left"><span>🗂️</span><span>Question Bank</span></div>
             <span>›</span>
           </div>
           <div
@@ -167,14 +175,36 @@ export default function ManagerDashboardPage({
               >
                 📝 Grammar Exercises
               </button>
+              <button
+                onClick={() => setMaterialSubTab('question_bank')}
+                style={{
+                  padding: '0.5rem 1.15rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  fontSize: '0.88rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  background: materialSubTab === 'question_bank' ? '#d97706' : 'transparent',
+                  color: materialSubTab === 'question_bank' ? '#fff' : 'var(--text-body)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                🗂️ Question Bank
+              </button>
             </div>
 
             {materialSubTab === 'grammar_patterns' ? (
               <GrammarManagementView currentUser={currentUser} />
-            ) : (
+            ) : materialSubTab === 'grammar_exercises' ? (
               <GrammarExerciseManagementView currentUser={currentUser} />
+            ) : (
+              <QuestionBankManagementView currentUser={currentUser} />
             )}
           </div>
+        )}
+
+        {activeTab === 'question_bank' && (
+          <QuestionBankManagementView currentUser={currentUser} />
         )}
 
         {activeTab === 'culture_articles' && (
