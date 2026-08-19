@@ -135,13 +135,6 @@ export default function ManagerDashboardPage({
             <span>›</span>
           </div>
           <div
-            className={`nav-item ${activeTab === 'question_bank' ? 'active' : ''}`}
-            onClick={() => setActiveTab('question_bank')}
-          >
-            <div className="nav-item-left"><span>🗂️</span><span>Question Bank</span></div>
-            <span>›</span>
-          </div>
-          <div
             className={`nav-item ${activeTab === 'culture_articles' ? 'active' : ''}`}
             onClick={() => setActiveTab('culture_articles')}
           >
@@ -345,10 +338,6 @@ export default function ManagerDashboardPage({
               </div>
             )}
           </div>
-        )}
-
-        {activeTab === 'question_bank' && (
-          <QuestionBankManagementView currentUser={currentUser} />
         )}
 
         {activeTab === 'culture_articles' && (

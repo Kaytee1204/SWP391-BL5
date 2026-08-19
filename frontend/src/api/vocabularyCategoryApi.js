@@ -1,4 +1,4 @@
-// URL gốc của backend (Bạn có thể đưa vào file .env)
+// URL gốc của backend
 const BASE_URL = 'http://localhost:8080/api/v1/vocabulary-categories';
 
 // Lấy JWT đúng với hệ thống đang lưu trong app
@@ -10,12 +10,6 @@ const getAuthHeaders = () => {
     };
 };
 
-<<<<<<< HEAD
-export const vocabularyCategoryApi = {
-    getAll: async () => {
-        const response = await fetch(BASE_URL, { headers: getAuthHeaders() });
-        return response.json();
-=======
 // Hàm hỗ trợ đọc response an toàn, tránh lỗi SyntaxError khi server trả về dữ liệu rỗng hoặc không phải JSON
 const handleResponse = async (response) => {
     const text = await response.text();
@@ -34,16 +28,11 @@ export const vocabularyCategoryApi = {
     getAll: async () => {
         const response = await fetch(BASE_URL, { headers: getAuthHeaders() });
         return handleResponse(response);
->>>>>>> temp-vocabulary-work
     },
     
     getById: async (id) => {
         const response = await fetch(`${BASE_URL}/${id}`, { headers: getAuthHeaders() });
-<<<<<<< HEAD
-        return response.json();
-=======
         return handleResponse(response);
->>>>>>> temp-vocabulary-work
     },
 
     create: async (data) => {
@@ -52,7 +41,6 @@ export const vocabularyCategoryApi = {
             headers: getAuthHeaders(),
             body: JSON.stringify(data)
         });
-        return response.json();
         return handleResponse(response);
     },
 
@@ -62,7 +50,6 @@ export const vocabularyCategoryApi = {
             headers: getAuthHeaders(),
             body: JSON.stringify(data)
         });
-        return response.json();
         return handleResponse(response);
     },
 
@@ -71,7 +58,6 @@ export const vocabularyCategoryApi = {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
-        return response.json();
         return handleResponse(response);
     }
 };

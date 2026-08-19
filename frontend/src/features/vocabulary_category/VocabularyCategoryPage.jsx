@@ -47,40 +47,28 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
         }
     };
 
-const handleFormSubmit = async (formData) => {
-    try {
-      // Lấy id từ currentUser truyền vào để đáp ứng yêu cầu của Backend
-      const payload = {
-        name: formData.name,
-        jlptLevel: formData.jlptLevel,
-        description: formData.description,
-      };
+    const handleFormSubmit = async (formData) => {
+        try {
+            let response;
+            if (editingCategory) {
+                response = await vocabularyCategoryApi.update(editingCategory.categoryId, formData);
+            } else {
+                response = await vocabularyCategoryApi.create(formData);
+            }
 
-      let response;
-      if (editingCategory) {
-        response = await vocabularyCategoryApi.update(editingCategory.categoryId, payload);
-      } else {
-        const createdById = currentUser?.accountId;
-        if (!createdById) {
-          alert('Vui lòng đăng nhập để tạo danh mục từ vựng.');
-          return;
+            const success = response && (response.code === 200 || response.code === 201);
+            if (!success) {
+                alert(response?.message || 'Không thể lưu danh mục.');
+                return;
+            }
+
+            setIsModalOpen(false);
+            await fetchCategories();
+        } catch (error) {
+            console.error("Lỗi khi lưu dữ liệu:", error);
+            alert(error?.message || 'Lỗi khi lưu danh mục.');
         }
-        response = await vocabularyCategoryApi.create({ ...payload, createdById });
-      }
-
-      const success = response && (response.code === 200 || response.code === 201);
-      if (!success) {
-        alert(response?.message || 'Không thể lưu danh mục.');
-        return;
-      }
-
-      setIsModalOpen(false);
-      await fetchCategories();
-    } catch (error) {
-      console.error("Lỗi khi lưu dữ liệu:", error);
-      alert(error?.message || 'Lỗi khi lưu danh mục.');
-    }
-  };
+    };
 
     return (
         <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: '"Inter", sans-serif' }}>

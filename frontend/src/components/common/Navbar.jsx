@@ -54,6 +54,29 @@ export default function Navbar({
               Grammar (文法)
             </a>
           </li>
+          <li>
+            
+          </li>
+          <li>
+            <a
+              className={`nav-link highlight-tab ${currentView === 'kanji' ? 'active' : ''}`}
+              onClick={() => onNavigate('kanji')}
+              title="Japanese Kanji"
+            >
+              Kanji
+            </a>
+          </li>
+          {currentUser?.role === 'Student' && (
+            <li>
+              <a
+                className={`nav-link highlight-tab ${currentView === 'kanji-decks' ? 'active' : ''}`}
+                onClick={() => onNavigate('kanji-decks')}
+                title="Manage your personal Kanji decks"
+              >
+                Kanji Decks
+              </a>
+            </li>
+          )}
           {currentUser && (currentUser.role === 'Student' || currentUser.role === 'Lecturer' || currentUser.role === 'Manager') && (
             <li>
               <a

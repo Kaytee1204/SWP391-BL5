@@ -12,9 +12,10 @@ export default function LearningMaterialsView({
   onNavigate,
   onViewProfile,
   onOpenAuth,
-  onLogout
+  onLogout,
+  initialTab = 'grammar_patterns'
 }) {
-  const [materialTab, setMaterialTab] = useState('grammar_patterns'); // 'grammar_patterns' | 'grammar_exercises' | 'question_bank' | 'vocabulary_categories'
+  const [materialTab, setMaterialTab] = useState(initialTab); // 'grammar_patterns' | 'grammar_exercises' | 'question_bank' | 'vocabulary_categories'
 
   // State cho phần Quản lý Danh mục từ vựng
   const [categories, setCategories] = useState([]);
