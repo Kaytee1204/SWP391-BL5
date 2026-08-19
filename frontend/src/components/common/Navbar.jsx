@@ -55,13 +55,7 @@ export default function Navbar({
             </a>
           </li>
           <li>
-            <a
-              className={`nav-link highlight-tab ${currentView === 'vocab' ? 'active' : ''}`}
-              onClick={() => onNavigate('vocab')}
-              title="Japanese vocabulary"
-            >
-              Vocabulary
-            </a>
+            
           </li>
           <li>
             <a
