@@ -11,6 +11,8 @@ import CultureArticleManagementView from './features/culture-articles/CultureArt
 import AuthorWorkspacePage from './features/culture-articles/AuthorWorkspacePage';
 import LearningMaterialsView from './features/materials/LearningMaterialsView';
 import ManagerDashboardPage from './features/dashboard/ManagerDashboardPage';
+
+import VocabularyCategoryPage from './features/vocabulary-category/VocabularyCategoryPage';
 import GrammarReaderPage from './features/grammar/GrammarReaderPage';
 import GrammarExercisePracticeView from './features/grammar/GrammarExercisePracticeView';
 import QuestionBankManagementView from './features/question-bank/QuestionBankManagementView';
@@ -20,6 +22,7 @@ import { KanjiPage } from './pages/KanjiPage';
 import { PersonalVocabDecksPage } from './pages/PersonalVocabDecksPage';
 import { PersonalKanjiDecksPage } from './pages/PersonalKanjiDecksPage';
 import { AccountsPage } from './pages/AccountsPage';
+
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -230,6 +233,16 @@ export default function App() {
           onNavigate={(view) => setCurrentView(view)}
           onViewProfile={() => setShowProfileModal(true)}
           onOpenArticleDetail={(art) => handleOpenArticleDetail(art, 'dashboard')}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {/* 7. Quản Lý Danh Mục Từ Vựng (Vocabulary Category Management) */}
+      {currentView === 'vocabulary_category' && (
+        <VocabularyCategoryPage
+          currentUser={currentUser}
+          onNavigate={(view) => setCurrentView(view)}
+          onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
         />
       )}
