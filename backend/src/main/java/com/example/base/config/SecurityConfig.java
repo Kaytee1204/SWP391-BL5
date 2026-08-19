@@ -90,7 +90,9 @@ public class SecurityConfig {
                                 "/culture-articles", "/culture-articles/**",
                                 "/grammar-patterns", "/grammar-patterns/**",
                                 "/kanji-modules", "/kanji-modules/**",
-                                "/kanji-details", "/kanji-details/**").permitAll()
+                                "/kanji-details", "/kanji-details/**",
+                                "/vocabulary-categories", "/vocabulary-categories/**",
+                                "/vocabulary-items", "/vocabulary-items/**").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
                 )
