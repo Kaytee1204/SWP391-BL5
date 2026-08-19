@@ -57,11 +57,14 @@ public final class DeckDtos {
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class PersonalKanjiDeckItemDto {
         private Long kanjiId;
+        private Long moduleId;
+        private String moduleTitle;
         private String character;
         private String onyomi;
         private String kunyomi;
         private String meaning;
         private String compoundWords;
+        private String strokeOrderUrl;
         private JlptLevel jlptLevel;
         private String memorizationNote;
         private LocalDateTime addedAt;

@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { ArrowLeft, ArrowRight, RotateCw, Volume2 } from 'lucide-react';
 
 export const FlashcardModal = ({ isOpen, onClose, title, items = [], type = 'vocab' }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(0);
+      setIsFlipped(false);
+    }
+  }, [isOpen, items]);
 
   if (!items || items.length === 0) {
     return (
@@ -90,6 +97,9 @@ export const FlashcardModal = ({ isOpen, onClose, title, items = [], type = 'voc
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                   Onyomi: {currentItem.onyomi || '—'}
                 </div>
+                <button className="btn btn-secondary btn-sm" style={{ marginTop: '12px' }} onClick={(e) => { e.stopPropagation(); playSpeech(currentItem.character); }}>
+                  <Volume2 size={16} /> Nghe âm Kanji
+                </button>
               </>
             )}
             <div style={{ marginTop: 'auto', fontSize: '0.75rem', color: 'var(--text-subtle)', display: 'flex', alignItems: 'center', gap: '4px' }}>

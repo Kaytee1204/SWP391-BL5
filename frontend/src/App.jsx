@@ -101,7 +101,7 @@ export default function App() {
 
   const learningViews = {
     vocab: <VocabularyPage />,
-    kanji: <KanjiPage />,
+    kanji: <KanjiPage currentUser={currentUser} />,
     'vocab-decks': <PersonalVocabDecksPage onNavigate={setCurrentView} />,
     'kanji-decks': <PersonalKanjiDecksPage onNavigate={setCurrentView} />,
     accounts: <AccountsPage />,

@@ -2,6 +2,7 @@ package com.example.base.service.kanji.impl;
 
 import com.example.base.dto.kanji.KanjiDtos.*;
 import com.example.base.entity.*;
+import com.example.base.exception.BadRequestException;
 import com.example.base.exception.ResourceNotFoundException;
 import com.example.base.repository.*;
 import com.example.base.service.kanji.KanjiService;
@@ -19,6 +20,7 @@ public class KanjiServiceImpl implements KanjiService {
     private final KanjiLessonModuleRepository moduleRepository;
     private final KanjiDetailRepository kanjiRepository;
     private final AccountRepository accountRepository;
+    private final PersonalKanjiDeckItemRepository kanjiDeckItemRepository;
 
     @Override
     public List<KanjiModuleDto> getModules(JlptLevel level) {
@@ -41,7 +43,7 @@ public class KanjiServiceImpl implements KanjiService {
         KanjiLessonModule module = KanjiLessonModule.builder()
                 .jlptLevel(request.getJlptLevel())
                 .title(request.getTitle().trim())
-                .description(request.getDescription())
+                .description(trimToNull(request.getDescription()))
                 .createdBy(creator)
                 .build();
         return toModuleDto(moduleRepository.save(module));
@@ -53,27 +55,40 @@ public class KanjiServiceImpl implements KanjiService {
         KanjiLessonModule module = requireModule(moduleId);
         module.setJlptLevel(request.getJlptLevel());
         module.setTitle(request.getTitle().trim());
-        module.setDescription(request.getDescription());
+        module.setDescription(trimToNull(request.getDescription()));
         return toModuleDto(moduleRepository.save(module));
     }
 
     @Override
     @Transactional
     public void deleteModule(Long moduleId) {
-        moduleRepository.delete(requireModule(moduleId));
+        KanjiLessonModule module = requireModule(moduleId);
+        if (kanjiDeckItemRepository.existsByKanji_Module_ModuleId(moduleId)) {
+            throw new BadRequestException("Không thể xóa module vì có Kanji đang được lưu trong deck cá nhân");
+        }
+        moduleRepository.delete(module);
     }
 
     @Override
     public List<KanjiDetailDto> getKanji(Long moduleId, JlptLevel level, String search) {
         List<KanjiDetail> result;
         if (search != null && !search.isBlank()) {
-            result = kanjiRepository.search(search.trim());
+            String keyword = search.trim();
+            if (moduleId != null) {
+                requireModule(moduleId);
+                result = kanjiRepository.searchByModule(moduleId, keyword);
+            } else if (level != null) {
+                result = kanjiRepository.searchByJlptLevel(level, keyword);
+            } else {
+                result = kanjiRepository.search(keyword);
+            }
         } else if (moduleId != null) {
+            requireModule(moduleId);
             result = kanjiRepository.findByModule_ModuleIdOrderByKanjiIdAsc(moduleId);
         } else if (level != null) {
             result = kanjiRepository.findByJlptLevel(level);
         } else {
-            result = kanjiRepository.findAll();
+            result = kanjiRepository.findByOrderByKanjiIdAsc();
         }
         return result.stream().map(this::toKanjiDto).toList();
     }
@@ -89,11 +104,11 @@ public class KanjiServiceImpl implements KanjiService {
         KanjiDetail kanji = KanjiDetail.builder()
                 .module(requireModule(request.getModuleId()))
                 .character(request.getCharacter().trim())
-                .onyomi(request.getOnyomi())
-                .kunyomi(request.getKunyomi())
-                .strokeOrderUrl(request.getStrokeOrderUrl())
+                .onyomi(trimToNull(request.getOnyomi()))
+                .kunyomi(trimToNull(request.getKunyomi()))
+                .strokeOrderUrl(trimToNull(request.getStrokeOrderUrl()))
                 .meaning(request.getMeaning().trim())
-                .compoundWords(request.getCompoundWords())
+                .compoundWords(trimToNull(request.getCompoundWords()))
                 .isPreview(Boolean.TRUE.equals(request.getIsPreview()))
                 .build();
         return toKanjiDto(kanjiRepository.save(kanji));
@@ -105,11 +120,11 @@ public class KanjiServiceImpl implements KanjiService {
         KanjiDetail kanji = requireKanji(kanjiId);
         kanji.setModule(requireModule(request.getModuleId()));
         kanji.setCharacter(request.getCharacter().trim());
-        kanji.setOnyomi(request.getOnyomi());
-        kanji.setKunyomi(request.getKunyomi());
-        kanji.setStrokeOrderUrl(request.getStrokeOrderUrl());
+        kanji.setOnyomi(trimToNull(request.getOnyomi()));
+        kanji.setKunyomi(trimToNull(request.getKunyomi()));
+        kanji.setStrokeOrderUrl(trimToNull(request.getStrokeOrderUrl()));
         kanji.setMeaning(request.getMeaning().trim());
-        kanji.setCompoundWords(request.getCompoundWords());
+        kanji.setCompoundWords(trimToNull(request.getCompoundWords()));
         if (request.getIsPreview() != null) kanji.setPreview(request.getIsPreview());
         return toKanjiDto(kanjiRepository.save(kanji));
     }
@@ -117,7 +132,11 @@ public class KanjiServiceImpl implements KanjiService {
     @Override
     @Transactional
     public void deleteKanji(Long kanjiId) {
-        kanjiRepository.delete(requireKanji(kanjiId));
+        KanjiDetail kanji = requireKanji(kanjiId);
+        if (kanjiDeckItemRepository.existsByKanji_KanjiId(kanjiId)) {
+            throw new BadRequestException("Không thể xóa Kanji vì chữ này đang được lưu trong deck cá nhân");
+        }
+        kanjiRepository.delete(kanji);
     }
 
     private KanjiLessonModule requireModule(Long id) {
@@ -160,5 +179,9 @@ public class KanjiServiceImpl implements KanjiService {
                 .createdAt(kanji.getCreatedAt())
                 .updatedAt(kanji.getUpdatedAt())
                 .build();
+    }
+
+    private String trimToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 }

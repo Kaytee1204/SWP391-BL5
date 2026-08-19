@@ -14,8 +14,8 @@ const emptyKanji = {
   isPreview: false,
 };
 
-export const KanjiPage = () => {
-  const role = JSON.parse(localStorage.getItem('user_info') || 'null')?.role;
+export const KanjiPage = ({ currentUser }) => {
+  const role = currentUser?.role;
   const isStudent = role === 'Student';
   const canManageContent = ['Manager', 'Lecturer', 'Author'].includes(role);
   const [selectedLevel, setSelectedLevel] = useState('ALL');
@@ -42,13 +42,16 @@ export const KanjiPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const mods = await kanjiApi.getModules(selectedLevel === 'ALL' ? null : selectedLevel);
-      setModules(mods);
       const params = {};
       if (selectedLevel !== 'ALL') params.jlptLevel = selectedLevel;
       if (selectedModuleId) params.moduleId = selectedModuleId;
-      if (searchQuery) params.search = searchQuery;
-      setKanjiList(await kanjiApi.getKanjiDetails(params));
+      if (searchQuery.trim()) params.search = searchQuery.trim();
+      const [mods, kanji] = await Promise.all([
+        kanjiApi.getModules(selectedLevel === 'ALL' ? null : selectedLevel),
+        kanjiApi.getKanjiDetails(params),
+      ]);
+      setModules(Array.isArray(mods) ? mods : []);
+      setKanjiList(Array.isArray(kanji) ? kanji : []);
     } catch (err) {
       setFeedback({ type: 'error', msg: 'Lỗi tải dữ liệu Kanji: ' + err.message });
     } finally {
@@ -87,10 +90,14 @@ export const KanjiPage = () => {
 
   const deleteModule = async (moduleId) => {
     if (!window.confirm('Bạn có chắc muốn xóa Module này? Tất cả chữ Kanji trong module cũng sẽ bị xóa.')) return;
-    await kanjiApi.deleteModule(moduleId);
-    setFeedback({ type: 'success', msg: 'Đã xóa module Kanji' });
-    setSelectedModuleId('');
-    fetchData();
+    try {
+      await kanjiApi.deleteModule(moduleId);
+      setFeedback({ type: 'success', msg: 'Đã xóa module Kanji' });
+      setSelectedModuleId('');
+      fetchData();
+    } catch (err) {
+      setFeedback({ type: 'error', msg: err.message });
+    }
   };
 
   const openKanjiModal = (kanji = null) => {
@@ -120,9 +127,13 @@ export const KanjiPage = () => {
 
   const deleteKanji = async (kanjiId) => {
     if (!window.confirm('Bạn có chắc muốn xóa chữ Kanji này?')) return;
-    await kanjiApi.deleteKanji(kanjiId);
-    setFeedback({ type: 'success', msg: 'Đã xóa chữ Kanji' });
-    fetchData();
+    try {
+      await kanjiApi.deleteKanji(kanjiId);
+      setFeedback({ type: 'success', msg: 'Đã xóa chữ Kanji' });
+      fetchData();
+    } catch (err) {
+      setFeedback({ type: 'error', msg: err.message });
+    }
   };
 
   const openAddToDeck = async (kanji) => {
@@ -218,6 +229,8 @@ export const KanjiPage = () => {
                 <div style={{ marginTop: '2px' }}><strong>Kun:</strong> {kanji.kunyomi || '-'}</div>
               </div>
               {kanji.compoundWords && <div className="jp-font" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'left', marginBottom: '12px', flex: 1 }}><strong>Từ ghép:</strong> {kanji.compoundWords}</div>}
+              {kanji.strokeOrderUrl && <a href={kanji.strokeOrderUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.78rem', marginBottom: '10px' }}>Xem thứ tự nét ↗</a>}
+              {kanji.isPreview && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '8px' }}>Nội dung xem trước</span>}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-light)', paddingTop: '10px', marginTop: 'auto' }}>
                 {isStudent && <button className="btn btn-secondary btn-sm" title="Lưu vào Deck Kanji" onClick={() => openAddToDeck(kanji)}><BookmarkPlus size={14} /> Lưu Deck</button>}
                 {canManageContent && <div style={{ display: 'flex', gap: '4px' }}>
@@ -233,8 +246,8 @@ export const KanjiPage = () => {
       <Modal isOpen={isModuleModalOpen} onClose={() => setIsModuleModalOpen(false)} title={editingModule ? 'Chỉnh sửa Module Kanji' : 'Tạo Module Kanji mới'}>
         <form onSubmit={saveModule}>
           <div className="form-group"><label className="form-label">Cấp độ JLPT</label><select className="form-select" value={moduleForm.jlptLevel} onChange={(e) => setModuleForm({ ...moduleForm, jlptLevel: e.target.value })}>{['N5', 'N4', 'N3', 'N2', 'N1'].map((level) => <option key={level} value={level}>{level}</option>)}</select></div>
-          <div className="form-group"><label className="form-label">Tiêu đề Module</label><input className="form-input" required placeholder="VD: Bài 1: Chữ Hán cơ bản & Số đếm" value={moduleForm.title} onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })} /></div>
-          <div className="form-group"><label className="form-label">Mô tả Module</label><textarea className="form-textarea" placeholder="Mô tả nội dung bài học..." value={moduleForm.description} onChange={(e) => setModuleForm({ ...moduleForm, description: e.target.value })} /></div>
+          <div className="form-group"><label className="form-label">Tiêu đề Module</label><input className="form-input" required maxLength={150} placeholder="VD: Bài 1: Chữ Hán cơ bản & Số đếm" value={moduleForm.title} onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })} /></div>
+          <div className="form-group"><label className="form-label">Mô tả Module</label><textarea className="form-textarea" maxLength={500} placeholder="Mô tả nội dung bài học..." value={moduleForm.description} onChange={(e) => setModuleForm({ ...moduleForm, description: e.target.value })} /></div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><button type="button" className="btn btn-secondary" onClick={() => setIsModuleModalOpen(false)}>Hủy</button><button type="submit" className="btn btn-primary">{editingModule ? 'Lưu cập nhật' : 'Tạo Module'}</button></div>
         </form>
       </Modal>
@@ -242,9 +255,11 @@ export const KanjiPage = () => {
       <Modal isOpen={isKanjiModalOpen} onClose={() => setIsKanjiModalOpen(false)} title={editingKanji ? 'Chỉnh sửa chữ Hán' : 'Thêm chữ Hán mới'}>
         <form onSubmit={saveKanji}>
           <div className="form-group"><label className="form-label">Thuộc Module</label><select className="form-select" required value={kanjiForm.moduleId} onChange={(e) => setKanjiForm({ ...kanjiForm, moduleId: e.target.value })}><option value="">-- Chọn Module Kanji --</option>{modules.map((m) => <option key={m.moduleId} value={m.moduleId}>[{m.jlptLevel}] {m.title}</option>)}</select></div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}><div className="form-group"><label className="form-label">Chữ Hán (Kanji)</label><input className="form-input" required maxLength={5} placeholder="VD: 日" value={kanjiForm.character} onChange={(e) => setKanjiForm({ ...kanjiForm, character: e.target.value })} /></div><div className="form-group"><label className="form-label">Nghĩa Hán Việt & Thuần Việt</label><input className="form-input" required placeholder="VD: Nhật (Mặt trời, ngày)" value={kanjiForm.meaning} onChange={(e) => setKanjiForm({ ...kanjiForm, meaning: e.target.value })} /></div></div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}><div className="form-group"><label className="form-label">Âm On (Katakana)</label><input className="form-input" placeholder="VD: ニチ, ジツ" value={kanjiForm.onyomi} onChange={(e) => setKanjiForm({ ...kanjiForm, onyomi: e.target.value })} /></div><div className="form-group"><label className="form-label">Âm Kun (Hiragana)</label><input className="form-input" placeholder="VD: ひ, -び, -か" value={kanjiForm.kunyomi} onChange={(e) => setKanjiForm({ ...kanjiForm, kunyomi: e.target.value })} /></div></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}><div className="form-group"><label className="form-label">Chữ Hán (Kanji)</label><input className="form-input" required maxLength={10} placeholder="VD: 日" value={kanjiForm.character} onChange={(e) => setKanjiForm({ ...kanjiForm, character: e.target.value })} /></div><div className="form-group"><label className="form-label">Nghĩa Hán Việt & Thuần Việt</label><input className="form-input" required maxLength={300} placeholder="VD: Nhật (Mặt trời, ngày)" value={kanjiForm.meaning} onChange={(e) => setKanjiForm({ ...kanjiForm, meaning: e.target.value })} /></div></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}><div className="form-group"><label className="form-label">Âm On (Katakana)</label><input className="form-input" maxLength={200} placeholder="VD: ニチ, ジツ" value={kanjiForm.onyomi} onChange={(e) => setKanjiForm({ ...kanjiForm, onyomi: e.target.value })} /></div><div className="form-group"><label className="form-label">Âm Kun (Hiragana)</label><input className="form-input" maxLength={200} placeholder="VD: ひ, -び, -か" value={kanjiForm.kunyomi} onChange={(e) => setKanjiForm({ ...kanjiForm, kunyomi: e.target.value })} /></div></div>
           <div className="form-group"><label className="form-label">Từ ghép thông dụng</label><textarea className="form-textarea" placeholder="VD: 日本 (Nihon - Nhật Bản), 日曜日 (Nichiyoubi - Chủ nhật)" value={kanjiForm.compoundWords} onChange={(e) => setKanjiForm({ ...kanjiForm, compoundWords: e.target.value })} /></div>
+          <div className="form-group"><label className="form-label">URL thứ tự nét (tùy chọn)</label><input type="url" maxLength={500} className="form-input" placeholder="https://..." value={kanjiForm.strokeOrderUrl} onChange={(e) => setKanjiForm({ ...kanjiForm, strokeOrderUrl: e.target.value })} /></div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}><input type="checkbox" checked={Boolean(kanjiForm.isPreview)} onChange={(e) => setKanjiForm({ ...kanjiForm, isPreview: e.target.checked })} /> Cho phép xem trước</label>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><button type="button" className="btn btn-secondary" onClick={() => setIsKanjiModalOpen(false)}>Hủy</button><button type="submit" className="btn btn-primary">{editingKanji ? 'Lưu cập nhật' : 'Thêm chữ Hán'}</button></div>
         </form>
       </Modal>
@@ -252,7 +267,7 @@ export const KanjiPage = () => {
       <Modal isOpen={isAddToDeckModalOpen} onClose={() => setIsAddToDeckModalOpen(false)} title={`Lưu chữ [${selectedKanjiForDeck?.character}] vào Deck`}>
         {myKanjiDecks.length === 0 ? <p style={{ color: 'var(--text-muted)', marginBottom: '16px' }}>Chưa có deck Kanji nào. Hãy vào mục <strong>Decks Kanji</strong> để tạo deck trước nhé!</p> : <>
           <div className="form-group"><label className="form-label">Chọn Deck Kanji</label><select className="form-select" value={targetDeckId} onChange={(e) => setTargetDeckId(e.target.value)}>{myKanjiDecks.map((deck) => <option key={deck.deckId} value={deck.deckId}>{deck.title} ({deck.totalItems} chữ)</option>)}</select></div>
-          <div className="form-group"><label className="form-label">Ghi chú nhớ cá nhân (Memorization note)</label><textarea className="form-textarea" placeholder="VD: Chữ này giống hình mặt trời có vạch ngang ở giữa..." value={memorizationNote} onChange={(e) => setMemorizationNote(e.target.value)} /></div>
+          <div className="form-group"><label className="form-label">Ghi chú nhớ cá nhân (Memorization note)</label><textarea className="form-textarea" maxLength={500} placeholder="VD: Chữ này giống hình mặt trời có vạch ngang ở giữa..." value={memorizationNote} onChange={(e) => setMemorizationNote(e.target.value)} /></div>
         </>}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}><button className="btn btn-secondary" onClick={() => setIsAddToDeckModalOpen(false)}>Hủy</button>{myKanjiDecks.length > 0 && <button className="btn btn-primary" onClick={saveToDeck}><BookmarkPlus size={16} /> Lưu vào Deck</button>}</div>
       </Modal>

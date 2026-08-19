@@ -167,11 +167,14 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
                   <div style={{ textAlign: 'center', margin: '8px 0' }}>
                     <div style={{ fontSize: '3.5rem', fontWeight: '700', color: 'var(--text-main)' }} className="jp-font">{item.character}</div>
                     <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>{item.meaning}</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', marginTop: '4px' }}>{item.moduleTitle}</div>
                   </div>
                   <div style={{ background: 'var(--bg-surface-alt)', padding: '8px 10px', borderRadius: '8px', fontSize: '0.78rem', marginBottom: '10px' }}>
                     <div><strong>On:</strong> {item.onyomi || '-'}</div>
                     <div style={{ marginTop: '2px' }}><strong>Kun:</strong> {item.kunyomi || '-'}</div>
                   </div>
+                  {item.compoundWords && <div className="jp-font" style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '10px' }}><strong>Từ ghép:</strong> {item.compoundWords}</div>}
+                  {item.strokeOrderUrl && <a href={item.strokeOrderUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.78rem', marginBottom: '10px' }}>Xem thứ tự nét ↗</a>}
                   <div style={{ background: '#fef3c7', color: '#92400e', padding: '10px', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '12px', flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <div style={{ fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}><MessageSquare size={13} /> Mẹo nhớ:</div>

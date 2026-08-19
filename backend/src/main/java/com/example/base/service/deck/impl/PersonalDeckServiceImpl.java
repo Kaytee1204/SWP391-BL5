@@ -208,9 +208,11 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     private PersonalKanjiDeckItemDto toKanjiItemDto(PersonalKanjiDeckItem item) {
         KanjiDetail kanji = item.getKanji();
         return PersonalKanjiDeckItemDto.builder()
-                .kanjiId(kanji.getKanjiId()).character(kanji.getCharacter())
+                .kanjiId(kanji.getKanjiId()).moduleId(kanji.getModule().getModuleId())
+                .moduleTitle(kanji.getModule().getTitle()).character(kanji.getCharacter())
                 .onyomi(kanji.getOnyomi()).kunyomi(kanji.getKunyomi()).meaning(kanji.getMeaning())
-                .compoundWords(kanji.getCompoundWords()).jlptLevel(kanji.getModule().getJlptLevel())
+                .compoundWords(kanji.getCompoundWords()).strokeOrderUrl(kanji.getStrokeOrderUrl())
+                .jlptLevel(kanji.getModule().getJlptLevel())
                 .memorizationNote(item.getMemorizationNote()).addedAt(item.getAddedAt()).build();
     }
 
