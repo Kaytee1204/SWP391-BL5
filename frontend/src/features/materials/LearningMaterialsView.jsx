@@ -8,9 +8,10 @@ export default function LearningMaterialsView({
   currentUser,
   onNavigate,
   onViewProfile,
-  onLogout
+  onLogout,
+  initialTab = 'grammar_patterns'
 }) {
-  const [materialTab, setMaterialTab] = useState('grammar_patterns');
+  const [materialTab, setMaterialTab] = useState(initialTab); // 'grammar_patterns' | 'grammar_exercises' | 'question_bank'
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }}>
