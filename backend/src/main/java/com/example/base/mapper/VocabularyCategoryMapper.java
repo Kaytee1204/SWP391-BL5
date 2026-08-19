@@ -2,8 +2,8 @@ package com.example.base.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.example.base.dto.request.VocabularyCategoryCreateRequest;
-import com.example.base.dto.response.VocabularyCategoryResponse;
+import com.example.base.dto.vocabulary_category.VocabularyCategoryCreateRequest;
+import com.example.base.dto.vocabulary_category.VocabularyCategoryResponse;
 import com.example.base.entity.VocabularyCategory;
 
 @Component

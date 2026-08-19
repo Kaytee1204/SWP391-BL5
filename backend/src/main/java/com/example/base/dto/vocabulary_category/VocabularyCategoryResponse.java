@@ -1,9 +1,14 @@
-package com.example.base.dto.response;
-
-import com.example.base.entity.JlptLevel;
-import lombok.*;
+package com.example.base.dto.vocabulary_category;
 
 import java.time.LocalDateTime;
+
+import com.example.base.entity.JlptLevel;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter

@@ -1,20 +1,22 @@
 package com.example.base.service.impl;
 
-import com.example.base.dto.request.VocabularyCategoryCreateRequest;
-import com.example.base.dto.request.VocabularyCategoryUpdateRequest;
-import com.example.base.dto.response.VocabularyCategoryResponse;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.base.dto.vocabulary_category.VocabularyCategoryCreateRequest;
+import com.example.base.dto.vocabulary_category.VocabularyCategoryResponse;
+import com.example.base.dto.vocabulary_category.VocabularyCategoryUpdateRequest;
 import com.example.base.entity.Account;
 import com.example.base.entity.VocabularyCategory;
 import com.example.base.mapper.VocabularyCategoryMapper;
 import com.example.base.repository.AccountRepository;
 import com.example.base.repository.VocabularyCategoryRepository;
 import com.example.base.service.VocabularyCategoryService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

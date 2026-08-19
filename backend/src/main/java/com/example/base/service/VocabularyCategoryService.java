@@ -2,9 +2,9 @@ package com.example.base.service;
 
 import java.util.List;
 
-import com.example.base.dto.request.VocabularyCategoryCreateRequest;
-import com.example.base.dto.request.VocabularyCategoryUpdateRequest;
-import com.example.base.dto.response.VocabularyCategoryResponse;
+import com.example.base.dto.vocabulary_category.VocabularyCategoryCreateRequest;
+import com.example.base.dto.vocabulary_category.VocabularyCategoryResponse;
+import com.example.base.dto.vocabulary_category.VocabularyCategoryUpdateRequest;
 
 public interface VocabularyCategoryService {
     List<VocabularyCategoryResponse> getAllCategories();

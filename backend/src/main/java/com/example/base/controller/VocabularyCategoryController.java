@@ -1,15 +1,24 @@
 package com.example.base.controller;
 
-import com.example.base.dto.request.VocabularyCategoryCreateRequest;
-import com.example.base.dto.request.VocabularyCategoryUpdateRequest;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.base.dto.response.ApiResponse;
-import com.example.base.dto.response.VocabularyCategoryResponse;
+import com.example.base.dto.vocabulary_category.VocabularyCategoryCreateRequest;
+import com.example.base.dto.vocabulary_category.VocabularyCategoryResponse;
+import com.example.base.dto.vocabulary_category.VocabularyCategoryUpdateRequest;
 import com.example.base.service.VocabularyCategoryService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/vocabulary-categories")
