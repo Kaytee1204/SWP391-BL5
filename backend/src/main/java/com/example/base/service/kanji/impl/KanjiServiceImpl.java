@@ -1,10 +1,10 @@
-package com.example.base.service.impl;
+package com.example.base.service.kanji.impl;
 
-import com.example.base.dto.KanjiDtos.*;
+import com.example.base.dto.kanji.KanjiDtos.*;
 import com.example.base.entity.*;
 import com.example.base.exception.ResourceNotFoundException;
 import com.example.base.repository.*;
-import com.example.base.service.KanjiService;
+import com.example.base.service.kanji.KanjiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

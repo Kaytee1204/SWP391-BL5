@@ -1,9 +1,9 @@
-package com.example.base.controller;
+package com.example.base.controller.deck;
 
-import com.example.base.dto.DeckDtos.*;
-import com.example.base.dto.response.ApiResponse;
+import com.example.base.dto.deck.DeckDtos.*;
+import com.example.base.dto.common.ApiResponse;
 import com.example.base.security.UserPrincipal;
-import com.example.base.service.PersonalDeckService;
+import com.example.base.service.deck.PersonalDeckService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;

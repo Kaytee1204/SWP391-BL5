@@ -1,6 +1,6 @@
-package com.example.base.service;
+package com.example.base.service.kanji;
 
-import com.example.base.dto.KanjiDtos.*;
+import com.example.base.dto.kanji.KanjiDtos.*;
 import com.example.base.entity.JlptLevel;
 
 import java.util.List;

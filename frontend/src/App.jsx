@@ -14,6 +14,11 @@ import ManagerDashboardPage from './features/dashboard/ManagerDashboardPage';
 import GrammarReaderPage from './features/grammar/GrammarReaderPage';
 import GrammarExercisePracticeView from './features/grammar/GrammarExercisePracticeView';
 import Navbar from './components/common/Navbar';
+import { VocabularyPage } from './pages/VocabularyPage';
+import { KanjiPage } from './pages/KanjiPage';
+import { PersonalVocabDecksPage } from './pages/PersonalVocabDecksPage';
+import { PersonalKanjiDecksPage } from './pages/PersonalKanjiDecksPage';
+import { AccountsPage } from './pages/AccountsPage';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -65,7 +70,7 @@ export default function App() {
     } else if (authData.account.role === 'Lecturer') {
       setCurrentView('materials');
     } else {
-      setCurrentView('culture_reader');
+      setCurrentView('kanji');
     }
   };
 
@@ -93,6 +98,15 @@ export default function App() {
     setPreviousView(fromView);
     setCurrentView('article_detail');
   };
+
+  const learningViews = {
+    vocab: <VocabularyPage />,
+    kanji: <KanjiPage />,
+    'vocab-decks': <PersonalVocabDecksPage onNavigate={setCurrentView} />,
+    'kanji-decks': <PersonalKanjiDecksPage onNavigate={setCurrentView} />,
+    accounts: <AccountsPage />,
+  };
+  const learningView = learningViews[currentView];
 
   return (
     <div>
@@ -201,6 +215,22 @@ export default function App() {
           onOpenArticleDetail={(art) => handleOpenArticleDetail(art, 'dashboard')}
           onLogout={handleLogout}
         />
+      )}
+
+      {learningView && (
+        <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }}>
+          <Navbar
+            currentView={currentView}
+            currentUser={currentUser}
+            onNavigate={(view) => setCurrentView(view)}
+            onOpenAuth={(mode) => setAuthModalMode(mode)}
+            onViewProfile={() => setShowProfileModal(true)}
+            onLogout={handleLogout}
+          />
+          <main className="app-shell">
+            {learningView}
+          </main>
+        </div>
       )}
 
       {/* Auth Modal (Login / Register) */}

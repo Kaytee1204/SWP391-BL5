@@ -1,10 +1,10 @@
-package com.example.base.service.impl;
+package com.example.base.service.vocabulary.impl;
 
-import com.example.base.dto.VocabDtos.*;
+import com.example.base.dto.vocabulary.VocabDtos.*;
 import com.example.base.entity.*;
 import com.example.base.exception.ResourceNotFoundException;
 import com.example.base.repository.*;
-import com.example.base.service.VocabularyService;
+import com.example.base.service.vocabulary.VocabularyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

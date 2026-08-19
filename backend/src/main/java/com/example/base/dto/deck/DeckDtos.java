@@ -1,5 +1,6 @@
-package com.example.base.dto;
+package com.example.base.dto.deck;
 
+import com.example.base.dto.vocabulary.VocabDtos.VocabItemDto;
 import com.example.base.entity.JlptLevel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,7 +30,7 @@ public final class DeckDtos {
         private String title;
         private String description;
         private Integer totalItems;
-        private List<VocabDtos.VocabItemDto> items;
+        private List<VocabItemDto> items;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
     }

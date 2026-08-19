@@ -1,10 +1,10 @@
-package com.example.base.controller;
+package com.example.base.controller.kanji;
 
-import com.example.base.dto.KanjiDtos.*;
-import com.example.base.dto.response.ApiResponse;
+import com.example.base.dto.kanji.KanjiDtos.*;
+import com.example.base.dto.common.ApiResponse;
 import com.example.base.entity.JlptLevel;
 import com.example.base.security.UserPrincipal;
-import com.example.base.service.KanjiService;
+import com.example.base.service.kanji.KanjiService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;

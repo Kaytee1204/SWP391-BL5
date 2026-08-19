@@ -1,12 +1,12 @@
-package com.example.base.service.impl;
+package com.example.base.service.deck.impl;
 
-import com.example.base.dto.DeckDtos.*;
-import com.example.base.dto.VocabDtos.VocabItemDto;
+import com.example.base.dto.deck.DeckDtos.*;
+import com.example.base.dto.vocabulary.VocabDtos.VocabItemDto;
 import com.example.base.entity.*;
 import com.example.base.exception.BadRequestException;
 import com.example.base.exception.ResourceNotFoundException;
 import com.example.base.repository.*;
-import com.example.base.service.PersonalDeckService;
+import com.example.base.service.deck.PersonalDeckService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

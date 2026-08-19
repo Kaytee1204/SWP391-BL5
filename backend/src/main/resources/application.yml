@@ -14,7 +14,7 @@ spring:
     username: sa
     password: 123
 
-  # JPA Configuration: ddl-auto: none (CHỈ KẾT NỐI, KHÔNG TỰ ĐỘNG TẠO/SỬA BẢNG)
+  # JPA Configuration: ddl-auto: none (CHI KET NOI, KHONG TU DONG TAO/SUA BANG)
   jpa:
     database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:

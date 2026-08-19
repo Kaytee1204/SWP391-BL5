@@ -1,4 +1,4 @@
-package com.example.base.dto;
+package com.example.base.dto.vocabulary;
 
 import com.example.base.entity.JlptLevel;
 import jakarta.validation.constraints.NotBlank;

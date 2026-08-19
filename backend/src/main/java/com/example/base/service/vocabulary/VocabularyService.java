@@ -1,6 +1,6 @@
-package com.example.base.service;
+package com.example.base.service.vocabulary;
 
-import com.example.base.dto.VocabDtos.*;
+import com.example.base.dto.vocabulary.VocabDtos.*;
 import com.example.base.entity.JlptLevel;
 
 import java.util.List;

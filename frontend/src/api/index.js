@@ -42,7 +42,7 @@ export const kanjiApi = {
 
 export const deckApi = {
   // Deck từ vựng cá nhân
-  getMyVocabDecks: (studentId) => axiosClient.get('/personal/vocab-decks', { params: { studentId } }),
+  getMyVocabDecks: () => axiosClient.get('/personal/vocab-decks'),
   getVocabDeckById: (id) => axiosClient.get(`/personal/vocab-decks/${id}`),
   createVocabDeck: (data) => axiosClient.post('/personal/vocab-decks', data),
   updateVocabDeck: (id, data) => axiosClient.put(`/personal/vocab-decks/${id}`, data),
@@ -51,7 +51,7 @@ export const deckApi = {
   removeVocabItemFromDeck: (deckId, itemId) => axiosClient.delete(`/personal/vocab-decks/${deckId}/items/${itemId}`),
 
   // Deck Kanji cá nhân
-  getMyKanjiDecks: (studentId) => axiosClient.get('/personal/kanji-decks', { params: { studentId } }),
+  getMyKanjiDecks: () => axiosClient.get('/personal/kanji-decks'),
   getKanjiDeckById: (id) => axiosClient.get(`/personal/kanji-decks/${id}`),
   createKanjiDeck: (data) => axiosClient.post('/personal/kanji-decks', data),
   updateKanjiDeck: (id, data) => axiosClient.put(`/personal/kanji-decks/${id}`, data),

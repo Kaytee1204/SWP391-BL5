@@ -17,6 +17,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
   const [editingNoteItem, setEditingNoteItem] = useState(null);
   const [noteForm, setNoteForm] = useState('');
   const [isFlashcardOpen, setIsFlashcardOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchDecks = async () => {
     setLoading(true);
@@ -49,6 +50,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
 
   const saveDeck = async (event) => {
     event.preventDefault();
+    setSubmitting(true);
     try {
       if (editingDeck) {
         await deckApi.updateKanjiDeck(editingDeck.deckId, deckForm);
@@ -64,6 +66,8 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
       }
     } catch (err) {
       setFeedback({ type: 'error', msg: err.message });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -98,6 +102,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
 
   const saveNote = async (event) => {
     event.preventDefault();
+    setSubmitting(true);
     try {
       await deckApi.updateKanjiNote(activeDeck.deckId, editingNoteItem.kanjiId, {
         memorizationNote: noteForm.trim(),
@@ -107,6 +112,8 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
       await openDeckDetail(activeDeck.deckId);
     } catch (err) {
       setFeedback({ type: 'error', msg: err.message });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -186,11 +193,11 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
               <form onSubmit={saveNote}>
                 <div className="form-group">
                   <label className="form-label">Ghi chú phương pháp nhớ (Chiết tự / Câu chuyện)</label>
-                  <textarea className="form-textarea" required placeholder="VD: Cây (Mộc) thêm 1 nét ngang ở gốc là Bản/Gốc rễ..." value={noteForm} onChange={(e) => setNoteForm(e.target.value)} />
+                  <textarea className="form-textarea" maxLength={500} placeholder="VD: Cây (Mộc) thêm 1 nét ngang ở gốc là Bản/Gốc rễ..." value={noteForm} onChange={(e) => setNoteForm(e.target.value)} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                   <button type="button" className="btn btn-secondary" onClick={() => setEditingNoteItem(null)}>Hủy</button>
-                  <button type="submit" className="btn btn-primary">Lưu mẹo nhớ</button>
+                  <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Đang lưu...' : 'Lưu mẹo nhớ'}</button>
                 </div>
               </form>
             </Modal>
@@ -246,15 +253,15 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
         <form onSubmit={saveDeck}>
           <div className="form-group">
             <label className="form-label">Tên Deck</label>
-            <input type="text" className="form-input" required placeholder="VD: Kanji N5 hay nhầm, 50 chữ Hán thường gặp..." value={deckForm.title} onChange={(e) => setDeckForm({ ...deckForm, title: e.target.value })} />
+            <input type="text" className="form-input" required maxLength={150} placeholder="VD: Kanji N5 hay nhầm, 50 chữ Hán thường gặp..." value={deckForm.title} onChange={(e) => setDeckForm({ ...deckForm, title: e.target.value })} />
           </div>
           <div className="form-group">
             <label className="form-label">Mô tả (tùy chọn)</label>
-            <textarea className="form-textarea" placeholder="Mô tả mục tiêu học của deck..." value={deckForm.description} onChange={(e) => setDeckForm({ ...deckForm, description: e.target.value })} />
+            <textarea className="form-textarea" maxLength={500} placeholder="Mô tả mục tiêu học của deck..." value={deckForm.description} onChange={(e) => setDeckForm({ ...deckForm, description: e.target.value })} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
             <button type="button" className="btn btn-secondary" onClick={() => setIsDeckModalOpen(false)}>Hủy</button>
-            <button type="submit" className="btn btn-primary">{editingDeck ? 'Lưu cập nhật' : 'Tạo Deck'}</button>
+            <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Đang lưu...' : editingDeck ? 'Lưu cập nhật' : 'Tạo Deck'}</button>
           </div>
         </form>
       </Modal>

@@ -126,22 +126,30 @@ export const KanjiPage = () => {
   };
 
   const openAddToDeck = async (kanji) => {
-    setSelectedKanjiForDeck(kanji);
-    setMemorizationNote('');
-    const decks = await deckApi.getMyKanjiDecks();
-    setMyKanjiDecks(decks);
-    setTargetDeckId(decks[0]?.deckId ? String(decks[0].deckId) : '');
-    setIsAddToDeckModalOpen(true);
+    try {
+      setSelectedKanjiForDeck(kanji);
+      setMemorizationNote('');
+      const decks = await deckApi.getMyKanjiDecks();
+      setMyKanjiDecks(decks);
+      setTargetDeckId(decks[0]?.deckId ? String(decks[0].deckId) : '');
+      setIsAddToDeckModalOpen(true);
+    } catch (err) {
+      setFeedback({ type: 'error', msg: 'Không thể tải danh sách deck Kanji: ' + err.message });
+    }
   };
 
   const saveToDeck = async () => {
     if (!targetDeckId) return;
-    await deckApi.addKanjiToDeck(targetDeckId, {
-      kanjiId: selectedKanjiForDeck.kanjiId,
-      memorizationNote: memorizationNote.trim() || undefined,
-    });
-    setFeedback({ type: 'success', msg: `Đã thêm chữ [${selectedKanjiForDeck.character}] vào deck!` });
-    setIsAddToDeckModalOpen(false);
+    try {
+      await deckApi.addKanjiToDeck(targetDeckId, {
+        kanjiId: selectedKanjiForDeck.kanjiId,
+        memorizationNote: memorizationNote.trim() || null,
+      });
+      setFeedback({ type: 'success', msg: `Đã thêm chữ [${selectedKanjiForDeck.character}] vào deck!` });
+      setIsAddToDeckModalOpen(false);
+    } catch (err) {
+      setFeedback({ type: 'error', msg: 'Không thể thêm Kanji vào deck: ' + err.message });
+    }
   };
 
   return (

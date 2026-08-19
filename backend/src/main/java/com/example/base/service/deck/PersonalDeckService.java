@@ -1,6 +1,6 @@
-package com.example.base.service;
+package com.example.base.service.deck;
 
-import com.example.base.dto.DeckDtos.*;
+import com.example.base.dto.deck.DeckDtos.*;
 
 import java.util.List;
 

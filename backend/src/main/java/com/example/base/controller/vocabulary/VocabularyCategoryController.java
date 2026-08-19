@@ -1,10 +1,10 @@
-package com.example.base.controller;
+package com.example.base.controller.vocabulary;
 
-import com.example.base.dto.VocabDtos.*;
-import com.example.base.dto.response.ApiResponse;
+import com.example.base.dto.vocabulary.VocabDtos.*;
+import com.example.base.dto.common.ApiResponse;
 import com.example.base.entity.JlptLevel;
 import com.example.base.security.UserPrincipal;
-import com.example.base.service.VocabularyService;
+import com.example.base.service.vocabulary.VocabularyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
