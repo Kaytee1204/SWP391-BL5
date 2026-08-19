@@ -13,6 +13,7 @@ import LearningMaterialsView from './features/materials/LearningMaterialsView';
 import ManagerDashboardPage from './features/dashboard/ManagerDashboardPage';
 import GrammarReaderPage from './features/grammar/GrammarReaderPage';
 import GrammarExercisePracticeView from './features/grammar/GrammarExercisePracticeView';
+import PersonalVocabularyDeckView from './features/personal-vocabulary-deck/PersonalVocabularyDeckView';
 import Navbar from './components/common/Navbar';
 
 export default function App() {
@@ -152,6 +153,26 @@ export default function App() {
           />
           <main>
             <GrammarExercisePracticeView
+              currentUser={currentUser}
+              onOpenAuth={(mode) => setAuthModalMode(mode)}
+            />
+          </main>
+        </div>
+      )}
+
+      {/* 2.7. Bộ Từ Vựng Cá Nhân (Personal Vocabulary Deck - Student) */}
+      {currentView === 'my_vocabulary_decks' && (
+        <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }}>
+          <Navbar
+            currentView="my_vocabulary_decks"
+            currentUser={currentUser}
+            onNavigate={(view) => setCurrentView(view)}
+            onOpenAuth={(mode) => setAuthModalMode(mode)}
+            onViewProfile={() => setShowProfileModal(true)}
+            onLogout={handleLogout}
+          />
+          <main>
+            <PersonalVocabularyDeckView
               currentUser={currentUser}
               onOpenAuth={(mode) => setAuthModalMode(mode)}
             />

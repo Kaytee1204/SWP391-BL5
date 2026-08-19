@@ -65,6 +65,17 @@ export default function Navbar({
               </a>
             </li>
           )}
+          {currentUser?.role === 'Student' && (
+            <li>
+              <a
+                className={`nav-link highlight-tab ${currentView === 'my_vocabulary_decks' ? 'active' : ''}`}
+                onClick={() => onNavigate('my_vocabulary_decks')}
+                title="Bộ từ vựng cá nhân của bạn"
+              >
+                📚 My Decks
+              </a>
+            </li>
+          )}
           {currentUser?.role === 'Author' && (
             <li>
               <a
