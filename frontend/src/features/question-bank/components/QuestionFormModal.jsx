@@ -3,10 +3,10 @@ import { apiRequest } from '../../../api/apiRequest';
 import { JLPT_LEVELS } from '../../../assets/constants';
 
 const SKILL_OPTIONS = [
-  { value: 'vocabulary', label: 'Từ vựng' },
-  { value: 'grammar', label: 'Ngữ pháp' },
-  { value: 'listening', label: 'Nghe hiểu' },
-  { value: 'reading', label: 'Đọc hiểu' }
+  { value: 'vocabulary', label: '📖 Vocabulary (Từ vựng)' },
+  { value: 'grammar', label: '✍️ Grammar (Ngữ pháp)' },
+  { value: 'listening', label: '🎧 Listening (Nghe hiểu)' },
+  { value: 'reading', label: '📑 Reading (Đọc hiểu)' }
 ];
 
 const emptyQuestion = {
@@ -26,7 +26,7 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
     questionType: question.questionType || 'multiple_choice',
     questionText: question.questionText || '',
     choices: question.questionType === 'multiple_choice'
-      ? (question.choices?.length ? [...question.choices] : ['', ''])
+      ? (question.choices?.length ? [...question.choices] : ['', '', '', ''])
       : ['', ''],
     correctAnswers: question.correctAnswers?.length ? [...question.correctAnswers] : [],
     explanation: question.explanation || ''
@@ -75,7 +75,7 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
     setForm(prev => ({
       ...prev,
       questionType,
-      choices: prev.choices.length >= 2 ? prev.choices : ['', ''],
+      choices: prev.choices.length >= 2 ? prev.choices : ['', '', '', ''],
       correctAnswers: questionType === 'multiple_choice' ? [] : prev.correctAnswers
     }));
     if (questionType === 'fill_blank' && form.questionType === 'multiple_choice') {
@@ -92,16 +92,20 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
       ? form.correctAnswers.map(value => value.trim()).filter(Boolean)
       : blankAnswers.split('\n').map(value => value.trim()).filter(Boolean);
 
+    if (!form.questionText.trim()) {
+      setError('Please enter the question text.');
+      return;
+    }
     if (isMultipleChoice && choices.length < 2) {
-      setError('Câu hỏi trắc nghiệm cần ít nhất 2 lựa chọn.');
+      setError('Multiple choice questions require at least 2 choices.');
       return;
     }
     if (correctAnswers.length === 0) {
-      setError('Vui lòng nhập hoặc chọn ít nhất một đáp án đúng.');
+      setError('Please select or input at least one correct answer.');
       return;
     }
     if (isMultipleChoice && !correctAnswers.every(answer => choices.includes(answer))) {
-      setError('Mọi đáp án đúng phải nằm trong danh sách lựa chọn.');
+      setError('All correct answers must be among the provided choices.');
       return;
     }
 
@@ -122,7 +126,7 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
       onSaved(response.data);
       onClose();
     } catch (err) {
-      setError(err.message || 'Không thể lưu câu hỏi.');
+      setError(err.message || 'Failed to save question.');
     } finally {
       setSaving(false);
     }
@@ -130,123 +134,229 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card modal-card-large" onClick={event => event.stopPropagation()}>
-        <div className="question-modal-header">
+      <div className="modal-card" onClick={event => event.stopPropagation()} style={{ maxWidth: '680px', width: '92%', maxHeight: '90vh', overflowY: 'auto' }}>
+        {/* Modal Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem' }}>
           <div>
-            <div className="question-modal-eyebrow">QUESTION BANK</div>
-            <h3>{question ? `Chỉnh sửa câu hỏi #${question.questionId}` : 'Tạo câu hỏi mới'}</h3>
+            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#7c3aed', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              🗂️ JLPT QUESTION BANK
+            </div>
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, margin: '0.2rem 0 0', color: 'var(--text-heading)' }}>
+              {question ? `Edit Question #${question.questionId}` : 'Create New Question'}
+            </h3>
           </div>
-          <button type="button" className="question-close-btn" onClick={onClose} aria-label="Đóng">×</button>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              background: '#f1f5f9',
+              border: 'none',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              fontSize: '1.1rem',
+              cursor: 'pointer',
+              color: '#64748b',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            ✕
+          </button>
         </div>
 
-        {error && <div className="question-alert">⚠ {error}</div>}
+        {error && (
+          <div style={{ padding: '0.75rem 1rem', background: '#fff1f2', color: '#e11d48', borderRadius: '10px', fontSize: '0.85rem', marginBottom: '1rem', border: '1px solid #fecdd3', fontWeight: 600 }}>
+            ⚠️ {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="question-form">
-          <div className="question-form-grid question-form-grid-3">
-            <label>
-              <span>Kỹ năng</span>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+          {/* Classification Selectors */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '0.75rem' }}>
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-body)', display: 'block', marginBottom: '0.35rem' }}>
+                Skill Type (Kỹ năng) *
+              </label>
               <select className="form-select" value={form.skillType} onChange={e => setForm({ ...form, skillType: e.target.value })}>
                 {SKILL_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
               </select>
-            </label>
-            <label>
-              <span>Trình độ JLPT</span>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-body)', display: 'block', marginBottom: '0.35rem' }}>
+                JLPT Level (Cấp độ) *
+              </label>
               <select className="form-select" value={form.jlptLevel} onChange={e => setForm({ ...form, jlptLevel: e.target.value })}>
                 {JLPT_LEVELS.map(level => <option key={level.value} value={level.value}>{level.label}</option>)}
               </select>
-            </label>
-            <label>
-              <span>Loại câu hỏi</span>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-body)', display: 'block', marginBottom: '0.35rem' }}>
+                Question Type (Dạng bài) *
+              </label>
               <select className="form-select" value={form.questionType} onChange={e => handleTypeChange(e.target.value)}>
-                <option value="multiple_choice">Trắc nghiệm</option>
-                <option value="fill_blank">Điền vào chỗ trống</option>
+                <option value="multiple_choice">Multiple Choice (Trắc nghiệm)</option>
+                <option value="fill_blank">Fill in the Blank (Điền từ)</option>
               </select>
-            </label>
+            </div>
           </div>
 
-          <label>
-            <span>Nội dung câu hỏi</span>
+          {/* Question Text */}
+          <div>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-body)', display: 'block', marginBottom: '0.35rem' }}>
+              Question Content (Nội dung câu hỏi) *
+            </label>
             <textarea
-              className="form-textarea question-textarea"
+              className="form-textarea"
               value={form.questionText}
               onChange={e => setForm({ ...form, questionText: e.target.value })}
-              placeholder="Nhập nội dung câu hỏi tiếng Nhật..."
+              placeholder="e.g. わたしは まいにち 日本語 (  ) べんきょうします。"
+              rows={3}
               required
             />
-          </label>
+          </div>
 
+          {/* Choices Section */}
           {isMultipleChoice ? (
-            <fieldset className="question-choices-fieldset">
-              <div className="question-section-heading">
+            <div style={{ background: '#fafafa', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                 <div>
-                  <strong>Các lựa chọn</strong>
-                  <small>Đánh dấu một hoặc nhiều đáp án đúng.</small>
+                  <strong style={{ fontSize: '0.85rem', color: 'var(--text-heading)' }}>Answer Choices & Correct Answer:</strong>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Click checkbox on the left to mark an option as correct.</div>
                 </div>
                 <button
                   type="button"
-                  className="btn-dash btn-dash-secondary"
                   onClick={() => setForm(prev => ({ ...prev, choices: [...prev.choices, ''] }))}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    background: '#ede9fe',
+                    color: '#6b21a8',
+                    border: '1px solid #ddd6fe',
+                    borderRadius: '8px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
                 >
-                  ＋ Thêm lựa chọn
+                  ＋ Add Choice
                 </button>
               </div>
-              <div className="question-choice-list">
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 {form.choices.map((choice, index) => {
-                  const checked = form.correctAnswers.includes(choice) && Boolean(choice.trim());
+                  const labelChar = String.fromCharCode(65 + index);
+                  const isChecked = form.correctAnswers.includes(choice) && Boolean(choice.trim());
                   return (
-                    <div className={`question-choice-row ${checked ? 'is-correct' : ''}`} key={index}>
-                      <label className="question-correct-toggle" title="Đánh dấu đáp án đúng">
-                        <input type="checkbox" checked={checked} onChange={() => toggleCorrectAnswer(choice)} disabled={!choice.trim()} />
-                        <span>{String.fromCharCode(65 + index)}</span>
+                    <div
+                      key={index}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.65rem',
+                        background: isChecked ? '#ecfdf5' : '#fff',
+                        padding: '0.4rem 0.65rem',
+                        borderRadius: '10px',
+                        border: `1.5px solid ${isChecked ? '#10b981' : '#e2e8f0'}`
+                      }}
+                    >
+                      <label
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          cursor: choice.trim() ? 'pointer' : 'not-allowed',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '6px',
+                          background: isChecked ? '#10b981' : '#f1f5f9',
+                          color: isChecked ? '#fff' : '#475569',
+                          fontWeight: 800,
+                          fontSize: '0.78rem'
+                        }}
+                        title={choice.trim() ? 'Click to mark as correct' : 'Enter text first'}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleCorrectAnswer(choice)}
+                          disabled={!choice.trim()}
+                          style={{ cursor: 'pointer' }}
+                        />
+                        <span>{labelChar}</span>
                       </label>
+
                       <input
+                        type="text"
                         className="form-input"
                         value={choice}
                         onChange={e => updateChoice(index, e.target.value)}
-                        placeholder={`Lựa chọn ${String.fromCharCode(65 + index)}`}
+                        placeholder={`Choice ${labelChar}...`}
+                        style={{ flex: 1, padding: '0.45rem 0.75rem', border: '1px solid #cbd5e1' }}
                         required
                       />
-                      <button
-                        type="button"
-                        className="question-remove-choice"
-                        onClick={() => removeChoice(index)}
-                        disabled={form.choices.length <= 2}
-                        aria-label="Xóa lựa chọn"
-                      >×</button>
+
+                      {form.choices.length > 2 && (
+                        <button
+                          type="button"
+                          onClick={() => removeChoice(index)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#94a3b8',
+                            fontSize: '1.2rem',
+                            cursor: 'pointer',
+                            padding: '0 0.4rem'
+                          }}
+                          title="Remove option"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
                   );
                 })}
               </div>
-            </fieldset>
+            </div>
           ) : (
-            <label>
-              <span>Đáp án chấp nhận</span>
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-body)', display: 'block', marginBottom: '0.35rem' }}>
+                Accepted Answers (Đáp án chấp nhận, mỗi đáp án 1 dòng) *
+              </label>
               <textarea
-                className="form-textarea question-answer-textarea"
+                className="form-textarea"
                 value={blankAnswers}
                 onChange={e => setBlankAnswers(e.target.value)}
-                placeholder={'Nhập mỗi đáp án trên một dòng\nVí dụ: 日本語'}
+                placeholder={'Enter each valid answer on a new line\ne.g.: を\nオ'}
+                rows={3}
                 required
               />
-              <small className="question-field-hint">Mỗi dòng là một cách trả lời được chấp nhận.</small>
-            </label>
+            </div>
           )}
 
-          <label>
-            <span>Giải thích</span>
+          {/* Explanation */}
+          <div>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-body)', display: 'block', marginBottom: '0.35rem' }}>
+              Explanation & Study Notes (Giải thích ngữ pháp & ngữ cảnh)
+            </label>
             <textarea
               className="form-textarea"
               value={form.explanation}
               onChange={e => setForm({ ...form, explanation: e.target.value })}
-              placeholder="Giải thích đáp án, quy tắc hoặc lưu ý cho người học..."
+              placeholder="Explain why the answer is correct, usage nuances, or vocabulary context..."
+              rows={3}
               maxLength={5000}
             />
-          </label>
+          </div>
 
-          <div className="question-modal-actions">
-            <button type="button" className="btn-dash btn-dash-secondary" onClick={onClose}>Hủy</button>
+          {/* Footer Actions */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+            <button type="button" className="btn-dash btn-dash-secondary" onClick={onClose}>
+              Cancel
+            </button>
             <button type="submit" className="btn-dash btn-dash-primary" disabled={saving}>
-              {saving ? 'Đang lưu...' : question ? 'Lưu thay đổi' : 'Tạo câu hỏi'}
+              {saving ? 'Saving...' : question ? '💾 Save Changes' : '✨ Create Question'}
             </button>
           </div>
         </form>
