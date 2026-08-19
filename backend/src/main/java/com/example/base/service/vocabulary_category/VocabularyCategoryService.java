@@ -1,4 +1,4 @@
-package com.example.base.service;
+package com.example.base.service.vocabulary_category;
 
 import java.util.List;
 
