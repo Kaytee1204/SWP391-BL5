@@ -21,7 +21,7 @@ public class QuestionBank {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "skill_type", nullable = false, length = 20)
-    private SkillType skillType;
+    private QuestionSkillType skillType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "jlpt_level", nullable = false, length = 20)
@@ -30,8 +30,11 @@ public class QuestionBank {
     @Column(name = "question_text", nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String questionText;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "question_type", nullable = false, length = 25)
-    private String questionType;
+    private QuestionType questionType;
+    //JPA tu chuyen enum thanh chuoi tuong ung trong sql
+    //du lieu dau vao duoc gioi han dung theo schema
 
     @Column(name = "choices", columnDefinition = "NVARCHAR(MAX)")
     private String choices;
@@ -52,14 +55,14 @@ public class QuestionBank {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @PrePersist
+    @PrePersist // ghi lai thoi gian up cau hoi
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
     }
 
-    @PreUpdate
+    @PreUpdate // ghi lai time chinh sua
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
