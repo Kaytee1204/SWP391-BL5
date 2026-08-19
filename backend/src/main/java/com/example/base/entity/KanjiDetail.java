@@ -53,6 +53,7 @@ public class KanjiDetail {
 
     @PrePersist
     protected void onCreate() {
+        // Khi tao kanji detail moi, tu dong gan createdAt va updatedAt cung thoi diem hien tai.
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
@@ -60,6 +61,7 @@ public class KanjiDetail {
 
     @PreUpdate
     protected void onUpdate() {
+        // Khi cap nhat kanji detail, chi lam moi updatedAt de giu nguyen createdAt ban dau.
         this.updatedAt = LocalDateTime.now();
     }
 }

@@ -24,6 +24,7 @@ public class KanjiServiceImpl implements KanjiService {
 
     @Override
     public List<KanjiModuleDto> getModules(JlptLevel level) {
+        // Lay danh sach module kanji; neu level null thi lay tat ca, nguoc lai loc theo JLPT level, sau do map sang DTO.
         List<KanjiLessonModule> modules = level == null
                 ? moduleRepository.findByOrderByModuleIdAsc()
                 : moduleRepository.findByJlptLevelOrderByModuleIdAsc(level);
@@ -32,12 +33,14 @@ public class KanjiServiceImpl implements KanjiService {
 
     @Override
     public KanjiModuleDto getModule(Long moduleId) {
+        // Lay mot module theo id; requireModule kiem tra ton tai truoc khi map entity sang DTO.
         return toModuleDto(requireModule(moduleId));
     }
 
     @Override
     @Transactional
     public KanjiModuleDto createModule(KanjiModuleRequest request, Long creatorId) {
+        // Tao module kanji moi; load creator hop le, trim title/description, gan creator, save, roi tra ve DTO.
         Account creator = accountRepository.findByAccountIdAndDeletedAtIsNull(creatorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "id", creatorId));
         KanjiLessonModule module = KanjiLessonModule.builder()
@@ -52,6 +55,7 @@ public class KanjiServiceImpl implements KanjiService {
     @Override
     @Transactional
     public KanjiModuleDto updateModule(Long moduleId, KanjiModuleRequest request) {
+        // Cap nhat module kanji; load module theo id, ghi lai level/title/description tu request, save, roi map DTO.
         KanjiLessonModule module = requireModule(moduleId);
         module.setJlptLevel(request.getJlptLevel());
         module.setTitle(request.getTitle().trim());
@@ -62,6 +66,7 @@ public class KanjiServiceImpl implements KanjiService {
     @Override
     @Transactional
     public void deleteModule(Long moduleId) {
+        // Xoa module kanji; load module, chan xoa neu bat ky kanji cua module dang nam trong personal deck, roi delete.
         KanjiLessonModule module = requireModule(moduleId);
         if (kanjiDeckItemRepository.existsByKanji_Module_ModuleId(moduleId)) {
             throw new BadRequestException("Không thể xóa module vì có Kanji đang được lưu trong deck cá nhân");
@@ -71,6 +76,7 @@ public class KanjiServiceImpl implements KanjiService {
 
     @Override
     public List<KanjiDetailDto> getKanji(Long moduleId, JlptLevel level, String search) {
+        // Lay danh sach kanji detail; uu tien search neu co keyword, sau do loc theo moduleId hoac JLPT level neu duoc truyen.
         List<KanjiDetail> result;
         if (search != null && !search.isBlank()) {
             String keyword = search.trim();
@@ -95,12 +101,14 @@ public class KanjiServiceImpl implements KanjiService {
 
     @Override
     public KanjiDetailDto getKanji(Long kanjiId) {
+        // Lay mot kanji detail theo id; requireKanji dam bao entity ton tai truoc khi map DTO.
         return toKanjiDto(requireKanji(kanjiId));
     }
 
     @Override
     @Transactional
     public KanjiDetailDto createKanji(KanjiDetailRequest request) {
+        // Tao kanji detail moi; kiem tra module, trim cac text field, set preview mac dinh false neu request null, roi save.
         KanjiDetail kanji = KanjiDetail.builder()
                 .module(requireModule(request.getModuleId()))
                 .character(request.getCharacter().trim())
@@ -117,6 +125,7 @@ public class KanjiServiceImpl implements KanjiService {
     @Override
     @Transactional
     public KanjiDetailDto updateKanji(Long kanjiId, KanjiDetailRequest request) {
+        // Cap nhat kanji detail; load kanji cu, gan module moi hop le, trim cac field, chi doi preview khi request co gia tri.
         KanjiDetail kanji = requireKanji(kanjiId);
         kanji.setModule(requireModule(request.getModuleId()));
         kanji.setCharacter(request.getCharacter().trim());
@@ -132,6 +141,7 @@ public class KanjiServiceImpl implements KanjiService {
     @Override
     @Transactional
     public void deleteKanji(Long kanjiId) {
+        // Xoa kanji detail; chan xoa neu kanji dang nam trong personal deck de tranh mat du lieu hoc tap cua student.
         KanjiDetail kanji = requireKanji(kanjiId);
         if (kanjiDeckItemRepository.existsByKanji_KanjiId(kanjiId)) {
             throw new BadRequestException("Không thể xóa Kanji vì chữ này đang được lưu trong deck cá nhân");
@@ -140,16 +150,19 @@ public class KanjiServiceImpl implements KanjiService {
     }
 
     private KanjiLessonModule requireModule(Long id) {
+        // Tim module theo id; neu khong co thi nem ResourceNotFoundException de controller tra loi loi phu hop.
         return moduleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kanji module", "id", id));
     }
 
     private KanjiDetail requireKanji(Long id) {
+        // Tim kanji theo id; neu khong co thi nem ResourceNotFoundException de dung luong nghiep vu hien tai.
         return kanjiRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kanji", "id", id));
     }
 
     private KanjiModuleDto toModuleDto(KanjiLessonModule module) {
+        // Map KanjiLessonModule sang DTO; dem so kanji trong module de gan kanjiCount cho response.
         return KanjiModuleDto.builder()
                 .moduleId(module.getModuleId())
                 .jlptLevel(module.getJlptLevel())
@@ -164,6 +177,7 @@ public class KanjiServiceImpl implements KanjiService {
     }
 
     private KanjiDetailDto toKanjiDto(KanjiDetail kanji) {
+        // Map KanjiDetail sang DTO; lay them thong tin module va JLPT level tu quan he kanji.module.
         return KanjiDetailDto.builder()
                 .kanjiId(kanji.getKanjiId())
                 .moduleId(kanji.getModule().getModuleId())
@@ -182,6 +196,7 @@ public class KanjiServiceImpl implements KanjiService {
     }
 
     private String trimToNull(String value) {
+        // Chuan hoa chuoi optional: null hoac blank thanh null, nguoc lai cat khoang trang dau/cuoi.
         return value == null || value.isBlank() ? null : value.trim();
     }
 }

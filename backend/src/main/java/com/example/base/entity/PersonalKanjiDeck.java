@@ -37,6 +37,7 @@ public class PersonalKanjiDeck {
 
     @PrePersist
     protected void onCreate() {
+        // Khi tao personal kanji deck moi, tu dong set createdAt va updatedAt cho record.
         LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
@@ -44,6 +45,7 @@ public class PersonalKanjiDeck {
 
     @PreUpdate
     protected void onUpdate() {
+        // Khi cap nhat deck, chi set lai updatedAt de ghi nhan thoi diem sua gan nhat.
         updatedAt = LocalDateTime.now();
     }
 }

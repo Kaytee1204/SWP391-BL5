@@ -95,6 +95,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
 
     @Override
     public List<PersonalKanjiDeckDto> getKanjiDecks(Long studentId) {
+        // Lay tat ca personal kanji deck cua student; kiem tra account phai la Student roi sap xep deck moi nhat truoc.
         requireStudent(studentId);
         return kanjiDeckRepository.findByStudent_AccountIdOrderByCreatedAtDesc(studentId)
                 .stream().map(this::toKanjiDeckSummary).toList();
@@ -102,6 +103,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
 
     @Override
     public PersonalKanjiDeckDto getKanjiDeck(Long deckId, Long studentId) {
+        // Lay chi tiet deck theo id va owner; sau khi xac thuc so huu thi nap item trong deck va gan vao DTO.
         PersonalKanjiDeck deck = requireOwnedKanjiDeck(deckId, studentId);
         List<PersonalKanjiDeckItemDto> items = kanjiItemRepository.findByDeck_DeckIdOrderByAddedAtDesc(deckId)
                 .stream().map(this::toKanjiItemDto).toList();
@@ -113,6 +115,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     @Override
     @Transactional
     public PersonalKanjiDeckDto createKanjiDeck(CreateDeckRequest request, Long studentId) {
+        // Tao personal kanji deck moi; owner phai la Student, title duoc trim, description blank thi luu null.
         PersonalKanjiDeck deck = PersonalKanjiDeck.builder()
                 .student(requireStudent(studentId))
                 .title(request.getTitle().trim())
@@ -124,6 +127,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     @Override
     @Transactional
     public PersonalKanjiDeckDto updateKanjiDeck(Long deckId, CreateDeckRequest request, Long studentId) {
+        // Cap nhat deck ca nhan; chi cho owner sua title/description, sau do save va tra ve summary DTO.
         PersonalKanjiDeck deck = requireOwnedKanjiDeck(deckId, studentId);
         deck.setTitle(request.getTitle().trim());
         deck.setDescription(trimToNull(request.getDescription()));
@@ -133,6 +137,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     @Override
     @Transactional
     public void deleteKanjiDeck(Long deckId, Long studentId) {
+        // Xoa personal kanji deck; kiem tra deck thuoc student, xoa tat ca kanji item truoc, roi xoa deck.
         PersonalKanjiDeck deck = requireOwnedKanjiDeck(deckId, studentId);
         kanjiItemRepository.deleteAll(kanjiItemRepository.findByDeck_DeckIdOrderByAddedAtDesc(deckId));
         kanjiDeckRepository.delete(deck);
@@ -141,6 +146,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     @Override
     @Transactional
     public void addKanji(Long deckId, AddKanjiToDeckRequest request, Long studentId) {
+        // Them kanji vao deck; neu item da ton tai thi cap nhat note, neu chua co thi tao composite id va item moi.
         PersonalKanjiDeck deck = requireOwnedKanjiDeck(deckId, studentId);
         KanjiDetail kanji = kanjiRepository.findById(request.getKanjiId())
                 .orElseThrow(() -> new ResourceNotFoundException("Kanji", "id", request.getKanjiId()));
@@ -154,6 +160,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     @Override
     @Transactional
     public void updateKanjiNote(Long deckId, Long kanjiId, UpdateKanjiNoteRequest request, Long studentId) {
+        // Cap nhat memorization note; deck phai thuoc student va kanji item phai dang nam trong deck.
         requireOwnedKanjiDeck(deckId, studentId);
         PersonalKanjiDeckItem item = kanjiItemRepository.findById(new PersonalKanjiDeckItemId(deckId, kanjiId))
                 .orElseThrow(() -> new ResourceNotFoundException("Kanji is not in this deck"));
@@ -164,6 +171,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     @Override
     @Transactional
     public void removeKanji(Long deckId, Long kanjiId, Long studentId) {
+        // Xoa kanji khoi deck; kiem tra owner, tao composite id, dam bao item ton tai roi delete theo id.
         requireOwnedKanjiDeck(deckId, studentId);
         PersonalKanjiDeckItemId id = new PersonalKanjiDeckItemId(deckId, kanjiId);
         if (!kanjiItemRepository.existsById(id)) throw new ResourceNotFoundException("Kanji is not in this deck");
@@ -171,6 +179,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     }
 
     private Account requireStudent(Long id) {
+        // Tim account theo id va dam bao account la Student; personal deck chi duoc gan owner la student.
         Account account = accountRepository.findByAccountIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "id", id));
         if (account.getRole() != Role.Student) throw new BadRequestException("Only students can own personal decks");
@@ -183,6 +192,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     }
 
     private PersonalKanjiDeck requireOwnedKanjiDeck(Long deckId, Long studentId) {
+        // Tim kanji deck theo deckId va studentId; dung de bao ve moi thao tac chi duoc tac dong deck cua chinh owner.
         return kanjiDeckRepository.findByDeckIdAndStudent_AccountId(deckId, studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kanji deck", "id", deckId));
     }
@@ -197,6 +207,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     }
 
     private PersonalKanjiDeckDto toKanjiDeckSummary(PersonalKanjiDeck deck) {
+        // Map deck entity sang summary DTO; tinh totalItems bang count query thay vi load toan bo item.
         return PersonalKanjiDeckDto.builder()
                 .deckId(deck.getDeckId()).studentId(deck.getStudent().getAccountId())
                 .studentName(deck.getStudent().getFullName()).title(deck.getTitle())
@@ -206,6 +217,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     }
 
     private PersonalKanjiDeckItemDto toKanjiItemDto(PersonalKanjiDeckItem item) {
+        // Map deck item sang DTO; gom thong tin kanji, module, JLPT level, note ca nhan va thoi diem them vao deck.
         KanjiDetail kanji = item.getKanji();
         return PersonalKanjiDeckItemDto.builder()
                 .kanjiId(kanji.getKanjiId()).moduleId(kanji.getModule().getModuleId())
@@ -227,6 +239,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     }
 
     private String trimToNull(String value) {
+        // Chuan hoa chuoi optional dung cho deck/note: null hoac blank thanh null, nguoc lai trim space dau/cuoi.
         if (value == null || value.isBlank()) return null;
         return value.trim();
     }

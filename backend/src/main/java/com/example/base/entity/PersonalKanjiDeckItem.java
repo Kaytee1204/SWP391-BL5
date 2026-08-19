@@ -35,6 +35,7 @@ public class PersonalKanjiDeckItem {
 
     @PrePersist
     protected void onCreate() {
+        // Khi them kanji vao deck, tu dong gan addedAt bang thoi diem item duoc persist.
         addedAt = LocalDateTime.now();
     }
 }

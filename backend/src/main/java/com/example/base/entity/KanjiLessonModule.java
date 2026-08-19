@@ -47,6 +47,7 @@ public class KanjiLessonModule {
 
     @PrePersist
     protected void onCreate() {
+        // Khi tao kanji module moi, tu dong gan createdAt va updatedAt cung thoi diem hien tai.
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
@@ -54,6 +55,7 @@ public class KanjiLessonModule {
 
     @PreUpdate
     protected void onUpdate() {
+        // Khi cap nhat kanji module, chi lam moi updatedAt de theo doi lan sua cuoi.
         this.updatedAt = LocalDateTime.now();
     }
 }
