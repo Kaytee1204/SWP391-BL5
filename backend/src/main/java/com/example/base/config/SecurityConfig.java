@@ -91,7 +91,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/culture-articles", "/culture-articles/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/culture-articles", "/culture-articles/**", "/grammar-patterns", "/grammar-patterns/**").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
                 )

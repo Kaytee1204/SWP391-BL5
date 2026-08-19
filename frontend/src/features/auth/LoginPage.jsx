@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
 import { apiRequest } from '../../api/apiRequest';
 import { JLPT_LEVELS } from '../../assets/constants';
+import ForgotPasswordModal from '../../components/auth/ForgotPasswordModal';
 
 export default function LoginPage({ onLoginSuccess, onBackHome }) {
   const [isRegister, setIsRegister] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [jlptTargetLevel, setJlptTargetLevel] = useState('N5');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  if (showForgot) {
+    return (
+      <ForgotPasswordModal
+        onClose={() => setShowForgot(false)}
+        onSwitchToLogin={() => setShowForgot(false)}
+      />
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -83,7 +94,7 @@ export default function LoginPage({ onLoginSuccess, onBackHome }) {
             }}
           >
             <span>←</span>
-            <span>Quay lại Trang Chủ</span>
+            <span>Back to Home</span>
           </button>
         )}
 
@@ -107,7 +118,7 @@ export default function LoginPage({ onLoginSuccess, onBackHome }) {
             <span>JLMS</span>
           </h1>
           <p style={{ color: 'var(--text-body)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-            {isRegister ? 'Tạo tài khoản học tiếng Nhật miễn phí' : 'Đăng nhập vào hệ thống JLMS'}
+            {isRegister ? 'Create your free Japanese learning account' : 'Sign in to your JLMS account'}
           </p>
         </div>
 
@@ -120,10 +131,10 @@ export default function LoginPage({ onLoginSuccess, onBackHome }) {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
           {isRegister && (
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.35rem' }}>Họ và tên *</label>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.35rem' }}>Full Name *</label>
               <input
                 type="text"
-                placeholder="Ví dụ: Nguyễn Văn A"
+                placeholder="e.g. John Doe"
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 className="form-input"
@@ -133,7 +144,7 @@ export default function LoginPage({ onLoginSuccess, onBackHome }) {
           )}
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.35rem' }}>Địa chỉ Email *</label>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.35rem' }}>Email Address *</label>
             <input
               type="email"
               placeholder="name@example.com"
@@ -145,10 +156,10 @@ export default function LoginPage({ onLoginSuccess, onBackHome }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.35rem' }}>Mật khẩu *</label>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.35rem' }}>Password *</label>
             <input
               type="password"
-              placeholder="Tối thiểu 6 ký tự"
+              placeholder="Minimum 6 characters"
               value={password}
               onChange={e => setPassword(e.target.value)}
               className="form-input"
@@ -158,7 +169,7 @@ export default function LoginPage({ onLoginSuccess, onBackHome }) {
 
           {isRegister && (
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.35rem' }}>Mục tiêu JLPT</label>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.35rem' }}>JLPT Target Level</label>
               <select
                 value={jlptTargetLevel}
                 onChange={e => setJlptTargetLevel(e.target.value)}
@@ -177,33 +188,44 @@ export default function LoginPage({ onLoginSuccess, onBackHome }) {
             className="btn-primary-purple"
             style={{ width: '100%', padding: '0.85rem', marginTop: '0.5rem', fontSize: '1rem' }}
           >
-            {loading ? 'Đang xử lý...' : isRegister ? 'Tạo Tài Khoản Miễn Phí' : 'Đăng Nhập'}
+            {loading ? 'Processing...' : isRegister ? 'Create Free Account' : 'Log In'}
           </button>
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.88rem', color: 'var(--text-body)' }}>
           {isRegister ? (
             <span>
-              Đã có tài khoản?{' '}
+              Already have an account?{' '}
               <button
                 type="button"
                 onClick={() => setIsRegister(false)}
                 style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}
               >
-                Đăng nhập
+                Log In
               </button>
             </span>
           ) : (
-            <span>
-              Chưa có tài khoản?{' '}
-              <button
-                type="button"
-                onClick={() => setIsRegister(true)}
-                style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                Đăng ký miễn phí
-              </button>
-            </span>
+            <div>
+              <div>
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsRegister(true)}
+                  style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  Sign up free
+                </button>
+              </div>
+              <div style={{ marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowForgot(true)}
+                  style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  Forgot your password?
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

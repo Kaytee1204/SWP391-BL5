@@ -1,6 +1,6 @@
 package com.example.base.security;
 
-import com.example.base.dto.response.ApiResponse;
+import com.example.base.dto.common.ApiResponse;
 import com.example.base.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;

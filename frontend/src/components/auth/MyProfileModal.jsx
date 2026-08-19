@@ -40,7 +40,7 @@ export default function MyProfileModal({ currentUser, onClose, onUpdateSuccess }
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <h4 style={{ fontSize: '1.25rem', marginBottom: '1.25rem', fontWeight: 800 }}>
-          {isEditing ? 'Chỉnh Sửa Hồ Sơ & Avatar' : 'Thông Tin Tài Khoản Cá Nhân'}
+          {isEditing ? 'Edit Profile & Avatar' : 'Personal Account Profile'}
         </h4>
 
         {error && (
@@ -82,23 +82,23 @@ export default function MyProfileModal({ currentUser, onClose, onUpdateSuccess }
               gap: '0.5rem',
               fontSize: '0.88rem'
             }}>
-              <div><strong>Mã Tài Khoản:</strong> #{currentUser?.accountId}</div>
-              <div><strong>Mục tiêu JLPT:</strong> <span style={{ color: 'var(--primary-orange)', fontWeight: 700 }}>{currentUser?.jlptTargetLevel || 'N5'}</span></div>
-              <div><strong>Trạng thái:</strong> <span className="status-badge active">{currentUser?.status}</span></div>
-              <div><strong>Ngày tham gia:</strong> {currentUser?.createdAt ? new Date(currentUser?.createdAt).toLocaleDateString('vi-VN') : '-'}</div>
+              <div><strong>Account ID:</strong> #{currentUser?.accountId}</div>
+              <div><strong>JLPT Target:</strong> <span style={{ color: 'var(--primary-orange)', fontWeight: 700 }}>{currentUser?.jlptTargetLevel || 'N5'}</span></div>
+              <div><strong>Status:</strong> <span className="status-badge active">{currentUser?.status}</span></div>
+              <div><strong>Member Since:</strong> {currentUser?.createdAt ? new Date(currentUser?.createdAt).toLocaleDateString('en-US') : '-'}</div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem' }}>
-              <button className="btn-dash btn-dash-secondary" onClick={onClose}>Đóng</button>
+              <button className="btn-dash btn-dash-secondary" onClick={onClose}>Close</button>
               <button className="btn-dash btn-dash-primary" onClick={() => setIsEditing(true)}>
-                ✏️ Chỉnh Sửa Profile & Avatar
+                ✏️ Edit Profile & Avatar
               </button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-              <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-body)' }}>Chọn Avatar:</label>
+              <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-body)' }}>Choose Avatar:</label>
               <div style={{ margin: '0.5rem auto' }}>
                 <img src={avatarUrl} alt="prev" style={{ width: '74px', height: '74px', borderRadius: '50%', border: '3px solid var(--primary-orange)', background: '#fff7ed' }} />
               </div>
@@ -117,15 +117,15 @@ export default function MyProfileModal({ currentUser, onClose, onUpdateSuccess }
             </div>
 
             <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Họ và tên *</label>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Full Name *</label>
               <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} className="form-input" required />
             </div>
             <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Địa chỉ Email *</label>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Email Address *</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="form-input" required />
             </div>
             <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Mục tiêu JLPT</label>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>JLPT Target Level</label>
               <select value={jlptTargetLevel} onChange={e => setJlptTargetLevel(e.target.value)} className="form-select">
                 {JLPT_LEVELS.map(lvl => (
                   <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
@@ -133,14 +133,14 @@ export default function MyProfileModal({ currentUser, onClose, onUpdateSuccess }
               </select>
             </div>
             <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Mật khẩu mới (Để trống nếu không đổi)</label>
-              <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Tối thiểu 6 ký tự..." className="form-input" />
+              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>New Password (Leave blank to keep unchanged)</label>
+              <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Minimum 6 characters..." className="form-input" />
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.75rem' }}>
-              <button type="button" className="btn-dash btn-dash-secondary" onClick={() => setIsEditing(false)}>Hủy</button>
+              <button type="button" className="btn-dash btn-dash-secondary" onClick={() => setIsEditing(false)}>Cancel</button>
               <button type="submit" disabled={loading} className="btn-dash btn-dash-primary">
-                {loading ? 'Đang lưu...' : '💾 Lưu Thay Đổi'}
+                {loading ? 'Saving...' : '💾 Save Changes'}
               </button>
             </div>
           </form>

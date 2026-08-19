@@ -25,44 +25,73 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Các tab chức năng ở giữa (Đã bỏ button Home) */}
+        {/* Các tab chức năng ở giữa */}
         <ul className="nav-links">
+          <li>
+            <a
+              className={`nav-link highlight-tab ${currentView === 'landing' || currentView === 'home' ? 'active' : ''}`}
+              onClick={() => onNavigate('landing')}
+              title="Return to Homepage"
+            >
+              Home
+            </a>
+          </li>
           <li>
             <a
               className={`nav-link highlight-tab ${currentView === 'culture_reader' ? 'active' : ''}`}
               onClick={() => onNavigate('culture_reader')}
               title="Khám phá tạp chí văn hóa & tiếng lóng"
             >
-              🌸 Culture & Slang
+              Culture Article
             </a>
           </li>
+          <li>
+            <a
+              className={`nav-link highlight-tab ${currentView === 'grammar_reader' ? 'active' : ''}`}
+              onClick={() => onNavigate('grammar_reader')}
+              title="Master Japanese JLPT Grammar Patterns"
+            >
+              Grammar (文法)
+            </a>
+          </li>
+          {currentUser && (currentUser.role === 'Student' || currentUser.role === 'Lecturer' || currentUser.role === 'Manager') && (
+            <li>
+              <a
+                className={`nav-link highlight-tab ${currentView === 'exercise_practice' ? 'active' : ''}`}
+                onClick={() => onNavigate('exercise_practice')}
+                title="Practice Japanese Grammar Multiple-Choice Quizzes"
+              >
+                📝 Practice Quiz
+              </a>
+            </li>
+          )}
           {currentUser?.role === 'Author' && (
             <li>
               <a
-                className={`nav-link ${currentView === 'culture_articles' ? 'active' : ''}`}
+                className={`nav-link highlight-tab ${currentView === 'culture_articles' ? 'active' : ''}`}
                 onClick={() => onNavigate('culture_articles')}
               >
-                ✍️ Author Workspace
+                Author Workspace
               </a>
             </li>
           )}
           {currentUser?.role === 'Lecturer' && (
             <li>
               <a
-                className={`nav-link ${currentView === 'materials' ? 'active' : ''}`}
+                className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}
                 onClick={() => onNavigate('materials')}
               >
-                📚 Learning Materials
+                Learning Materials
               </a>
             </li>
           )}
           {currentUser?.role === 'Manager' && (
             <li>
               <a
-                className={`nav-link ${currentView === 'dashboard' ? 'active' : ''}`}
+                className={`nav-link highlight-tab ${currentView === 'dashboard' ? 'active' : ''}`}
                 onClick={() => onNavigate('dashboard')}
               >
-                👑 Manager Portal
+                Manager Portal
               </a>
             </li>
           )}

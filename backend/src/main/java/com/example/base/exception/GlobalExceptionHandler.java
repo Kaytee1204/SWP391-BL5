@@ -1,6 +1,6 @@
 package com.example.base.exception;
 
-import com.example.base.dto.response.ApiResponse;
+import com.example.base.dto.common.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,6 +91,16 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.<Void>builder()
                         .code(ErrorCode.BAD_REQUEST.getCode())
                         .message(msg)
+                        .build());
+    }
+
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResourceFound(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        log.warn("Resource / Endpoint not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.<Void>builder()
+                        .code(404)
+                        .message("Không tìm thấy đường dẫn tài nguyên: " + ex.getResourcePath())
                         .build());
     }
 

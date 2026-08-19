@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
 import { apiRequest } from '../../api/apiRequest';
 import { JLPT_LEVELS } from '../../assets/constants';
+import ForgotPasswordModal from './ForgotPasswordModal';
 
 export default function AuthModal({ initialMode, onLoginSuccess, onClose }) {
   const [isRegister, setIsRegister] = useState(initialMode === 'register');
+  const [showForgot, setShowForgot] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [jlptTargetLevel, setJlptTargetLevel] = useState('N5');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  if (showForgot) {
+    return (
+      <ForgotPasswordModal
+        onClose={onClose}
+        onSwitchToLogin={() => setShowForgot(false)}
+      />
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,7 +37,7 @@ export default function AuthModal({ initialMode, onLoginSuccess, onClose }) {
           avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Kenji',
           role: 'Student'
         });
-        alert('Tài khoản đã được đăng ký thành công!');
+        alert('Account registered successfully!');
         onLoginSuccess(res.data);
       } else {
         const res = await apiRequest('/auth/login', 'POST', {
@@ -47,7 +58,7 @@ export default function AuthModal({ initialMode, onLoginSuccess, onClose }) {
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800 }}>
-            {isRegister ? 'Tạo Tài Khoản JLMS' : 'Đăng Nhập JLMS'}
+            {isRegister ? 'Create JLMS Account' : 'Log In to JLMS'}
           </h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#94a3b8' }}>✕</button>
         </div>
@@ -61,10 +72,10 @@ export default function AuthModal({ initialMode, onLoginSuccess, onClose }) {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {isRegister && (
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.25rem' }}>Họ và tên *</label>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.25rem' }}>Full Name *</label>
               <input
                 type="text"
-                placeholder="Ví dụ: Nguyễn Văn A"
+                placeholder="e.g. John Doe"
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 className="form-input"
@@ -74,7 +85,7 @@ export default function AuthModal({ initialMode, onLoginSuccess, onClose }) {
           )}
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.25rem' }}>Địa chỉ Email *</label>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.25rem' }}>Email Address *</label>
             <input
               type="email"
               placeholder="name@example.com"
@@ -86,10 +97,10 @@ export default function AuthModal({ initialMode, onLoginSuccess, onClose }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.25rem' }}>Mật khẩu *</label>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.25rem' }}>Password *</label>
             <input
               type="password"
-              placeholder="Tối thiểu 6 ký tự"
+              placeholder="Minimum 6 characters"
               value={password}
               onChange={e => setPassword(e.target.value)}
               className="form-input"
@@ -99,7 +110,7 @@ export default function AuthModal({ initialMode, onLoginSuccess, onClose }) {
 
           {isRegister && (
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.25rem' }}>Mục tiêu JLPT</label>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.25rem' }}>JLPT Target Level</label>
               <select
                 value={jlptTargetLevel}
                 onChange={e => setJlptTargetLevel(e.target.value)}
@@ -118,25 +129,36 @@ export default function AuthModal({ initialMode, onLoginSuccess, onClose }) {
             className="btn-primary-purple"
             style={{ width: '100%', padding: '0.85rem', marginTop: '0.5rem', fontSize: '1rem' }}
           >
-            {loading ? 'Đang xử lý...' : isRegister ? 'Tạo Tài Khoản Miễn Phí' : 'Đăng Nhập'}
+            {loading ? 'Processing...' : isRegister ? 'Create Free Account' : 'Log In'}
           </button>
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.88rem', color: '#64748b' }}>
           {isRegister ? (
             <span>
-              Đã có tài khoản?{' '}
+              Already have an account?{' '}
               <button onClick={() => setIsRegister(false)} style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 800, cursor: 'pointer' }}>
-                Đăng nhập ngay
+                Log in now
               </button>
             </span>
           ) : (
-            <span>
-              Chưa có tài khoản?{' '}
-              <button onClick={() => setIsRegister(true)} style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 800, cursor: 'pointer' }}>
-                Đăng ký miễn phí
-              </button>
-            </span>
+            <div>
+              <div>
+                Don't have an account?{' '}
+                <button onClick={() => setIsRegister(true)} style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 800, cursor: 'pointer' }}>
+                  Sign up free
+                </button>
+              </div>
+              <div style={{ marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowForgot(true)}
+                  style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Forgot your password?
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>
