@@ -22,9 +22,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/question-bank")
 @RequiredArgsConstructor
-@PreAuthorize(
-        "hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')"
-)
+@PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+
 public class QuestionBankController {
 
     private final QuestionBankService questionBankService;

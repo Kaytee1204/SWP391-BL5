@@ -15,7 +15,7 @@ const SKILLS = [
 const SKILL_LABELS = Object.fromEntries(SKILLS.map(item => [item.value, item.label]));
 const TYPE_LABELS = { multiple_choice: 'Trắc nghiệm', fill_blank: 'Điền chỗ trống' };
 
-export default function QuestionBankManagementView() {
+export default function QuestionBankManagementView({ currentUser }) {
   const [questions, setQuestions] = useState([]);
   const [pageInfo, setPageInfo] = useState({ page: 0, totalPages: 0, totalElements: 0 });
   const [page, setPage] = useState(0);
@@ -87,7 +87,9 @@ export default function QuestionBankManagementView() {
     <section className="question-bank-view">
       <header className="question-bank-hero">
         <div>
-          <div className="question-bank-kicker">LECTURER WORKSPACE</div>
+          <div className="question-bank-kicker">
+            {currentUser?.role === 'Manager' ? 'MANAGER WORKSPACE' : 'LECTURER WORKSPACE'}
+          </div>
           <h2>Ngân hàng câu hỏi</h2>
           <p>Quản lý câu hỏi JLPT theo kỹ năng, trình độ và dạng bài.</p>
         </div>
