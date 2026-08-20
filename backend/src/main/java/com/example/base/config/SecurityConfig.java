@@ -97,7 +97,8 @@ public class SecurityConfig {
                                 "/kanji-modules", "/kanji-modules/**",
                                 "/kanji-details", "/kanji-details/**",
                                 "/vocabulary-categories", "/vocabulary-categories/**",
-                                "/vocabulary-items", "/vocabulary-items/**").permitAll()
+                                "/vocabulary-items", "/vocabulary-items/**",
+                                "/system-flashcards", "/system-flashcards/**").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
                 )

@@ -13,6 +13,7 @@ import QuestionBankManagementView from '../question-bank/QuestionBankManagementV
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryTable from '../../components/vocabulary_category/CategoryTable';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
+import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
 
 export default function ManagerDashboardPage({
   currentUser,
@@ -285,6 +286,22 @@ export default function ManagerDashboardPage({
               >
                 📚 Vocabulary Categories
               </button>
+              <button
+                onClick={() => setMaterialSubTab('flashcard_decks')}
+                style={{
+                  padding: '0.5rem 1.15rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  fontSize: '0.88rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  background: materialSubTab === 'flashcard_decks' ? '#3b82f6' : 'transparent',
+                  color: materialSubTab === 'flashcard_decks' ? '#fff' : 'var(--text-body)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                🃏 Flashcard Decks
+              </button>
             </div>
 
             {materialSubTab === 'grammar_patterns' && (
@@ -336,6 +353,9 @@ export default function ManagerDashboardPage({
                   initialData={editingCategory}
                 />
               </div>
+            )}
+            {materialSubTab === 'flashcard_decks' && (
+              <FlashcardDeckManagementPage currentUser={currentUser} />
             )}
           </div>
         )}
