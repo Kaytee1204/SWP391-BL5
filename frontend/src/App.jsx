@@ -103,11 +103,27 @@ export default function App() {
     setCurrentView('article_detail');
   };
 
+  // Chặn khách vãng lai (Guest) không được vào trang Vocabulary
+  useEffect(() => {
+    if (!currentUser && (currentView === 'vocab' || currentView === 'vocab-decks')) {
+      setCurrentView('landing');
+      setAuthModalMode('login');
+    }
+  }, [currentUser, currentView]);
+
+  const handleNavigate = (view) => {
+    if ((view === 'vocab' || view === 'vocab-decks') && !currentUser) {
+      setAuthModalMode('login');
+      return;
+    }
+    setCurrentView(view);
+  };
+
   const learningViews = {
-    vocab: <VocabularyPage />,
+    vocab: currentUser ? <VocabularyPage /> : null,
     kanji: <KanjiPage currentUser={currentUser} />,
-    'vocab-decks': <PersonalVocabDecksPage onNavigate={setCurrentView} />,
-    'kanji-decks': <PersonalKanjiDecksPage onNavigate={setCurrentView} />,
+    'vocab-decks': <PersonalVocabDecksPage onNavigate={handleNavigate} />,
+    'kanji-decks': <PersonalKanjiDecksPage onNavigate={handleNavigate} />,
     accounts: <AccountsPage />,
   };
   const learningView = learningViews[currentView];
@@ -118,7 +134,7 @@ export default function App() {
       {(currentView === 'home' || currentView === 'landing') && (
         <HomePage
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onOpenAuth={(mode) => setAuthModalMode(mode)}
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
@@ -129,7 +145,7 @@ export default function App() {
       {currentView === 'culture_reader' && (
         <CultureSlangReaderPage
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onOpenAuth={(mode) => setAuthModalMode(mode)}
           onViewProfile={() => setShowProfileModal(true)}
           onReadArticle={(article) => handleOpenArticleDetail(article, 'culture_reader')}
@@ -143,7 +159,7 @@ export default function App() {
           <Navbar
             currentView="grammar_reader"
             currentUser={currentUser}
-            onNavigate={(view) => setCurrentView(view)}
+            onNavigate={handleNavigate}
             onOpenAuth={(mode) => setAuthModalMode(mode)}
             onViewProfile={() => setShowProfileModal(true)}
             onLogout={handleLogout}
@@ -163,7 +179,7 @@ export default function App() {
           <Navbar
             currentView="exercise_practice"
             currentUser={currentUser}
-            onNavigate={(view) => setCurrentView(view)}
+            onNavigate={handleNavigate}
             onOpenAuth={(mode) => setAuthModalMode(mode)}
             onViewProfile={() => setShowProfileModal(true)}
             onLogout={handleLogout}
@@ -183,7 +199,7 @@ export default function App() {
           article={readingArticle}
           previousView={previousView}
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
         />
@@ -193,7 +209,7 @@ export default function App() {
       {currentView === 'culture_articles' && (
         <AuthorWorkspacePage
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onViewProfile={() => setShowProfileModal(true)}
           onOpenArticleDetail={(art) => handleOpenArticleDetail(art, 'culture_articles')}
           onLogout={handleLogout}
@@ -204,7 +220,7 @@ export default function App() {
       {currentView === 'materials' && (
         <LearningMaterialsView
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
         />
@@ -216,7 +232,7 @@ export default function App() {
           <Navbar
             currentView="question_bank"
             currentUser={currentUser}
-            onNavigate={(view) => setCurrentView(view)}
+            onNavigate={handleNavigate}
             onViewProfile={() => setShowProfileModal(true)}
             onLogout={handleLogout}
           />
@@ -230,7 +246,7 @@ export default function App() {
       {currentView === 'dashboard' && (
         <ManagerDashboardPage
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onViewProfile={() => setShowProfileModal(true)}
           onOpenArticleDetail={(art) => handleOpenArticleDetail(art, 'dashboard')}
           onLogout={handleLogout}
@@ -241,7 +257,7 @@ export default function App() {
       {currentView === 'vocabulary_category' && (
         <VocabularyCategoryPage
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
         />
@@ -252,7 +268,7 @@ export default function App() {
           <Navbar
             currentView={currentView}
             currentUser={currentUser}
-            onNavigate={(view) => setCurrentView(view)}
+            onNavigate={handleNavigate}
             onOpenAuth={(mode) => setAuthModalMode(mode)}
             onViewProfile={() => setShowProfileModal(true)}
             onLogout={handleLogout}

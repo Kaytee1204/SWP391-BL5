@@ -54,15 +54,17 @@ export default function Navbar({
               Grammar (文法)
             </a>
           </li>
-          <li>
-            <a
-              className={`nav-link highlight-tab ${currentView === 'vocab' ? 'active' : ''}`}
-              onClick={() => onNavigate('vocab')}
-              title="Japanese Vocabulary"
-            >
-              Vocabulary
-            </a>
-          </li>
+          {currentUser && (
+            <li>
+              <a
+                className={`nav-link highlight-tab ${currentView === 'vocab' ? 'active' : ''}`}
+                onClick={() => onNavigate('vocab')}
+                title="Japanese Vocabulary"
+              >
+                Vocabulary
+              </a>
+            </li>
+          )}
           <li>
             <a
               className={`nav-link highlight-tab ${currentView === 'kanji' ? 'active' : ''}`}
