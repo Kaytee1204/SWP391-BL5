@@ -84,7 +84,7 @@ export default function Navbar({
                 onClick={() => onNavigate('exercise_practice')}
                 title="Practice Japanese Grammar Multiple-Choice Quizzes"
               >
-                📝 Practice Quiz
+                 Practice Quiz
               </a>
             </li>
           )}
