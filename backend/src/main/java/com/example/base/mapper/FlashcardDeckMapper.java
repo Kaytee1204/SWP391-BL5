@@ -1,0 +1,47 @@
+package com.example.base.mapper;
+    
+import com.example.base.entity.FlashcardDeck;
+import com.example.base.dto.flashcard_deck.FlashcardDeckCreateRequest;
+import com.example.base.dto.flashcard_deck.FlashcardDeckResponse;
+import com.example.base.dto.flashcard_deck.FlashcardDeckUpdateRequest;
+import org.springframework.stereotype.Component;
+
+@Component
+public class FlashcardDeckMapper {
+
+    public FlashcardDeck toEntity(FlashcardDeckCreateRequest request) {
+        if (request == null) {
+            return null;
+        }
+        FlashcardDeck deck = new FlashcardDeck();
+        deck.setTitle(request.getTitle());
+        deck.setDescription(request.getDescription());
+        return deck;
+    }
+
+    public void updateEntity(FlashcardDeck entity, FlashcardDeckUpdateRequest request) {
+        if (request == null || entity == null) {
+            return;
+        }
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            entity.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            entity.setDescription(request.getDescription());
+        }
+    }
+
+    public FlashcardDeckResponse toResponse(FlashcardDeck entity) {
+        if (entity == null) {
+            return null;
+        }
+        return FlashcardDeckResponse.builder()
+                .deckId(entity.getDeckId())
+                .title(entity.getTitle())
+                .description(entity.getDescription())
+                .createdBy(entity.getCreatedBy())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .build();
+    }
+}

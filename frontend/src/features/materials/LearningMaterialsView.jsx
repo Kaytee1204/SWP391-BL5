@@ -6,6 +6,7 @@ import QuestionBankManagementView from '../question-bank/QuestionBankManagementV
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryTable from '../../components/vocabulary_category/CategoryTable';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
+import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
 
 export default function LearningMaterialsView({
   currentUser,
@@ -15,7 +16,7 @@ export default function LearningMaterialsView({
   onLogout,
   initialTab = 'grammar_patterns'
 }) {
-  const [materialTab, setMaterialTab] = useState(initialTab); // 'grammar_patterns' | 'grammar_exercises' | 'question_bank' | 'vocabulary_categories'
+  const [materialTab, setMaterialTab] = useState(initialTab); // 'grammar_patterns' | 'grammar_exercises' | 'question_bank' | 'vocabulary_categories' | 'flashcard_decks'
 
   // State cho phần Quản lý Danh mục từ vựng
   const [categories, setCategories] = useState([]);
@@ -192,6 +193,23 @@ export default function LearningMaterialsView({
           >
             📚 Vocabulary Categories (Danh mục từ vựng)
           </button>
+
+          <button
+            onClick={() => setMaterialTab('flashcard_decks')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'flashcard_decks' ? '#3b82f6' : 'transparent',
+              color: materialTab === 'flashcard_decks' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            🃏 Flashcard Decks
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -247,6 +265,10 @@ export default function LearningMaterialsView({
               initialData={editingCategory}
             />
           </div>
+        )}
+
+        {materialTab === 'flashcard_decks' && (
+          <FlashcardDeckManagementPage currentUser={currentUser} />
         )}
       </main>
     </div>
