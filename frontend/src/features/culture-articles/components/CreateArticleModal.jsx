@@ -2,7 +2,20 @@ import React, { useState } from 'react';
 import { apiRequest } from '../../../api/apiRequest';
 import { ARTICLE_COVER_PRESETS } from '../../../assets/constants';
 
+/**
+ * ============================================================================
+ * MODAL COMPONENT: CreateArticleModal
+ * NGHIỆP VỤ: Tác giả (Author) soạn thảo và xuất bản bài viết văn hóa mới
+ * CÁC BƯỚC THỰC HIỆN:
+ *  1. Nhập tiêu đề bài viết (tối đa 200 ký tự).
+ *  2. Chọn ảnh bìa Preset Nhật Bản hoặc nhập link ảnh tùy chỉnh (URL).
+ *  3. Chọn trạng thái xuất bản: 'published' (Công khai) hoặc 'draft' (Lưu nháp).
+ *  4. Soạn nội dung bài viết chi tiết.
+ *  5. Gửi POST /api/v1/culture-articles lên Backend.
+ * ============================================================================
+ */
 export default function CreateArticleModal({ onClose, onCreateSuccess }) {
+  // --- FORM STATE ---
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState(ARTICLE_COVER_PRESETS[0].url);
@@ -11,12 +24,16 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  /**
+   * Xử lý đăng tải bài viết mới
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
+      // Ưu tiên sử dụng URL tự nhập nếu có, ngược lại dùng ảnh preset đã chọn
       const finalCover = customUrl.trim() ? customUrl.trim() : coverImageUrl;
       const body = {
         title: title.trim(),
@@ -25,12 +42,13 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
         status: status ? status.toLowerCase() : 'published'
       };
 
+      // Gọi API tạo bài viết mới
       const res = await apiRequest('/culture-articles', 'POST', body);
-      alert('Cultural article published successfully!');
-      onCreateSuccess(res.data);
-      onClose();
+      alert('Đăng bài viết văn hóa thành công!');
+      onCreateSuccess(res.data); // Báo cho component cha tải lại danh sách
+      onClose();                 // Đóng modal
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Không thể xuất bản bài viết.');
     } finally {
       setLoading(false);
     }
@@ -39,6 +57,7 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card modal-card-large" onClick={e => e.stopPropagation()}>
+        {/* TIÊU ĐỀ MODAL */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-heading)' }}>
             🌸 Publish New Cultural & Slang Article
@@ -46,6 +65,7 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#94a3b8' }}>✕</button>
         </div>
 
+        {/* THÔNG BÁO LỖI (NẾU CÓ) */}
         {error && (
           <div style={{ padding: '0.75rem', background: '#fff1f2', color: '#e11d48', borderRadius: '10px', fontSize: '0.85rem', marginBottom: '1rem', border: '1px solid #fecdd3' }}>
             ⚠️ {error}
@@ -53,6 +73,7 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.95rem' }}>
+          {/* NHẬP TIÊU ĐỀ BÀI VIẾT */}
           <div>
             <label style={{ fontSize: '0.82rem', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
               <span>Article Title *</span>
@@ -71,6 +92,7 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
             />
           </div>
 
+          {/* CHỌN ẢNH BÌA PRESET HOẶC NHẬP URL */}
           <div>
             <label style={{ fontSize: '0.82rem', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
               <span>Choose Cover Image:</span>
@@ -100,6 +122,7 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
             />
           </div>
 
+          {/* CHỌN TRẠNG THÁI XUẤT BẢN */}
           <div>
             <label style={{ fontSize: '0.82rem', fontWeight: 700 }}>Publication Status *</label>
             <select value={status} onChange={e => setStatus(e.target.value)} className="form-select">
@@ -108,6 +131,7 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
             </select>
           </div>
 
+          {/* SOẠN NỘI DUNG BÀI VIẾT */}
           <div>
             <label style={{ fontSize: '0.82rem', fontWeight: 700 }}>Article Content *</label>
             <textarea
@@ -120,6 +144,7 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
             />
           </div>
 
+          {/* HÀNH ĐỘNG */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', marginTop: '0.75rem' }}>
             <button type="button" className="btn-dash btn-dash-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" disabled={loading} className="btn-dash btn-dash-primary">

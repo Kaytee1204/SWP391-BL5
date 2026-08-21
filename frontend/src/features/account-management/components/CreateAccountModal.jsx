@@ -2,7 +2,19 @@ import React, { useState } from 'react';
 import { apiRequest } from '../../../api/apiRequest';
 import { AVATAR_PRESETS, JLPT_LEVELS, ROLES } from '../../../assets/constants';
 
+/**
+ * ============================================================================
+ * NGHIỆP VỤ: Tạo mới tài khoản người dùng thủ công bởi Quản lý (Manager)
+ * LUỒNG HOẠT ĐỘNG:
+ *  1. Nhập họ tên, email, mật khẩu khởi tạo (tối thiểu 6 ký tự).
+ *  2. Chọn ảnh đại diện từ danh sách Preset chuẩn Nhật Bản.
+ *  3. Chọn vai trò (Role: Student, Lecturer, Author, Manager).
+ *  4. Chọn cấp độ JLPT mục tiêu (N5 - N1).
+ *  5. Gửi POST /api/v1/accounts -> Backend băm BCrypt mật khẩu và lưu vào DB.
+ * ============================================================================
+ */
 export default function CreateAccountModal({ onClose, onCreateSuccess }) {
+  // --- FORM STATE ---
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,6 +24,9 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  /**
+   * Xử lý submit form tạo tài khoản
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -27,12 +42,13 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
         avatarUrl
       };
 
+      // Gửi request tạo tài khoản lên Backend
       const res = await apiRequest('/accounts', 'POST', body);
-      alert('Account created successfully!');
-      onCreateSuccess(res.data);
-      onClose();
+      alert('Tạo tài khoản mới thành công!');
+      onCreateSuccess(res.data); // Gọi callback báo component cha tải lại dữ liệu
+      onClose();                 // Đóng modal
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Không thể tạo tài khoản.');
     } finally {
       setLoading(false);
     }
@@ -41,6 +57,7 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={e => e.stopPropagation()}>
+        {/* TIÊU ĐỀ MODAL */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-heading)' }}>
             + Add New Account
@@ -48,6 +65,7 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#94a3b8' }}>✕</button>
         </div>
 
+        {/* THÔNG BÁO LỖI (NẾU CÓ) */}
         {error && (
           <div style={{ padding: '0.75rem', background: '#fff1f2', color: '#e11d48', borderRadius: '10px', fontSize: '0.85rem', marginBottom: '1rem', border: '1px solid #fecdd3' }}>
             ⚠️ {error}
@@ -55,6 +73,7 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          {/* CHỌN AVATAR PRESET */}
           <div style={{ textAlign: 'center' }}>
             <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-body)' }}>Choose Avatar:</label>
             <div style={{ margin: '0.4rem auto' }}>
@@ -69,21 +88,25 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
             </div>
           </div>
 
+          {/* NHẬP HỌ VÀ TÊN */}
           <div>
             <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Full Name *</label>
             <input type="text" placeholder="e.g. Alex Johnson" value={fullName} onChange={e => setFullName(e.target.value)} className="form-input" required />
           </div>
 
+          {/* NHẬP EMAIL */}
           <div>
             <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Email Address *</label>
             <input type="email" placeholder="user@japanlearning.com" value={email} onChange={e => setEmail(e.target.value)} className="form-input" required />
           </div>
 
+          {/* NHẬP MẬT KHẨU KHỞI TẠO */}
           <div>
             <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Initial Password *</label>
             <input type="password" placeholder="Minimum 6 characters" value={password} onChange={e => setPassword(e.target.value)} className="form-input" required />
           </div>
 
+          {/* CHỌN VAI TRÒ VÀ TRÌNH ĐỘ JLPT */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             <div>
               <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Role *</label>
@@ -100,6 +123,7 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
             </div>
           </div>
 
+          {/* HÀNH ĐỘNG: HỦY HOẶC TẠO */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
             <button type="button" className="btn-dash btn-dash-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" disabled={loading} className="btn-dash btn-dash-primary">
