@@ -98,6 +98,7 @@ public class SecurityConfig {
                                 "/kanji-details", "/kanji-details/**",
                                 "/vocabulary-categories", "/vocabulary-categories/**",
                                 "/vocabulary-items", "/vocabulary-items/**",
+                                "/media/listening/**",
                                 "/system-flashcards", "/system-flashcards/**").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()

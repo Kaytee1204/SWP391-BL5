@@ -5,6 +5,8 @@ import com.example.base.entity.QuestionSkillType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 import lombok.Data;
 
 @Data
@@ -34,4 +36,8 @@ public class QuestionSetUpsertRequest {
             message = "Level không được để trống"
     )
     private JlptLevel jlptLevel;
+
+    @Min(value = 1, message = "Thời lượng tối thiểu là 1 phút")
+    @Max(value = 300, message = "Thời lượng tối đa là 300 phút")
+    private Integer durationMinutes = 60;
 }

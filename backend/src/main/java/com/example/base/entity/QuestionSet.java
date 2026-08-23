@@ -33,6 +33,10 @@ public class QuestionSet {
     @Column(name="jlpt_level",nullable = false,length = 20)
     private JlptLevel jlptLevel;
 
+    @Builder.Default
+    @Column(name = "duration_minutes", nullable = false)
+    private Integer durationMinutes = 60;
+
     @ManyToOne
     @JoinColumn(name="created_by",nullable = false)
     private Account createBy;

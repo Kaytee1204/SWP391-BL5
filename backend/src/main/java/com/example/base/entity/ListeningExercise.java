@@ -5,21 +5,19 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-
 @Entity
-@Table(name = "ReadingPassage")
+@Table(name = "ListeningExercise")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+public class ListeningExercise {
 
-public class ReadingPassage {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // xác định khóa chính
-    @Column(name = "passage_id")
-    private Long passageId;
-
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "listening_exercise_id")
+    private Long listeningExerciseId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "jlpt_level", nullable = false, length = 20)
@@ -28,16 +26,20 @@ public class ReadingPassage {
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
-    @Column(name="content_furigana", nullable = false, columnDefinition = "NVARCHAR(MAX)")
-    private String contentHtml;
+    @Column(name = "audio_url", nullable = false, length = 500)
+    private String audioUrl;
 
-//    @Column(name = "translation", nullable = false, columnDefinition = "NVARCHAR(MAX)")
-    @Column(name = "translation",  columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "audio_storage_name", nullable = false, length = 255)
+    private String audioStorageName;
+
+    @Column(name = "audio_original_name", nullable = false, length = 255)
+    private String audioOriginalName;
+
+    @Column(name = "script_text", nullable = false, columnDefinition = "NVARCHAR(MAX)")
+    private String scriptText;
+
+    @Column(name = "translation", columnDefinition = "NVARCHAR(MAX)")
     private String translation;
-
-    @Builder.Default
-    @Column(name = "is_preview",nullable = false)
-    private boolean isPreview =false;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by", nullable = false)
@@ -48,7 +50,6 @@ public class ReadingPassage {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
 
     @PrePersist
     protected void onCreate() {

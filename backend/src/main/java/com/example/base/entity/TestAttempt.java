@@ -24,8 +24,8 @@ public class TestAttempt {
     private Account student;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "test_id", nullable = false)
-    private JLPTMockTest test;
+    @JoinColumn(name = "question_set_id", nullable = false)
+    private QuestionSet questionSet;
 
     @Column(name = "score")
     private Long score;

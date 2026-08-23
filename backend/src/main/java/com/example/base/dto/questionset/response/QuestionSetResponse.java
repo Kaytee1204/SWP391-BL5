@@ -19,6 +19,7 @@ public class QuestionSetResponse {
     private String description;
     private QuestionSkillType skillType;
     private JlptLevel jlptLevel;
+    private Integer durationMinutes;
 
     private Long createdById;
     private String createdByName;

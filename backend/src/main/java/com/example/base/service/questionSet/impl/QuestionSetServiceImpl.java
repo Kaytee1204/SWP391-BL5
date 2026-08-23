@@ -140,9 +140,10 @@ public class QuestionSetServiceImpl implements QuestionSetService {
 
         long questionCount = questionSetItemRepository.countByQuestionSetQuestionSetId(setId);
 
-        boolean classificationChanged = set.getSkillType() != request.getSkillType()
-                || set.getJlptLevel() != request.getJlptLevel();
-        if(classificationChanged && questionCount > 0){
+        boolean levelChanged = set.getJlptLevel() != request.getJlptLevel();
+        boolean changedToSingleSkill = set.getSkillType() != request.getSkillType()
+                && request.getSkillType() != QuestionSkillType.mixed;
+        if((levelChanged || changedToSingleSkill) && questionCount > 0){
             throw new AppException(
                     ErrorCode.CONFLICT, "Không thể đổi skill hoặc level khi bộ câu hỏi đã có câu hỏi"
             );
@@ -190,7 +191,8 @@ public class QuestionSetServiceImpl implements QuestionSetService {
             Long questionId = questionIds.get(idx);
             QuestionBank question = questionMap.get(questionId);
 
-            if(question.getSkillType()!=set.getSkillType()){
+            if(set.getSkillType() != QuestionSkillType.mixed
+                    && question.getSkillType()!=set.getSkillType()){
                 throw new AppException(
                         ErrorCode.BAD_REQUEST,"Câu hỏi #" + questionId
                         + " không cùng kỹ năng với bộ câu hỏi"
@@ -231,7 +233,9 @@ public class QuestionSetServiceImpl implements QuestionSetService {
     @Transactional
     public QuestionSetResponse createQuestionInsideSet(Long setId, QuestionUpsertRequest request, UserPrincipal currentUser){
         QuestionSet set = findOwnedSet(setId, currentUser);
-        request.setSkillType(set.getSkillType());
+        if (set.getSkillType() != QuestionSkillType.mixed) {
+            request.setSkillType(set.getSkillType());
+        }
         request.setJlptLevel(set.getJlptLevel());
 
         QuestionResponse createdQuestion = questionBankService.createQuestion(request,currentUser);
