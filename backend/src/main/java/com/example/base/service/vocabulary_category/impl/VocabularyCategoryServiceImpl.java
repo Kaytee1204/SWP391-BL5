@@ -44,33 +44,41 @@ public class VocabularyCategoryServiceImpl implements VocabularyCategoryService 
     @Override
     @Transactional
     public VocabularyCategoryResponse createCategory(VocabularyCategoryCreateRequest request) {
+        // 1. KIỂM TRA TRÙNG TÊN: Nếu tên danh mục đã tồn tại thì báo lỗi
+        if (repository.existsByName(request.getName().trim())) {
+            throw new RuntimeException("Tên danh mục từ vựng này đã tồn tại. Vui lòng chọn tên khác!");
+        }
+
         VocabularyCategory entity = mapper.toEntity(request);
-        
 
         Account createdBy = accountRepository.findById(request.getCreatedById())
                 .orElseThrow(() -> new RuntimeException("Lecturer Account not found with id: " + request.getCreatedById()));
-        
+
         entity.setCreatedBy(createdBy);
 
         VocabularyCategory savedEntity = repository.save(entity);
         return mapper.toResponse(savedEntity);
     }
-
     @Override
     @Transactional
     public VocabularyCategoryResponse updateCategory(Long id, VocabularyCategoryUpdateRequest request) {
         VocabularyCategory existingCategory = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
 
+        // Nếu đổi tên khác với tên cũ mà tên mới bị trùng với danh mục khác thì chặn
+        if (!existingCategory.getName().equals(request.getName().trim())) {
+            if (repository.existsByName(request.getName().trim())) {
+                throw new RuntimeException("Tên danh mục từ vựng này đã tồn tại. Vui lòng chọn tên khác!");
+            }
+        }
 
         existingCategory.setJlptLevel(request.getJlptLevel());
-        existingCategory.setName(request.getName());
+        existingCategory.setName(request.getName().trim());
         existingCategory.setDescription(request.getDescription());
-        
+
         VocabularyCategory updatedEntity = repository.save(existingCategory);
         return mapper.toResponse(updatedEntity);
     }
-
     @Override
     @Transactional
     public void deleteCategory(Long id) {
@@ -79,4 +87,5 @@ public class VocabularyCategoryServiceImpl implements VocabularyCategoryService 
         }
         repository.deleteById(id);
     }
+
 }

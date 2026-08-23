@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryTable from '../../components/CategoryTable';
 import CategoryFormModal from '../../components/CategoryFormModal';
+import CategoryItemsModal from '../../components/vocabulary_category/CategoryItemsModal';
 import Navbar from '../../components/common/Navbar';
 
 export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogout, onViewProfile, onOpenAuth }) {
     const [categories, setCategories] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
+    
+    // State quản lý xem danh sách từ vựng con
+    const [selectedCategoryForItems, setSelectedCategoryForItems] = useState(null);
 
     const fetchCategories = async () => {
         try {
@@ -106,10 +110,12 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
                     </button>
                 </div>
 
+                {/* 1. Truyền prop onViewItems vào CategoryTable */}
                 <CategoryTable 
                     categories={categories} 
                     onEdit={handleEdit} 
-                    onDelete={handleDelete} 
+                    onDelete={handleDelete}
+                    onViewItems={(category) => setSelectedCategoryForItems(category)}
                 />
 
                 <CategoryFormModal 
@@ -117,6 +123,12 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
                     onClose={() => setIsModalOpen(false)} 
                     onSubmit={handleFormSubmit}
                     initialData={editingCategory}
+                />
+
+                {/* 2. Đặt CategoryItemsModal ở cuối trang */}
+                <CategoryItemsModal 
+                    category={selectedCategoryForItems}
+                    onClose={() => setSelectedCategoryForItems(null)}
                 />
             </div>
         </div>
