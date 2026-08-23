@@ -11,6 +11,7 @@ import CultureArticleManagementView from './features/culture-articles/CultureArt
 import AuthorWorkspacePage from './features/culture-articles/AuthorWorkspacePage';
 import LearningMaterialsView from './features/materials/LearningMaterialsView';
 import ManagerDashboardPage from './features/dashboard/ManagerDashboardPage';
+import ManagerErrorReportView from './features/error_report/ManagerErrorReportView';
 
 import VocabularyCategoryPage from './features/vocabulary-category/VocabularyCategoryPage';
 import GrammarReaderPage from './features/grammar/GrammarReaderPage';
@@ -108,7 +109,7 @@ export default function App() {
     'vocab-decks': <PersonalVocabDecksPage onNavigate={setCurrentView} />,
     'kanji-decks': <PersonalKanjiDecksPage onNavigate={setCurrentView} />,
     accounts: <AccountsPage />,
-    'error-reports': <ErrorReportList /> // Đăng ký màn hình báo lỗi vào hệ thống
+    'error-reports': <ManagerErrorReportView currentUser={currentUser} /> // Đã trỏ đúng component quản lý báo cáo lỗi
   };
   const learningView = learningViews[currentView];
 

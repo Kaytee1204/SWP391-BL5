@@ -27,7 +27,7 @@ export default function ManagerDashboardPage({
   const [materialSubTab, setMaterialSubTab] = useState('grammar_patterns'); 
   const [showProPopup, setShowProPopup] = useState(false);
 
-  // State cho phần Quản lý Danh mục từ vựng
+  // States for Vocabulary Categories Management
   const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -41,7 +41,7 @@ export default function ManagerDashboardPage({
         setCategories(response.data || []);
       }
     } catch (error) {
-      console.error("Lỗi khi tải danh sách từ vựng:", error);
+      console.error("Error loading vocabulary categories:", error);
     }
   }, []);
 
@@ -62,21 +62,21 @@ export default function ManagerDashboardPage({
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) {
+    if (window.confirm("Are you sure you want to delete this category?")) {
       try {
         const response = await vocabularyCategoryApi.delete(id);
         if (response && (response.code === 200 || response.code === 204)) {
           fetchCategories(); 
         }
       } catch (error) {
-        console.error("Lỗi khi xóa danh mục:", error);
+        console.error("Error deleting category:", error);
       }
     }
   };
 
   const handleFormSubmit = async (formData) => {
     if (!formData.name || !formData.name.trim()) {
-      alert('Tên danh mục không được để trống!');
+      alert('Category name cannot be empty!');
       return;
     }
 
@@ -97,15 +97,15 @@ export default function ManagerDashboardPage({
 
       const success = response && (response.code === 200 || response.code === 201);
       if (!success) {
-        alert(response?.message || 'Không thể lưu danh mục.');
+        alert(response?.message || 'Failed to save category.');
         return;
       }
 
       setIsModalOpen(false);
       await fetchCategories();
     } catch (error) {
-      console.error("Lỗi khi lưu danh mục:", error);
-      alert(error?.message || 'Lỗi khi lưu danh mục.');
+      console.error("Error saving category:", error);
+      alert(error?.message || 'Error saving category.');
     }
   };
 
@@ -214,7 +214,7 @@ export default function ManagerDashboardPage({
               <button onClick={() => setMaterialSubTab('question_bank')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'question_bank' ? '#d97706' : 'transparent', color: materialSubTab === 'question_bank' ? '#fff' : 'var(--text-body)' }}>🗂️ Question Bank</button>
               <button onClick={() => setMaterialSubTab('vocabulary_categories')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'vocabulary_categories' ? '#10b981' : 'transparent', color: materialSubTab === 'vocabulary_categories' ? '#fff' : 'var(--text-body)' }}>📚 Vocabulary Categories</button>
               <button onClick={() => setMaterialSubTab('flashcard_decks')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'flashcard_decks' ? '#3b82f6' : 'transparent', color: materialSubTab === 'flashcard_decks' ? '#fff' : 'var(--text-body)' }}>🃏 Flashcard Decks</button>
-              <button onClick={() => setMaterialSubTab('error_reports')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: materialSubTab === 'error_reports' ? 'none' : '1px solid #fecdd3', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'error_reports' ? '#e11d48' : 'transparent', color: materialSubTab === 'error_reports' ? '#fff' : '#e11d48' }}>⚠️ Báo cáo lỗi</button>
+              <button onClick={() => setMaterialSubTab('error_reports')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: materialSubTab === 'error_reports' ? 'none' : '1px solid #fecdd3', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'error_reports' ? '#e11d48' : 'transparent', color: materialSubTab === 'error_reports' ? '#fff' : '#e11d48' }}>⚠️ Error Reports</button>
             </div>
 
             {materialSubTab === 'grammar_patterns' && (
@@ -230,18 +230,18 @@ export default function ManagerDashboardPage({
               <div style={{ backgroundColor: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '32px 24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                   <div>
-                    <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.75rem', fontWeight: '800' }}>Quản lý Danh mục Từ vựng</h2>
-                    <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Thêm, sửa, xóa và quản lý chi tiết từ vựng theo cấp độ JLPT</p>
+                    <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.75rem', fontWeight: '800' }}>Vocabulary Categories Management</h2>
+                    <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Add, update, delete, and manage vocabulary items by JLPT level</p>
                   </div>
                   <button 
                     onClick={handleAddNew}
                     style={{ padding: '10px 20px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.3)' }}
                   >
-                    + Thêm mới
+                    + Add New
                   </button>
                 </div>
 
-                {/* Bộ lọc cấp độ JLPT */}
+                {/* JLPT Level Filter */}
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
                   {['ALL', 'N5', 'N4', 'N3', 'N2', 'N1'].map((level) => (
                     <button
@@ -258,15 +258,15 @@ export default function ManagerDashboardPage({
                         fontSize: '0.85rem'
                       }}
                     >
-                      {level === 'ALL' ? 'Tất cả cấp độ' : level}
+                      {level === 'ALL' ? 'All Levels' : level}
                     </button>
                   ))}
                 </div>
 
-                {/* Giao diện dạng Cards hiện đại */}
+                {/* Cards Grid View */}
                 {filteredCategories.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '50px', color: '#94a3b8', fontStyle: 'italic' }}>
-                    Chưa có danh mục từ vựng nào.
+                    No vocabulary categories found.
                   </div>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
@@ -293,7 +293,7 @@ export default function ManagerDashboardPage({
                             </div>
                             <h3 style={{ margin: '0 0 6px 0', color: '#0f172a', fontSize: '1.15rem', fontWeight: '700' }}>{cat.name}</h3>
                             <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem', lineHeight: '1.4' }}>
-                              {cat.description || <span style={{ fontStyle: 'italic', color: '#cbd5e1' }}>Không có mô tả</span>}
+                              {cat.description || <span style={{ fontStyle: 'italic', color: '#cbd5e1' }}>No description</span>}
                             </p>
                           </div>
 
@@ -302,11 +302,11 @@ export default function ManagerDashboardPage({
                               onClick={() => setSelectedCategoryForItems(cat)}
                               style={{ backgroundColor: '#e0e7ff', color: '#3730a3', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' }}
                             >
-                              📚 Xem ({itemCount} từ)
+                              📚 View ({itemCount} words)
                             </button>
                             <div style={{ display: 'flex', gap: '6px' }}>
-                              <button onClick={() => handleEdit(cat)} style={{ padding: '6px 10px', backgroundColor: '#fef3c7', color: '#d97706', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.75rem' }}>Sửa</button>
-                              <button onClick={() => handleDelete(cat.categoryId)} style={{ padding: '6px 10px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.75rem' }}>Xóa</button>
+                              <button onClick={() => handleEdit(cat)} style={{ padding: '6px 10px', backgroundColor: '#fef3c7', color: '#d97706', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.75rem' }}>Edit</button>
+                              <button onClick={() => handleDelete(cat.categoryId)} style={{ padding: '6px 10px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.75rem' }}>Delete</button>
                             </div>
                           </div>
                         </div>

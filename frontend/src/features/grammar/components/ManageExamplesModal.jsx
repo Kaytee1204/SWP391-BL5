@@ -6,6 +6,8 @@ import {
   updateExample, 
   deleteExample 
 } from '../../../api/grammarExampleApi';
+import { playAudio } from '../../../utils/audioHelper';
+import { Volume2 } from 'lucide-react';
 
 export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
   const [examples, setExamples] = useState([]);
@@ -16,9 +18,9 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ sentenceJp: '', translation: '', audioUrl: '' });
   const [formLoading, setFormLoading] = useState(false);
-  const [errors, setErrors] = useState({}); // State quản lý lỗi hiển thị
+  const [errors, setErrors] = useState({});
 
-  // Quyền thao tác
+  // Permissions
   const canEdit = currentUser?.role === 'Manager' || 
                  (currentUser?.role === 'Lecturer' && pattern.createdById === currentUser?.accountId);
 
@@ -42,7 +44,7 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
   const resetForm = () => {
     setEditingId(null);
     setFormData({ sentenceJp: '', translation: '', audioUrl: '' });
-    setErrors({}); // Xóa lỗi khi reset
+    setErrors({});
   };
 
   const handleEditClick = (example) => {
@@ -52,27 +54,27 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
       translation: example.translation,
       audioUrl: example.audioUrl || ''
     });
-    setErrors({}); // Xóa lỗi cũ khi bấm sửa
+    setErrors({});
   };
 
   const validateForm = () => {
     const newErrors = {};
     
     if (!formData.sentenceJp.trim()) {
-      newErrors.sentenceJp = 'Câu tiếng Nhật không được để trống.';
+      newErrors.sentenceJp = 'Japanese sentence cannot be empty.';
     } else if (formData.sentenceJp.length > 150) {
-      newErrors.sentenceJp = 'Câu tiếng Nhật không được vượt quá 150 ký tự.';
+      newErrors.sentenceJp = 'Japanese sentence cannot exceed 150 characters.';
     }
 
     if (!formData.translation.trim()) {
-      newErrors.translation = 'Bản dịch không được để trống.';
+      newErrors.translation = 'Translation cannot be empty.';
     } else if (formData.translation.length > 150) {
-      newErrors.translation = 'Bản dịch không được vượt quá 150 ký tự.';
+      newErrors.translation = 'Translation cannot exceed 150 characters.';
     }
 
     if (formData.audioUrl.trim()) {
       if (formData.audioUrl.length > 500) {
-        newErrors.audioUrl = 'Đường dẫn âm thanh không được vượt quá 500 ký tự.';
+        newErrors.audioUrl = 'Audio URL cannot exceed 500 characters.';
       }
     }
 
@@ -83,7 +85,6 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate trước khi gọi API
     if (!validateForm()) {
       return; 
     }
@@ -127,10 +128,10 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
         backgroundColor: '#fff', borderRadius: '12px', overflow: 'hidden'
       }}>
         
-        {/* Header Modal */}
+        {/* Modal Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h3 style={{ margin: 0, color: '#334155' }}>
-            📖 Ví dụ cho mẫu: <span style={{ color: '#7C3AED' }}>{pattern.title}</span>
+            📖 Examples for Pattern: <span style={{ color: '#7C3AED' }}>{pattern.title}</span>
           </h3>
           <button onClick={onClose} style={{
             background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#94a3b8'
@@ -141,27 +142,27 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
 
         <div style={{ overflowY: 'auto', flex: 1, paddingRight: '0.5rem' }}>
           
-          {/* Form Thêm/Sửa */}
+          {/* Add/Edit Form */}
           {canEdit && (
             <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
               <h4 style={{ margin: '0 0 1rem 0', color: '#475569' }}>
-                {editingId ? '✏️ Cập nhật câu ví dụ' : '➕ Thêm câu ví dụ mới'}
+                {editingId ? '✏️ Edit Example' : '➕ Add New Example'}
               </h4>
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 
-                {/* Input Câu tiếng Nhật */}
+                {/* Japanese Sentence Input */}
                 <div>
                   <input 
                     className="form-input"
                     style={{ width: '100%', borderColor: errors.sentenceJp ? '#e11d48' : '#e2e8f0' }}
-                    placeholder="Câu tiếng Nhật (VD: 彼は先生です)" 
+                    placeholder="Japanese sentence (e.g., 彼は先生です)" 
                     value={formData.sentenceJp}
                     maxLength={150}
                     onChange={e => {
                       const val = e.target.value;
                       setFormData({...formData, sentenceJp: val});
                       if (val.length >= 150) {
-                        setErrors({...errors, sentenceJp: 'Đã đạt giới hạn 150 ký tự. Vui lòng nhập ngắn gọn hơn.'});
+                        setErrors({...errors, sentenceJp: 'Character limit of 150 reached.'});
                       } else if (errors.sentenceJp) {
                         setErrors({...errors, sentenceJp: null});
                       }
@@ -175,19 +176,19 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
                   </div>
                 </div>
 
-                {/* Input Bản dịch */}
+                {/* Translation Input */}
                 <div>
                   <input 
                     className="form-input"
                     style={{ width: '100%', borderColor: errors.translation ? '#e11d48' : '#e2e8f0' }}
-                    placeholder="Bản dịch tiếng Việt (VD: Anh ấy là giáo viên)" 
+                    placeholder="Translation (e.g., He is a teacher)" 
                     value={formData.translation}
                     maxLength={150}
                     onChange={e => {
                       const val = e.target.value;
                       setFormData({...formData, translation: val});
                       if (val.length >= 150) {
-                        setErrors({...errors, translation: 'Đã đạt giới hạn 150 ký tự. Vui lòng nhập ngắn gọn hơn.'});
+                        setErrors({...errors, translation: 'Character limit of 150 reached.'});
                       } else if (errors.translation) {
                         setErrors({...errors, translation: null});
                       }
@@ -201,19 +202,19 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
                   </div>
                 </div>
 
-                {/* Input Audio URL */}
+                {/* Audio URL Input */}
                 <div>
                   <input 
                     className="form-input"
                     style={{ width: '100%', borderColor: errors.audioUrl ? '#e11d48' : '#e2e8f0' }}
-                    placeholder="Link file âm thanh (Audio URL - Tùy chọn)" 
+                    placeholder="Audio URL (Optional)" 
                     value={formData.audioUrl}
                     maxLength={500}
                     onChange={e => {
                       const val = e.target.value;
                       setFormData({...formData, audioUrl: val});
                       if (val.length >= 500) {
-                        setErrors({...errors, audioUrl: 'Đã đạt giới hạn 500 ký tự.'});
+                        setErrors({...errors, audioUrl: 'Character limit of 500 reached.'});
                       } else if (errors.audioUrl) {
                         setErrors({...errors, audioUrl: null});
                       }
@@ -227,24 +228,24 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                   {editingId && (
                     <button type="button" onClick={resetForm} className="btn-dash" style={{ background: '#e2e8f0' }}>
-                      Hủy
+                      Cancel
                     </button>
                   )}
                   <button type="submit" disabled={formLoading} className="btn-dash btn-dash-primary" style={{ background: '#7C3AED', color: '#fff' }}>
-                    {formLoading ? 'Đang lưu...' : (editingId ? 'Cập nhật' : 'Thêm mới')}
+                    {formLoading ? 'Saving...' : (editingId ? 'Update' : 'Add New')}
                   </button>
                 </div>
               </form>
             </div>
           )}
 
-          {/* Danh sách ví dụ */}
+          {/* Examples List */}
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>Đang tải danh sách ví dụ...</div>
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>Loading examples list...</div>
           ) : error ? (
             <div style={{ color: '#e11d48', padding: '1rem', textAlign: 'center' }}>{error}</div>
           ) : examples.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Chưa có câu ví dụ nào.</div>
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>No examples found.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {examples.map((ex, index) => (
@@ -253,7 +254,6 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
                   display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
                   width: '100%', boxSizing: 'border-box'
                 }}>
-                  {/* Nội dung text áp dụng CSS word-break để không phá layout */}
                   <div style={{ 
                     flex: 1, 
                     marginRight: '1rem', 
@@ -264,12 +264,29 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
                     <div style={{ fontWeight: 600, fontSize: '1.1rem', color: '#0f172a', marginBottom: '0.3rem' }}>
                       {index + 1}. {ex.sentenceJp}
                     </div>
-                    <div style={{ color: '#475569', fontSize: '0.9rem' }}>
+                    <div style={{ color: '#475569', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
                       {ex.translation}
                     </div>
-                    {ex.audioUrl && (
-                      <audio controls src={ex.audioUrl} style={{ height: '30px', marginTop: '0.5rem', maxWidth: '100%' }} />
-                    )}
+
+                    {/* Nút Listen / Phát âm */}
+                    <button 
+                      onClick={() => playAudio(ex.audioUrl, ex.sentenceJp)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 10px',
+                        backgroundColor: '#e0e7ff',
+                        color: '#3730a3',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      <Volume2 size={14} /> Listen
+                    </button>
                   </div>
 
                   {canEdit && (
@@ -278,13 +295,13 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
                         border: 'none', background: '#fef3c7', color: '#d97706', 
                         padding: '0.4rem 0.6rem', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap'
                       }}>
-                        Sửa
+                        Edit
                       </button>
                       <button onClick={() => handleDelete(ex.exampleId)} style={{ 
                         border: 'none', background: '#fee2e2', color: '#e11d48', 
                         padding: '0.4rem 0.6rem', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap'
                       }}>
-                        Xóa
+                        Delete
                       </button>
                     </div>
                   )}
