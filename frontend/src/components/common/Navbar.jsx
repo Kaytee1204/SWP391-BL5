@@ -8,30 +8,26 @@ export default function Navbar({
   onOpenAuth,
   onViewProfile,
   onLogout,
-  extraAction
+  extraAction,
 }) {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        {/* Click vào Logo là về thẳng Trang Chủ */}
-        <div
-          className="brand-group"
-          onClick={() => onNavigate('landing')}
-          title="JLMS - Về Trang Chủ"
-        >
+        {/* Brand Group */}
+        <div className="brand-group" onClick={() => onNavigate('home')}>
           <div className="brand-icon">⛩️</div>
-          <div className="brand-title">
-            <span>JLMS</span>
-          </div>
+          <span className="brand-title">
+            JLMS
+            
+          </span>
         </div>
 
-        {/* Các tab chức năng ở giữa */}
+        {/* Nav Links */}
         <ul className="nav-links">
           <li>
             <a
-              className={`nav-link highlight-tab ${currentView === 'landing' || currentView === 'home' ? 'active' : ''}`}
-              onClick={() => onNavigate('landing')}
-              title="Return to Homepage"
+              className={`nav-link ${currentView === 'home' || currentView === 'landing' ? 'active' : ''}`}
+              onClick={() => onNavigate('home')}
             >
               Home
             </a>
@@ -47,55 +43,24 @@ export default function Navbar({
           </li>
           <li>
             <a
-              className={`nav-link highlight-tab ${currentView === 'grammar_reader' ? 'active' : ''}`}
-              onClick={() => onNavigate('grammar_reader')}
-              title="Master Japanese JLPT Grammar Patterns"
+              className={`nav-link highlight-tab ${currentView === 'courses' ? 'active' : ''}`}
+              onClick={() => onNavigate('courses')}
+              title="Khám phá và đăng ký các khóa học tiếng Nhật JLPT"
             >
-              Grammar (文法)
+              Courses
             </a>
           </li>
-          {currentUser && (
-            <li>
-              <a
-                className={`nav-link highlight-tab ${currentView === 'vocab' ? 'active' : ''}`}
-                onClick={() => onNavigate('vocab')}
-                title="Japanese Vocabulary"
-              >
-                Vocabulary
-              </a>
-            </li>
-          )}
           <li>
             <a
-              className={`nav-link highlight-tab ${currentView === 'kanji' ? 'active' : ''}`}
-              onClick={() => onNavigate('kanji')}
-              title="Japanese Kanji"
+              className={`nav-link highlight-tab ${(currentView === 'free_courses' || currentView === 'grammar_reader' || currentView === 'kanji' || currentView === 'kanji-decks' || currentView === 'exercise_practice') ? 'active' : ''}`}
+              onClick={() => onNavigate('free_courses')}
+              title="Khóa học & Tài nguyên học tiếng Nhật miễn phí (Grammar, Kanji, Quiz)"
             >
-              Kanji
+              🎁 Free Courses
             </a>
           </li>
-          {currentUser?.role === 'Student' && (
-            <li>
-              <a
-                className={`nav-link highlight-tab ${currentView === 'kanji-decks' ? 'active' : ''}`}
-                onClick={() => onNavigate('kanji-decks')}
-                title="Manage your personal Kanji decks"
-              >
-                Kanji Decks
-              </a>
-            </li>
-          )}
-          {currentUser && (currentUser.role === 'Student' || currentUser.role === 'Lecturer' || currentUser.role === 'Manager') && (
-            <li>
-              <a
-                className={`nav-link highlight-tab ${currentView === 'exercise_practice' ? 'active' : ''}`}
-                onClick={() => onNavigate('exercise_practice')}
-                title="Practice Japanese Grammar Multiple-Choice Quizzes"
-              >
-                 Practice Quiz
-              </a>
-            </li>
-          )}
+
+          {/* Phân hệ Role */}
           {currentUser?.role === 'Author' && (
             <li>
               <a
@@ -128,7 +93,7 @@ export default function Navbar({
           )}
         </ul>
 
-        {/* Nhóm button CTA góc phải chuẩn hóa đồng nhất */}
+        {/* CTA Group */}
         <div className="nav-cta-group">
           {extraAction}
 

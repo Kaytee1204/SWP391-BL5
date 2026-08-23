@@ -14,6 +14,7 @@ import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryTable from '../../components/vocabulary_category/CategoryTable';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
 import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
+import CourseManagementView from '../courses/CourseManagementView';
 
 export default function ManagerDashboardPage({
   currentUser,
@@ -129,10 +130,17 @@ export default function ManagerDashboardPage({
             <span>›</span>
           </div>
           <div
+            className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`}
+            onClick={() => setActiveTab('courses')}
+          >
+            <div className="nav-item-left"><span>📚</span><span>Courses & Pricing</span></div>
+            <span>›</span>
+          </div>
+          <div
             className={`nav-item ${activeTab === 'materials' ? 'active' : ''}`}
             onClick={() => setActiveTab('materials')}
           >
-            <div className="nav-item-left"><span>📚</span><span>Learning Materials</span></div>
+            <div className="nav-item-left"><span>📝</span><span>Learning Materials</span></div>
             <span>›</span>
           </div>
           <div
@@ -208,6 +216,10 @@ export default function ManagerDashboardPage({
             currentUser={currentUser}
             onAccountUpdated={() => {}}
           />
+        )}
+
+        {activeTab === 'courses' && (
+          <CourseManagementView currentUser={currentUser} />
         )}
 
         {activeTab === 'materials' && (

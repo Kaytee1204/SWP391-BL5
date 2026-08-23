@@ -27,12 +27,17 @@ spring:
       hibernate:
         format_sql: true
 
-# Application JWT Configuration
+# Application Configurations (JWT & SePay Payment Gateway)
 app:
   jwt:
     secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
     expiration-ms: 86400000 # 24 hours
     refresh-expiration-ms: 604800000 # 7 days
+  sepay:
+    bank-code: ${SEPAY_BANK_CODE:VietinBank}
+    account-number: ${SEPAY_ACCOUNT_NUMBER:103874683969}
+    account-name: ${SEPAY_ACCOUNT_NAME:TRINH BAO KHANH}
+    api-key: ${SEPAY_API_KEY:LOC0GNYOOSV5M5WKE6JXBFDGVHB29G7836SIXKQXYPCTDRUNLZ3C2BWQZFJMD9R1}
 
 # OpenAPI / Swagger configuration
 springdoc:

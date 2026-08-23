@@ -17,6 +17,9 @@ import GrammarReaderPage from './features/grammar/GrammarReaderPage';
 import GrammarExercisePracticeView from './features/grammar/GrammarExercisePracticeView';
 import QuestionBankManagementView from './features/question-bank/QuestionBankManagementView';
 import Navbar from './components/common/Navbar';
+import CourseCatalogPage from './features/courses/CourseCatalogPage';
+import PaymentReturnView from './features/courses/components/PaymentReturnView';
+import FreeCoursesPage from './features/free-courses/FreeCoursesPage';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { KanjiPage } from './pages/KanjiPage';
 import { PersonalVocabDecksPage } from './pages/PersonalVocabDecksPage';
@@ -59,6 +62,16 @@ export default function App() {
         });
     }
   }, [currentUser]);
+
+  // Kiểm tra nếu được redirect từ SePay về (?view=payment_return hoặc có orderCode)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewParam = urlParams.get('view');
+    const orderCode = urlParams.get('orderCode');
+    if (viewParam === 'payment_return' || orderCode) {
+      setCurrentView('payment_return');
+    }
+  }, []);
 
   const handleLoginSuccess = (authData) => {
     localStorage.setItem('jwt_token', authData.accessToken);
@@ -121,9 +134,7 @@ export default function App() {
 
   const learningViews = {
     vocab: currentUser ? <VocabularyPage /> : null,
-    kanji: <KanjiPage currentUser={currentUser} />,
     'vocab-decks': <PersonalVocabDecksPage onNavigate={handleNavigate} />,
-    'kanji-decks': <PersonalKanjiDecksPage onNavigate={handleNavigate} />,
     accounts: <AccountsPage />,
   };
   const learningView = learningViews[currentView];
@@ -153,44 +164,41 @@ export default function App() {
         />
       )}
 
-      {/* 2.5. Tra Cứu Ngữ Pháp JLPT (Japanese Grammar Reader) */}
-      {currentView === 'grammar_reader' && (
-        <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }}>
-          <Navbar
-            currentView="grammar_reader"
-            currentUser={currentUser}
-            onNavigate={handleNavigate}
-            onOpenAuth={(mode) => setAuthModalMode(mode)}
-            onViewProfile={() => setShowProfileModal(true)}
-            onLogout={handleLogout}
-          />
-          <main style={{ paddingBottom: '3rem' }}>
-            <GrammarReaderPage
-              currentUser={currentUser}
-              onOpenAuth={(mode) => setAuthModalMode(mode)}
-            />
-          </main>
-        </div>
+      {/* 2.1. Danh Mục Khóa Học & Đăng Ký / Mua Khóa Học (Course Catalog & SePay VietQR) */}
+      {currentView === 'courses' && (
+        <CourseCatalogPage
+          currentUser={currentUser}
+          onNavigate={handleNavigate}
+          onOpenAuth={(mode) => setAuthModalMode(mode)}
+          onViewProfile={() => setShowProfileModal(true)}
+          onLogout={handleLogout}
+        />
       )}
 
-      {/* 2.6. Luyện Tập Trắc Nghiệm Ngữ Pháp JLPT (Grammar Exercise Practice Quiz) */}
-      {currentView === 'exercise_practice' && (
-        <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }}>
-          <Navbar
-            currentView="exercise_practice"
-            currentUser={currentUser}
-            onNavigate={handleNavigate}
-            onOpenAuth={(mode) => setAuthModalMode(mode)}
-            onViewProfile={() => setShowProfileModal(true)}
-            onLogout={handleLogout}
-          />
-          <main>
-            <GrammarExercisePracticeView
-              currentUser={currentUser}
-              onOpenAuth={(mode) => setAuthModalMode(mode)}
-            />
-          </main>
-        </div>
+      {/* 2.2. Kết Quả Thanh Toán SePay (Return Verification) */}
+      {currentView === 'payment_return' && (
+        <PaymentReturnView
+          currentUser={currentUser}
+          onNavigate={handleNavigate}
+          onViewProfile={() => setShowProfileModal(true)}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {/* 2.5. Trang Khóa Học & Tài Liệu Miễn Phí Tổng Hợp (Free Courses Hub) */}
+      {(currentView === 'free_courses' || currentView === 'grammar_reader' || currentView === 'kanji' || currentView === 'kanji-decks' || currentView === 'exercise_practice') && (
+        <FreeCoursesPage
+          currentUser={currentUser}
+          onNavigate={handleNavigate}
+          onOpenAuth={(mode) => setAuthModalMode(mode)}
+          onViewProfile={() => setShowProfileModal(true)}
+          onLogout={handleLogout}
+          initialTab={
+            currentView === 'kanji' ? 'kanji' :
+            currentView === 'kanji-decks' ? 'kanji-decks' :
+            currentView === 'exercise_practice' ? 'quiz' : 'grammar'
+          }
+        />
       )}
 
       {/* 3. Trang Đọc Chi Tiết 1 Bài Viết (Full-Page Article Reader) */}

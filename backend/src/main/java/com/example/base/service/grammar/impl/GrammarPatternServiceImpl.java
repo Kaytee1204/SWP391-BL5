@@ -83,12 +83,19 @@ public class GrammarPatternServiceImpl implements GrammarPatternService {
             throw new AppException(ErrorCode.FORBIDDEN, "Chỉ tài khoản Giảng viên (Lecturer) mới có quyền tạo mẫu ngữ pháp!");
         }
 
+        // Kiểm tra tiêu đề mẫu ngữ pháp không được trùng lặp
+        String cleanTitle = request.getTitle() != null ? request.getTitle().trim() : "";
+        if (grammarPatternRepository.existsByTitleIgnoreCase(cleanTitle)) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Mẫu ngữ pháp '" + cleanTitle + "' đã tồn tại! Vui lòng đặt tên khác.");
+        }
+
         // Tìm thông tin tài khoản Giảng viên trong database
         Account lecturer = accountRepository.findByEmailAndDeletedAtIsNull(currentUser.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "email", currentUser.getEmail()));
 
         // Chuyển DTO thành Entity và gán lecturer là người tạo (created_by)
         GrammarPattern pattern = grammarPatternMapper.toEntity(request, lecturer);
+        pattern.setTitle(cleanTitle);
         GrammarPattern saved = grammarPatternRepository.save(pattern);
 
         log.info("Lecturer {} (ID: {}) created grammar pattern '{}' (ID: {})",
@@ -119,8 +126,15 @@ public class GrammarPatternServiceImpl implements GrammarPatternService {
             throw new AppException(ErrorCode.FORBIDDEN, "Bạn không có quyền chỉnh sửa mẫu ngữ pháp do giảng viên khác tạo");
         }
 
+        // Kiểm tra tiêu đề mẫu ngữ pháp không được trùng lặp với mẫu khác
+        String cleanTitle = request.getTitle() != null ? request.getTitle().trim() : "";
+        if (grammarPatternRepository.existsByTitleIgnoreCaseAndPatternIdNot(cleanTitle, patternId)) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Mẫu ngữ pháp '" + cleanTitle + "' đã được sử dụng bởi bài khác! Vui lòng đặt tên khác.");
+        }
+
         // Cập nhật các trường dữ liệu
         grammarPatternMapper.updateEntityFromDto(request, pattern);
+        pattern.setTitle(cleanTitle);
         GrammarPattern updated = grammarPatternRepository.save(pattern);
 
         log.info("User {} updated grammar pattern ID: {}", currentUser.getEmail(), updated.getPatternId());
