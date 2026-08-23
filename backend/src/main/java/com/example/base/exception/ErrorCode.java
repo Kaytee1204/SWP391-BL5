@@ -34,7 +34,8 @@ public enum ErrorCode {
     KANJI_NOT_FOUND(3004, "Chữ Kanji không tồn tại", HttpStatus.NOT_FOUND),
     GRAMMAR_PATTERN_NOT_FOUND(3005, "Mẫu ngữ pháp không tồn tại", HttpStatus.NOT_FOUND),
     MOCK_TEST_NOT_FOUND(3006, "Bài thi thử không tồn tại", HttpStatus.NOT_FOUND),
-    ARTICLE_NOT_FOUND(3007, "Bài viết văn hóa không tồn tại", HttpStatus.NOT_FOUND);
+    ARTICLE_NOT_FOUND(3007, "Bài viết văn hóa không tồn tại", HttpStatus.NOT_FOUND),
+    QUESTION_ALREADY_EXISTS(3008,"Câu hỏi này đã tồn tại trong ngân hàng câu hỏi",HttpStatus.CONFLICT);
 
     private final int code;
     private final String message;

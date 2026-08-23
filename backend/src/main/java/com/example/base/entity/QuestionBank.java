@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class QuestionBank {
-
+// khai báo entity
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "question_id")
@@ -43,6 +43,9 @@ public class QuestionBank {
     @Column(name = "explanation", columnDefinition = "NVARCHAR(MAX)")
     private String explanation;
 
+    @Column(name = "duplicate_hash", nullable = false, length=64)
+    private String duplicateHash;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private Account createdBy;
@@ -52,6 +55,8 @@ public class QuestionBank {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+
 
     @PrePersist
     protected void onCreate() {
