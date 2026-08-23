@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../../components/common/Navbar';
 import GrammarManagementView from '../grammar/GrammarManagementView';
 import GrammarExerciseManagementView from '../grammar/GrammarExerciseManagementView';
-import QuestionBankManagementView from '../question-bank/QuestionBankManagementView';
+import QuestionBankWorkspace from '../question-bank/QuestionBankWorkspace';
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
 import CategoryItemsModal from '../../components/vocabulary_category/CategoryItemsModal';
@@ -154,9 +154,18 @@ export default function LearningMaterialsView({
           <button onClick={() => setMaterialTab('error_reports')} style={{ padding: '0.55rem 1.25rem', borderRadius: '10px', border: materialTab === 'error_reports' ? 'none' : '1px solid #fecdd3', fontWeight: 800, cursor: 'pointer', background: materialTab === 'error_reports' ? '#e11d48' : 'transparent', color: materialTab === 'error_reports' ? '#fff' : '#e11d48' }}>⚠️ Quản lý Báo cáo lỗi</button>
         </div>
 
-        {materialTab === 'grammar_patterns' && <GrammarManagementView currentUser={currentUser} />}
-        {materialTab === 'grammar_exercises' && <GrammarExerciseManagementView currentUser={currentUser} />}
-        {materialTab === 'question_bank' && <QuestionBankManagementView currentUser={currentUser} />}
+        {/* Tab Content */}
+        {materialTab === 'grammar_patterns' && (
+          <GrammarManagementView currentUser={currentUser} />
+        )}
+        
+        {materialTab === 'grammar_exercises' && (
+          <GrammarExerciseManagementView currentUser={currentUser} />
+        )}
+
+        {materialTab === 'question_bank' && (
+          <QuestionBankWorkspace currentUser={currentUser} />
+        )}
 
         {materialTab === 'vocabulary_categories' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '32px 24px' }}>

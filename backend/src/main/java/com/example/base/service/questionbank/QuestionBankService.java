@@ -9,7 +9,7 @@ import com.example.base.entity.QuestionType;
 import com.example.base.security.UserPrincipal;
 import org.springframework.data.domain.Pageable;
 
-public interface QuestionBankService {
+public interface QuestionBankService { //xử lí nghiệp vụ
 
     PageResponse<QuestionResponse> searchQuestions(
             String keyword,
@@ -24,12 +24,12 @@ public interface QuestionBankService {
     QuestionResponse createQuestion(
             QuestionUpsertRequest request,
             UserPrincipal currentUser
-    );
+    ); // yêu cầu và người dùng.
 
     QuestionResponse updateQuestion(
             Long questionId,
             QuestionUpsertRequest request
-    );
+    ); //cần có id câu hỏi và yêu cầu điền đúng mẫu câu hỏi
 
-    void deleteQuestion(Long questionId);
+    void deleteQuestion(Long questionId); // xóa theo id
 }

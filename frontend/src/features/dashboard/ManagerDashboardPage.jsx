@@ -8,7 +8,7 @@ import RefundInfoView from './components/RefundInfoView';
 
 import GrammarManagementView from '../grammar/GrammarManagementView';
 import GrammarExerciseManagementView from '../grammar/GrammarExerciseManagementView';
-import QuestionBankManagementView from '../question-bank/QuestionBankManagementView';
+import QuestionBankWorkspace from '../question-bank/QuestionBankWorkspace';
 
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
@@ -217,10 +217,15 @@ export default function ManagerDashboardPage({
               <button onClick={() => setMaterialSubTab('error_reports')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: materialSubTab === 'error_reports' ? 'none' : '1px solid #fecdd3', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'error_reports' ? '#e11d48' : 'transparent', color: materialSubTab === 'error_reports' ? '#fff' : '#e11d48' }}>⚠️ Báo cáo lỗi</button>
             </div>
 
-            {materialSubTab === 'grammar_patterns' && <GrammarManagementView currentUser={currentUser} />}
-            {materialSubTab === 'grammar_exercises' && <GrammarExerciseManagementView currentUser={currentUser} />}
-            {materialSubTab === 'question_bank' && <QuestionBankManagementView currentUser={currentUser} />}
-            
+            {materialSubTab === 'grammar_patterns' && (
+              <GrammarManagementView currentUser={currentUser} />
+            )}
+            {materialSubTab === 'grammar_exercises' && (
+              <GrammarExerciseManagementView currentUser={currentUser} />
+            )}
+            {materialSubTab === 'question_bank' && (
+              <QuestionBankWorkspace currentUser={currentUser} />
+            )}
             {materialSubTab === 'vocabulary_categories' && (
               <div style={{ backgroundColor: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '32px 24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
