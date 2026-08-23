@@ -8,35 +8,30 @@ export default function Navbar({
   onOpenAuth,
   onViewProfile,
   onLogout,
-  extraAction
+  extraAction,
 }) {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        {/* Click vào Logo là về thẳng Trang Chủ */}
-        <div
-          className="brand-group"
-          onClick={() => onNavigate('landing')}
-          title="JLMS - Về Trang Chủ"
-        >
+        {/* Brand Group */}
+        <div className="brand-group" onClick={() => onNavigate('home')}>
           <div className="brand-icon">⛩️</div>
-          <div className="brand-title">
-            <span>JLMS</span>
-          </div>
+          <span className="brand-title">
+            JLMS
+          </span>
         </div>
 
-        {/* Các tab chức năng ở giữa */}
+        {/* Nav Links */}
         <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           <li>
             <a
-              className={`nav-link highlight-tab ${currentView === 'landing' || currentView === 'home' ? 'active' : ''}`}
-              onClick={() => onNavigate('landing')}
-              title="Return to Homepage"
-              style={{ whiteSpace: 'nowrap' }}
+              className={`nav-link ${currentView === 'home' || currentView === 'landing' ? 'active' : ''}`}
+              onClick={() => onNavigate('home')}
             >
               Home
             </a>
           </li>
+          
           <li>
             <a
               className={`nav-link highlight-tab ${currentView === 'culture_reader' ? 'active' : ''}`}
@@ -47,24 +42,34 @@ export default function Navbar({
               Culture Article
             </a>
           </li>
+
           <li>
             <a
-              className={`nav-link highlight-tab ${currentView === 'grammar_reader' ? 'active' : ''}`}
-              onClick={() => onNavigate('grammar_reader')}
-              title="Master Japanese JLPT Grammar Patterns"
+              className={`nav-link highlight-tab ${currentView === 'courses' ? 'active' : ''}`}
+              onClick={() => onNavigate('courses')}
+              title="Khám phá và đăng ký các khóa học tiếng Nhật JLPT"
               style={{ whiteSpace: 'nowrap' }}
             >
-              Grammar (文法)
+              Courses
             </a>
           </li>
+
           <li>
             <a
-              className={`nav-link highlight-tab ${currentView === 'kanji' ? 'active' : ''}`}
-              onClick={() => onNavigate('kanji')}
-              title="Japanese Kanji"
+              className={`nav-link highlight-tab ${
+                currentView === 'free_courses' ||
+                currentView === 'grammar_reader' ||
+                currentView === 'kanji' ||
+                currentView === 'kanji-decks' ||
+                currentView === 'exercise_practice'
+                  ? 'active'
+                  : ''
+              }`}
+              onClick={() => onNavigate('free_courses')}
+              title="Khóa học & Tài nguyên học tiếng Nhật miễn phí (Grammar, Kanji, Quiz)"
               style={{ whiteSpace: 'nowrap' }}
             >
-              Kanji
+              🎁 Free Courses
             </a>
           </li>
           
@@ -94,17 +99,17 @@ export default function Navbar({
             </li>
           )}
 
-          {/* === NÚT BÁO LỖI (Đã gỡ class highlight-tab và ép màu sáng) === */}
+          {/* Báo lỗi button */}
           {currentUser?.role === 'Student' && (
             <li>
               <a
-                className="nav-link" // Đã gỡ bỏ class highlight-tab
+                className="nav-link"
                 onClick={() => onNavigate('error-reports')}
                 title="Theo dõi lịch sử báo lỗi"
                 style={{
-                  whiteSpace: 'nowrap', // Chống rớt dòng
-                  color: '#e11d48', // Chữ màu đỏ hồng
-                  backgroundColor: currentView === 'error-reports' ? '#ffe4e6' : '#fff1f2', // Nền luôn sáng
+                  whiteSpace: 'nowrap',
+                  color: '#e11d48',
+                  backgroundColor: currentView === 'error-reports' ? '#ffe4e6' : '#fff1f2',
                   border: `1px solid ${currentView === 'error-reports' ? '#fb7185' : '#fecdd3'}`,
                   fontWeight: '600',
                   borderRadius: '20px',
@@ -120,8 +125,8 @@ export default function Navbar({
               </a>
             </li>
           )}
-          {/* ========================================= */}
 
+          {/* Phân hệ Role */}
           {currentUser?.role === 'Author' && (
             <li>
               <a
@@ -159,7 +164,7 @@ export default function Navbar({
           )}
         </ul>
 
-        {/* Nhóm button CTA góc phải chuẩn hóa đồng nhất */}
+        {/* CTA Group */}
         <div className="nav-cta-group">
           {extraAction}
 

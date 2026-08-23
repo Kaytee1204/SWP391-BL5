@@ -8,6 +8,7 @@ import CategoryFormModal from '../../components/vocabulary_category/CategoryForm
 import CategoryItemsModal from '../../components/vocabulary_category/CategoryItemsModal';
 import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
 import ManagerErrorReportView from '../error_report/ManagerErrorReportView';
+import CourseManagementView from '../courses/CourseManagementView';
 
 export default function LearningMaterialsView({
   currentUser,
@@ -152,9 +153,114 @@ export default function LearningMaterialsView({
           <button onClick={() => setMaterialTab('vocabulary_categories')} style={{ padding: '0.55rem 1.25rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialTab === 'vocabulary_categories' ? '#10b981' : 'transparent', color: materialTab === 'vocabulary_categories' ? '#fff' : 'var(--text-body)' }}>📚 Vocabulary Categories</button>
           <button onClick={() => setMaterialTab('flashcard_decks')} style={{ padding: '0.55rem 1.25rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialTab === 'flashcard_decks' ? '#3b82f6' : 'transparent', color: materialTab === 'flashcard_decks' ? '#fff' : 'var(--text-body)' }}>🃏 Flashcard Decks</button>
           <button onClick={() => setMaterialTab('error_reports')} style={{ padding: '0.55rem 1.25rem', borderRadius: '10px', border: materialTab === 'error_reports' ? 'none' : '1px solid #fecdd3', fontWeight: 800, cursor: 'pointer', background: materialTab === 'error_reports' ? '#e11d48' : 'transparent', color: materialTab === 'error_reports' ? '#fff' : '#e11d48' }}>⚠️ Error Reports</button>
+          <button
+            onClick={() => setMaterialTab('grammar_patterns')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'grammar_patterns' ? '#7C3AED' : 'transparent',
+              color: materialTab === 'grammar_patterns' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            📖 Grammar Patterns (Lý thuyết)
+          </button>
+          
+          <button
+            onClick={() => setMaterialTab('grammar_exercises')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'grammar_exercises' ? '#0d9488' : 'transparent',
+              color: materialTab === 'grammar_exercises' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            📝 Grammar Exercises (Bài tập)
+          </button>
+
+          <button
+            onClick={() => setMaterialTab('question_bank')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'question_bank' ? '#d97706' : 'transparent',
+              color: materialTab === 'question_bank' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            🗂️ Question Bank (Ngân hàng câu hỏi)
+          </button>
+
+          <button
+            onClick={() => setMaterialTab('vocabulary_categories')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'vocabulary_categories' ? '#10b981' : 'transparent',
+              color: materialTab === 'vocabulary_categories' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            📚 Vocabulary Categories (Danh mục từ vựng)
+          </button>
+
+          <button
+            onClick={() => setMaterialTab('flashcard_decks')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'flashcard_decks' ? '#3b82f6' : 'transparent',
+              color: materialTab === 'flashcard_decks' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            🃏 Flashcard Decks
+          </button>
+
+          <button
+            onClick={() => setMaterialTab('courses')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'courses' ? '#ea580c' : 'transparent',
+              color: materialTab === 'courses' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            📚 Courses (Khóa học & Giá)
+          </button>
         </div>
 
         {/* Tab Content */}
+        {materialTab === 'courses' && (
+          <CourseManagementView currentUser={currentUser} />
+        )}
+
         {materialTab === 'grammar_patterns' && (
           <GrammarManagementView currentUser={currentUser} />
         )}

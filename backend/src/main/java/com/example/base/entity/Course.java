@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "Course")
+@Table(name = "Course", uniqueConstraints = {
+        @UniqueConstraint(name = "UQ_Course_Title", columnNames = {"title"})
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,11 +27,15 @@ public class Course {
     @Column(name = "jlpt_level", nullable = false, length = 20)
     private JlptLevel jlptLevel;
 
-    @Column(name = "title", nullable = false, length = 200)
+    @Column(name = "title", nullable = false, unique = true, length = 200)
     private String title;
 
     @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
+
+    @Builder.Default
+    @Column(name = "price", nullable = false)
+    private Long price = 0L;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
@@ -50,6 +56,9 @@ public class Course {
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
+        if (this.price == null) {
+            this.price = 0L;
+        }
     }
 
     @PreUpdate
