@@ -7,7 +7,8 @@ const EMPTY_FORM = {
   title: '',
   description: '',
   skillType: 'vocabulary',
-  jlptLevel: 'N5'
+  jlptLevel: 'N5',
+  durationMinutes: 60
 };
 
 export default function QuestionSetFormModal({ questionSet, onClose, onSaved }) {
@@ -28,7 +29,8 @@ export default function QuestionSetFormModal({ questionSet, onClose, onSaved }) 
       title: questionSet.title || '',
       description: questionSet.description || '',
       skillType: questionSet.skillType || 'vocabulary',
-      jlptLevel: questionSet.jlptLevel || 'N5'
+      jlptLevel: questionSet.jlptLevel || 'N5',
+      durationMinutes: questionSet.durationMinutes || 60
     });
   }, [questionSet]);
 
@@ -52,7 +54,8 @@ export default function QuestionSetFormModal({ questionSet, onClose, onSaved }) 
         title: form.title.trim(),
         description: form.description.trim() || null,
         skillType: form.skillType,
-        jlptLevel: form.jlptLevel
+        jlptLevel: form.jlptLevel,
+        durationMinutes: Number(form.durationMinutes)
       };
 
       const response = isEditing
@@ -112,8 +115,10 @@ export default function QuestionSetFormModal({ questionSet, onClose, onSaved }) 
             <div className="qs-form-grid">
               <label className="qs-field">
                 <span>Kỹ năng <b>*</b></span>
-                <select name="skillType" value={form.skillType} onChange={updateField} disabled={classificationLocked}>
-                  {QUESTION_SET_SKILLS.filter((skill) => skill.value).map((skill) => (
+                <select name="skillType" value={form.skillType} onChange={updateField}>
+                  {QUESTION_SET_SKILLS.filter((skill) => skill.value)
+                    .filter((skill) => !classificationLocked || skill.value === form.skillType || skill.value === 'mixed')
+                    .map((skill) => (
                     <option key={skill.value} value={skill.value}>{skill.icon} {skill.label}</option>
                   ))}
                 </select>
@@ -129,9 +134,15 @@ export default function QuestionSetFormModal({ questionSet, onClose, onSaved }) 
               </label>
             </div>
 
+            <label className="qs-field">
+              <span>Thời lượng làm bài (phút) <b>*</b></span>
+              <input type="number" name="durationMinutes" min="1" max="300"
+                value={form.durationMinutes} onChange={updateField} />
+            </label>
+
             {classificationLocked && (
               <p className="qs-help-text">
-                Skill và level được khóa vì bộ đề đã có câu hỏi. Hãy xóa hết câu hỏi khỏi bộ trước nếu muốn đổi phân loại.
+                Level đã được khóa vì bộ đề có câu hỏi. Bạn vẫn có thể chuyển bộ đề sang Full JLPT để thêm câu hỏi từ mọi kỹ năng.
               </p>
             )}
           </div>

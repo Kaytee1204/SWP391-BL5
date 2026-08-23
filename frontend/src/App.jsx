@@ -22,6 +22,7 @@ import { KanjiPage } from './pages/KanjiPage';
 import { PersonalVocabDecksPage } from './pages/PersonalVocabDecksPage';
 import { PersonalKanjiDecksPage } from './pages/PersonalKanjiDecksPage';
 import { AccountsPage } from './pages/AccountsPage';
+import StudentExamWorkspace from './features/student-exams/StudentExamWorkspace';
 
 
 export default function App() {
@@ -235,6 +236,11 @@ export default function App() {
           onOpenArticleDetail={(art) => handleOpenArticleDetail(art, 'dashboard')}
           onLogout={handleLogout}
         />
+      )}
+
+      {currentView === 'student_exams' && (
+        <StudentExamWorkspace currentUser={currentUser} onNavigate={setCurrentView}
+          onViewProfile={() => setShowProfileModal(true)} onLogout={handleLogout} />
       )}
 
       {/* 7. Quản Lý Danh Mục Từ Vựng (Vocabulary Category Management) */}

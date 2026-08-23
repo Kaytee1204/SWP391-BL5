@@ -67,6 +67,7 @@ export default function Navbar({
             </a>
           </li>
           {currentUser?.role === 'Student' && (
+            <>
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'kanji-decks' ? 'active' : ''}`}
@@ -76,6 +77,9 @@ export default function Navbar({
                 Kanji Decks
               </a>
             </li>
+            <li><a className={`nav-link highlight-tab ${currentView === 'student_exams' ? 'active' : ''}`}
+              onClick={() => onNavigate('student_exams')} title="Làm đề và xem lịch sử điểm">Mock Exams</a></li>
+            </>
           )}
           {currentUser && (currentUser.role === 'Student' || currentUser.role === 'Lecturer' || currentUser.role === 'Manager') && (
             <li>
