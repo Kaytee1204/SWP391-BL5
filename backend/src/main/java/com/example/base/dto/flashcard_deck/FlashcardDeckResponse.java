@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Getter
@@ -17,6 +18,7 @@ public class FlashcardDeckResponse {
     private String title;
     private String description;
     private Long createdBy;
+    private List<?> items;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

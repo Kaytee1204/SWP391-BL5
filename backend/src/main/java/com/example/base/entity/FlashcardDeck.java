@@ -3,6 +3,7 @@ package com.example.base.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "FlashcardDeck")
@@ -26,6 +27,8 @@ public class FlashcardDeck {
 
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
+    @OneToMany(mappedBy = "flashcardDeck", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FlashcardDeckItem> items;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
