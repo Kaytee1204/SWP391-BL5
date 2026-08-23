@@ -16,13 +16,14 @@ import VocabularyCategoryPage from './features/vocabulary-category/VocabularyCat
 import GrammarReaderPage from './features/grammar/GrammarReaderPage';
 import GrammarExercisePracticeView from './features/grammar/GrammarExercisePracticeView';
 import QuestionBankManagementView from './features/question-bank/QuestionBankManagementView';
+import { ErrorReportList } from "./features/error_report/ErrorReportList";
+
 import Navbar from './components/common/Navbar';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { KanjiPage } from './pages/KanjiPage';
 import { PersonalVocabDecksPage } from './pages/PersonalVocabDecksPage';
 import { PersonalKanjiDecksPage } from './pages/PersonalKanjiDecksPage';
 import { AccountsPage } from './pages/AccountsPage';
-
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -109,6 +110,7 @@ export default function App() {
     'vocab-decks': <PersonalVocabDecksPage onNavigate={setCurrentView} />,
     'kanji-decks': <PersonalKanjiDecksPage onNavigate={setCurrentView} />,
     accounts: <AccountsPage />,
+    'error-reports': <ErrorReportList /> // Đăng ký màn hình báo lỗi vào hệ thống
   };
   const learningView = learningViews[currentView];
 

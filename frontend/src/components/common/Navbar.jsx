@@ -26,12 +26,13 @@ export default function Navbar({
         </div>
 
         {/* Các tab chức năng ở giữa */}
-        <ul className="nav-links">
+        <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           <li>
             <a
               className={`nav-link highlight-tab ${currentView === 'landing' || currentView === 'home' ? 'active' : ''}`}
               onClick={() => onNavigate('landing')}
               title="Return to Homepage"
+              style={{ whiteSpace: 'nowrap' }}
             >
               Home
             </a>
@@ -41,6 +42,7 @@ export default function Navbar({
               className={`nav-link highlight-tab ${currentView === 'culture_reader' ? 'active' : ''}`}
               onClick={() => onNavigate('culture_reader')}
               title="Khám phá tạp chí văn hóa & tiếng lóng"
+              style={{ whiteSpace: 'nowrap' }}
             >
               Culture Article
             </a>
@@ -50,69 +52,106 @@ export default function Navbar({
               className={`nav-link highlight-tab ${currentView === 'grammar_reader' ? 'active' : ''}`}
               onClick={() => onNavigate('grammar_reader')}
               title="Master Japanese JLPT Grammar Patterns"
+              style={{ whiteSpace: 'nowrap' }}
             >
               Grammar (文法)
             </a>
-          </li>
-          <li>
-            
           </li>
           <li>
             <a
               className={`nav-link highlight-tab ${currentView === 'kanji' ? 'active' : ''}`}
               onClick={() => onNavigate('kanji')}
               title="Japanese Kanji"
+              style={{ whiteSpace: 'nowrap' }}
             >
               Kanji
             </a>
           </li>
+          
           {currentUser?.role === 'Student' && (
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'kanji-decks' ? 'active' : ''}`}
                 onClick={() => onNavigate('kanji-decks')}
                 title="Manage your personal Kanji decks"
+                style={{ whiteSpace: 'nowrap' }}
               >
                 Kanji Decks
               </a>
             </li>
           )}
+          
           {currentUser && (currentUser.role === 'Student' || currentUser.role === 'Lecturer' || currentUser.role === 'Manager') && (
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'exercise_practice' ? 'active' : ''}`}
                 onClick={() => onNavigate('exercise_practice')}
                 title="Practice Japanese Grammar Multiple-Choice Quizzes"
+                style={{ whiteSpace: 'nowrap' }}
               >
                  Practice Quiz
               </a>
             </li>
           )}
+
+          {/* === NÚT BÁO LỖI (Đã gỡ class highlight-tab và ép màu sáng) === */}
+          {currentUser?.role === 'Student' && (
+            <li>
+              <a
+                className="nav-link" // Đã gỡ bỏ class highlight-tab
+                onClick={() => onNavigate('error-reports')}
+                title="Theo dõi lịch sử báo lỗi"
+                style={{
+                  whiteSpace: 'nowrap', // Chống rớt dòng
+                  color: '#e11d48', // Chữ màu đỏ hồng
+                  backgroundColor: currentView === 'error-reports' ? '#ffe4e6' : '#fff1f2', // Nền luôn sáng
+                  border: `1px solid ${currentView === 'error-reports' ? '#fb7185' : '#fecdd3'}`,
+                  fontWeight: '600',
+                  borderRadius: '20px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '0.4rem 0.8rem',
+                  fontSize: '0.85rem'
+                }}
+              >
+                ⚠️ Báo lỗi
+              </a>
+            </li>
+          )}
+          {/* ========================================= */}
+
           {currentUser?.role === 'Author' && (
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'culture_articles' ? 'active' : ''}`}
                 onClick={() => onNavigate('culture_articles')}
+                style={{ whiteSpace: 'nowrap' }}
               >
                 Author Workspace
               </a>
             </li>
           )}
+          
           {currentUser?.role === 'Lecturer' && (
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}
                 onClick={() => onNavigate('materials')}
+                style={{ whiteSpace: 'nowrap' }}
               >
                 Learning Materials
               </a>
             </li>
           )}
+          
           {currentUser?.role === 'Manager' && (
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'dashboard' ? 'active' : ''}`}
                 onClick={() => onNavigate('dashboard')}
+                style={{ whiteSpace: 'nowrap' }}
               >
                 Manager Portal
               </a>

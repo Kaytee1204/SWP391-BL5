@@ -15,6 +15,10 @@ import CategoryTable from '../../components/vocabulary_category/CategoryTable';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
 import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
 
+// --- ĐÃ SỬA LỖI IMPORT ĐƯỜNG DẪN TẠI ĐÂY ---
+import ManagerErrorReportView from '../error_report/ManagerErrorReportView'; 
+// -------------------------------------------
+
 export default function ManagerDashboardPage({
   currentUser,
   onNavigate,
@@ -23,7 +27,7 @@ export default function ManagerDashboardPage({
   onLogout
 }) {
   const [activeTab, setActiveTab] = useState('accounts');
-  const [materialSubTab, setMaterialSubTab] = useState('grammar_patterns'); // 'grammar_patterns' | 'grammar_exercises' | 'question_bank' | 'vocabulary_categories'
+  const [materialSubTab, setMaterialSubTab] = useState('grammar_patterns'); 
   const [showProPopup, setShowProPopup] = useState(false);
 
   // State cho phần Quản lý Danh mục từ vựng
@@ -302,6 +306,25 @@ export default function ManagerDashboardPage({
               >
                 🃏 Flashcard Decks
               </button>
+
+              {/* NÚT TAB: BÁO CÁO LỖI */}
+              <button
+                onClick={() => setMaterialSubTab('error_reports')}
+                style={{
+                  padding: '0.5rem 1.15rem',
+                  borderRadius: '10px',
+                  border: materialSubTab === 'error_reports' ? 'none' : '1px solid #fecdd3',
+                  fontSize: '0.88rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  background: materialSubTab === 'error_reports' ? '#e11d48' : 'transparent',
+                  color: materialSubTab === 'error_reports' ? '#fff' : '#e11d48',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                ⚠️ Báo cáo lỗi
+              </button>
+
             </div>
 
             {materialSubTab === 'grammar_patterns' && (
@@ -356,6 +379,11 @@ export default function ManagerDashboardPage({
             )}
             {materialSubTab === 'flashcard_decks' && (
               <FlashcardDeckManagementPage currentUser={currentUser} />
+            )}
+
+            {/* RENDER COMPONENT BÁO CÁO LỖI (Được import từ file riêng) */}
+            {materialSubTab === 'error_reports' && (
+              <ManagerErrorReportView />
             )}
           </div>
         )}

@@ -46,7 +46,7 @@ public class VocabularyCategoryServiceImpl implements VocabularyCategoryService 
     public VocabularyCategoryResponse createCategory(VocabularyCategoryCreateRequest request) {
         VocabularyCategory entity = mapper.toEntity(request);
         
-        // Lấy Account người tạo
+
         Account createdBy = accountRepository.findById(request.getCreatedById())
                 .orElseThrow(() -> new RuntimeException("Lecturer Account not found with id: " + request.getCreatedById()));
         
@@ -62,7 +62,7 @@ public class VocabularyCategoryServiceImpl implements VocabularyCategoryService 
         VocabularyCategory existingCategory = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
 
-        // Cập nhật thông tin
+
         existingCategory.setJlptLevel(request.getJlptLevel());
         existingCategory.setName(request.getName());
         existingCategory.setDescription(request.getDescription());

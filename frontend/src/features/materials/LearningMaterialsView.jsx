@@ -8,6 +8,10 @@ import CategoryTable from '../../components/vocabulary_category/CategoryTable';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
 import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
 
+// --- THÊM IMPORT COMPONENT BÁO LỖI VÀO ĐÂY ---
+import ManagerErrorReportView from '../error_report/ManagerErrorReportView';
+// ---------------------------------------------
+
 export default function LearningMaterialsView({
   currentUser,
   onNavigate,
@@ -16,7 +20,7 @@ export default function LearningMaterialsView({
   onLogout,
   initialTab = 'grammar_patterns'
 }) {
-  const [materialTab, setMaterialTab] = useState(initialTab); // 'grammar_patterns' | 'grammar_exercises' | 'question_bank' | 'vocabulary_categories' | 'flashcard_decks'
+  const [materialTab, setMaterialTab] = useState(initialTab); // 'grammar_patterns' | 'grammar_exercises' | 'question_bank' | 'vocabulary_categories' | 'flashcard_decks' | 'error_reports'
 
   // State cho phần Quản lý Danh mục từ vựng
   const [categories, setCategories] = useState([]);
@@ -210,6 +214,26 @@ export default function LearningMaterialsView({
           >
             🃏 Flashcard Decks
           </button>
+
+          {/* --- NÚT BẤM TAB QUẢN LÝ BÁO LỖI MỚI THÊM --- */}
+          <button
+            onClick={() => setMaterialTab('error_reports')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: materialTab === 'error_reports' ? 'none' : '1px solid #fecdd3',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'error_reports' ? '#e11d48' : 'transparent',
+              color: materialTab === 'error_reports' ? '#fff' : '#e11d48',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            ⚠️ Quản lý Báo cáo lỗi
+          </button>
+          {/* ------------------------------------------- */}
+
         </div>
 
         {/* Tab Content */}
@@ -270,6 +294,13 @@ export default function LearningMaterialsView({
         {materialTab === 'flashcard_decks' && (
           <FlashcardDeckManagementPage currentUser={currentUser} />
         )}
+
+        {/* --- KHU VỰC HIỂN THỊ COMPONENT QUẢN LÝ LỖI --- */}
+        {materialTab === 'error_reports' && (
+          <ManagerErrorReportView />
+        )}
+        {/* ---------------------------------------------- */}
+
       </main>
     </div>
   );

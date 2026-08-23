@@ -3,6 +3,7 @@ import { apiRequest } from '../../api/apiRequest';
 import { JLPT_LEVELS } from '../../assets/constants';
 import CreateGrammarModal from './components/CreateGrammarModal';
 import EditGrammarModal from './components/EditGrammarModal';
+import ManageExamplesModal from './components/ManageExamplesModal'; // 1. IMPORT MODAL VÍ DỤ
 
 export default function GrammarManagementView({ currentUser }) {
   const [patterns, setPatterns] = useState([]);
@@ -13,6 +14,9 @@ export default function GrammarManagementView({ currentUser }) {
   const [onlyMyPatterns, setOnlyMyPatterns] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingPattern, setEditingPattern] = useState(null);
+  
+  // 2. KHAI BÁO STATE QUẢN LÝ MODAL VÍ DỤ
+  const [selectedPatternForExamples, setSelectedPatternForExamples] = useState(null);
 
   const fetchPatterns = async () => {
     setLoading(true);
@@ -200,7 +204,7 @@ export default function GrammarManagementView({ currentUser }) {
                   <th style={{ padding: '0.85rem 1rem' }}>Structure Formula</th>
                   <th style={{ padding: '0.85rem 1rem' }}>Created By</th>
                   <th style={{ padding: '0.85rem 1rem', width: '120px' }}>Updated</th>
-                  <th style={{ padding: '0.85rem 1rem', textAlign: 'right', width: '140px' }}>Actions</th>
+                  <th style={{ padding: '0.85rem 1rem', textAlign: 'right', width: '220px' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -247,42 +251,62 @@ export default function GrammarManagementView({ currentUser }) {
                         {new Date(p.updatedAt || p.createdAt).toLocaleDateString()}
                       </td>
                       <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
-                        {canEdit ? (
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
-                            <button
-                              onClick={() => setEditingPattern(p)}
-                              style={{
-                                padding: '0.35rem 0.65rem',
-                                borderRadius: '6px',
-                                border: '1px solid #cbd5e1',
-                                background: '#fff',
-                                color: '#334155',
-                                fontSize: '0.78rem',
-                                fontWeight: 700,
-                                cursor: 'pointer'
-                              }}
-                            >
-                              ✏️ Edit
-                            </button>
-                            <button
-                              onClick={() => handleDelete(p)}
-                              style={{
-                                padding: '0.35rem 0.65rem',
-                                borderRadius: '6px',
-                                border: '1px solid #fecdd3',
-                                background: '#fff1f2',
-                                color: '#e11d48',
-                                fontSize: '0.78rem',
-                                fontWeight: 700,
-                                cursor: 'pointer'
-                              }}
-                            >
-                              🗑️ Delete
-                            </button>
-                          </div>
-                        ) : (
-                          <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Read-only</span>
-                        )}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                          
+                          {/* 3. NÚT MỞ MODAL VÍ DỤ (Tất cả mọi người đều được xem, nhưng CRUD phụ thuộc vào Modal) */}
+                          <button
+                            onClick={() => setSelectedPatternForExamples(p)}
+                            style={{
+                              padding: '0.35rem 0.65rem',
+                              borderRadius: '6px',
+                              border: '1px solid #c7d2fe',
+                              background: '#e0e7ff',
+                              color: '#4f46e5',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            💬 Ví dụ
+                          </button>
+
+                          {canEdit ? (
+                            <>
+                              <button
+                                onClick={() => setEditingPattern(p)}
+                                style={{
+                                  padding: '0.35rem 0.65rem',
+                                  borderRadius: '6px',
+                                  border: '1px solid #cbd5e1',
+                                  background: '#fff',
+                                  color: '#334155',
+                                  fontSize: '0.78rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(p)}
+                                style={{
+                                  padding: '0.35rem 0.65rem',
+                                  borderRadius: '6px',
+                                  border: '1px solid #fecdd3',
+                                  background: '#fff1f2',
+                                  color: '#e11d48',
+                                  fontSize: '0.78rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                🗑️ Delete
+                              </button>
+                            </>
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginLeft: '0.5rem', alignSelf: 'center' }}>Read-only</span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -306,6 +330,15 @@ export default function GrammarManagementView({ currentUser }) {
           pattern={editingPattern}
           onClose={() => setEditingPattern(null)}
           onUpdateSuccess={() => fetchPatterns()}
+        />
+      )}
+
+      {/* 4. RENDER MODAL QUẢN LÝ VÍ DỤ (Sẽ chỉ render khi selectedPatternForExamples có giá trị) */}
+      {selectedPatternForExamples && (
+        <ManageExamplesModal
+          pattern={selectedPatternForExamples}
+          currentUser={currentUser}
+          onClose={() => setSelectedPatternForExamples(null)}
         />
       )}
     </div>

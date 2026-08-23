@@ -31,7 +31,7 @@ public class VocabularyCategoryController {
         return ApiResponse.<List<VocabularyCategoryResponse>>builder()
                 .code(200)
                 .message("Success")
-                .data(service.getAllCategories()) // Sửa thành tên trường tương ứng trong ApiResponse của bạn (ví dụ: data hoặc result)
+                .data(service.getAllCategories())
                 .build();
     }
 
