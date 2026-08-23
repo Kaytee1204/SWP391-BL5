@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/** Deck tu vung do mot hoc vien tao va so huu. */
 @Entity
 @Table(name = "PersonalVocabularyDeck")
 @Getter

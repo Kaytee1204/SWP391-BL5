@@ -8,8 +8,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/**
+ * Chứa các biến thể truy vấn màn Kanji cần: toàn bộ, theo module, theo JLPT và tìm kiếm.
+ * Lọc ở database giúp không phải tải toàn bộ kho Kanji về bộ nhớ Java.
+ */
 public interface KanjiDetailRepository extends JpaRepository<KanjiDetail, Long> {
-    // Lay tat ca kanji detail, sap xep tang dan theo kanjiId.
+    // Lấy toàn bộ theo thứ tự ổn định khi không có filter/search.
     List<KanjiDetail> findByOrderByKanjiIdAsc();
 
     // Lay cac kanji detail thuoc mot module, sap xep tang dan theo kanjiId.
@@ -22,7 +26,7 @@ public interface KanjiDetailRepository extends JpaRepository<KanjiDetail, Long> 
     @Query("select k from KanjiDetail k where k.module.jlptLevel = :jlptLevel order by k.kanjiId")
     List<KanjiDetail> findByJlptLevel(@Param("jlptLevel") JlptLevel jlptLevel);
 
-    // Search toan bo kanji theo character, meaning, onyomi, hoac kunyomi.
+    // coalesce đổi null thành chuỗi rỗng để LIKE vẫn chạy với onyomi/kunyomi tùy chọn.
     @Query("select k from KanjiDetail k where " +
             "lower(k.character) like lower(concat('%', :keyword, '%')) or " +
             "lower(k.meaning) like lower(concat('%', :keyword, '%')) or " +
@@ -31,7 +35,7 @@ public interface KanjiDetailRepository extends JpaRepository<KanjiDetail, Long> 
             "order by k.kanjiId")
     List<KanjiDetail> search(@Param("keyword") String keyword);
 
-    // Search kanji trong mot module cu the theo character, meaning, onyomi, hoac kunyomi.
+    // Điều kiện module nằm ngoài nhóm OR để không trả nhầm Kanji của module khác.
     @Query("select k from KanjiDetail k where k.module.moduleId = :moduleId and (" +
             "lower(k.character) like lower(concat('%', :keyword, '%')) or " +
             "lower(k.meaning) like lower(concat('%', :keyword, '%')) or " +
@@ -40,7 +44,7 @@ public interface KanjiDetailRepository extends JpaRepository<KanjiDetail, Long> 
             "order by k.kanjiId")
     List<KanjiDetail> searchByModule(@Param("moduleId") Long moduleId, @Param("keyword") String keyword);
 
-    // Search kanji trong mot JLPT level cu the theo character, meaning, onyomi, hoac kunyomi.
+    // JLPT nằm ở module cha nên JPQL truy cập qua k.module.jlptLevel.
     @Query("select k from KanjiDetail k where k.module.jlptLevel = :jlptLevel and (" +
             "lower(k.character) like lower(concat('%', :keyword, '%')) or " +
             "lower(k.meaning) like lower(concat('%', :keyword, '%')) or " +

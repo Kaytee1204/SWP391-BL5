@@ -11,6 +11,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Dữ liệu frontend gửi khi tạo category. Validation chạy tại controller trước khi vào service;
+ * createdById chỉ giữ để tương thích client cũ, backend dùng accountId từ JWT thay giá trị này.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,6 +32,5 @@ public class VocabularyCategoryCreateRequest {
 
     private String description;
 
-    @NotNull(message = "Lecturer ID is required")
-    private Long createdById; 
+    private Long createdById;
 }

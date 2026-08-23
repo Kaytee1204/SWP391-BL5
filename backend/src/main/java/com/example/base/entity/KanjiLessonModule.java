@@ -14,6 +14,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+/**
+ * Nhóm các chữ Kanji thành một module bài học theo cấp độ JLPT.
+ * Một module là bảng cha: nhiều {@link KanjiDetail} cùng trỏ về module này để frontend
+ * có thể lọc Kanji theo bài học hoặc theo JLPT mà không phải lặp lại thông tin cấp độ.
+ */
 public class KanjiLessonModule {
 
     @Id
@@ -33,6 +38,7 @@ public class KanjiLessonModule {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
+    // Chỉ lưu khóa ngoại người tạo. LAZY giúp tránh tải toàn bộ Account khi chỉ cần danh sách module.
     private Account createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -43,11 +49,12 @@ public class KanjiLessonModule {
 
     @Builder.Default
     @OneToMany(mappedBy = "module", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // mappedBy chỉ ra KanjiDetail.module là phía giữ khóa ngoại; xóa module sẽ xóa các Kanji con.
     private List<KanjiDetail> kanjiList = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
-        // Khi tao kanji module moi, tu dong gan createdAt va updatedAt cung thoi diem hien tai.
+        // JPA gọi hàm này ngay trước INSERT để hai mốc thời gian luôn có giá trị đồng nhất.
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
@@ -55,7 +62,7 @@ public class KanjiLessonModule {
 
     @PreUpdate
     protected void onUpdate() {
-        // Khi cap nhat kanji module, chi lam moi updatedAt de theo doi lan sua cuoi.
+        // Khi UPDATE chỉ đổi updatedAt; createdAt phải giữ nguyên để phản ánh đúng ngày tạo.
         this.updatedAt = LocalDateTime.now();
     }
 }

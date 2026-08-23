@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+/**
+ * Bộ Kanji cá nhân do một học viên sở hữu. Mọi truy vấn sửa/xóa deck đều phải kết hợp
+ * deckId với student.accountId để người dùng không thể thao tác deck của học viên khác.
+ */
 public class PersonalKanjiDeck {
 
     @Id
@@ -21,6 +25,7 @@ public class PersonalKanjiDeck {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
+    // Account là chủ sở hữu thực tế; student_id được dùng trong các truy vấn kiểm tra ownership.
     private Account student;
 
     @Column(name = "title", nullable = false, length = 150)

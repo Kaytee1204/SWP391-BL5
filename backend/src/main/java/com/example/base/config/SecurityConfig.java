@@ -44,11 +44,7 @@ public class SecurityConfig {
             "/auth/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/vocabulary-categories/**",
-            "/vocabulary-categories",
-            "/api/v1/vocabulary-categories/**",
-            "/api/v1/vocabulary-categories"
+            "/swagger-ui.html"
     };
 
     @Bean
@@ -91,13 +87,18 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        /*
+                         * Dữ liệu học Kanji/Vocabulary được phép đọc theo cơ chế hiện tại,
+                         * kể cả khi chưa đăng nhập. Quy tắc này chỉ áp dụng cho GET; các thao tác
+                         * tạo, sửa, xóa vẫn đi qua xác thực và @PreAuthorize tại controller.
+                         */
                         .requestMatchers(HttpMethod.GET,
                                 "/culture-articles", "/culture-articles/**",
                                 "/grammar-patterns", "/grammar-patterns/**",
                                 "/kanji-modules", "/kanji-modules/**",
                                 "/kanji-details", "/kanji-details/**",
                                 "/vocabulary-categories", "/vocabulary-categories/**",
-                                "/vocabulary-items", "/vocabulary-items/**").permitAll()
+                                "/vocab-items", "/vocab-items/**").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
                 )

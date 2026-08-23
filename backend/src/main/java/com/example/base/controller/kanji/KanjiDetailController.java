@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST API cho từng chữ Kanji. Controller chỉ nhận/thẩm định dữ liệu HTTP; việc chọn query,
+ * kiểm tra module và bảo vệ Kanji đang được personal deck sử dụng nằm ở service.
+ */
 @RestController
 @RequestMapping("/kanji-details")
 @RequiredArgsConstructor
@@ -21,7 +25,7 @@ public class KanjiDetailController {
     public ApiResponse<List<KanjiDetailDto>> getAll(@RequestParam(required = false) Long moduleId,
                                                     @RequestParam(required = false) JlptLevel jlptLevel,
                                                     @RequestParam(required = false) String search) {
-        // Lay danh sach kanji detail; service ket hop filter theo module, level, va keyword search neu co.
+        // Truyền cả ba điều kiện xuống service để search vẫn có thể giữ module hoặc JLPT đã chọn.
         return ApiResponse.success(kanjiService.getKanji(moduleId, jlptLevel, search));
     }
 
@@ -34,7 +38,7 @@ public class KanjiDetailController {
     @PostMapping
     @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'Lecturer', 'ROLE_Lecturer', 'Author', 'ROLE_Author')")
     public ApiResponse<KanjiDetailDto> create(@Valid @RequestBody KanjiDetailRequest request) {
-        // Tao kanji detail moi; service kiem tra module, trim du lieu, set preview flag, roi save.
+        // Tao kanji detail moi; service kiem tra module, chuan hoa cac truong text, roi save.
         return ApiResponse.success("Kanji created successfully", kanjiService.createKanji(request));
     }
 

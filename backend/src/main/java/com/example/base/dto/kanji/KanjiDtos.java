@@ -8,10 +8,15 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * Tập hợp request/response cho học liệu Kanji. Controller nhận request đã được validate,
+ * service chuyển entity sang DTO rồi mới trả frontend để tránh lỗi vòng lặp quan hệ JPA.
+ */
 public final class KanjiDtos {
     private KanjiDtos() {}
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    /** Response module có thêm người tạo và kanjiCount, là dữ liệu tổng hợp không nằm trong một cột duy nhất. */
     public static class KanjiModuleDto {
         private Long moduleId;
         private JlptLevel jlptLevel;
@@ -25,6 +30,7 @@ public final class KanjiDtos {
     }
 
     @Data @NoArgsConstructor @AllArgsConstructor
+    /** Payload tạo/sửa module; Bean Validation chặn dữ liệu thiếu trước khi gọi service. */
     public static class KanjiModuleRequest {
         @NotNull(message = "JLPT level is required")
         private JlptLevel jlptLevel;
@@ -36,6 +42,7 @@ public final class KanjiDtos {
     }
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    /** Response Kanji làm phẳng title/JLPT của module để frontend không phải gọi thêm API. */
     public static class KanjiDetailDto {
         private Long kanjiId;
         private Long moduleId;
@@ -44,15 +51,14 @@ public final class KanjiDtos {
         private String character;
         private String onyomi;
         private String kunyomi;
-        private String strokeOrderUrl;
         private String meaning;
         private String compoundWords;
-        private Boolean isPreview;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
     }
 
     @Data @NoArgsConstructor @AllArgsConstructor
+    /** moduleId là khóa tham chiếu; service phải xác nhận module tồn tại rồi mới gắn vào Kanji. */
     public static class KanjiDetailRequest {
         @NotNull(message = "Module ID is required")
         private Long moduleId;
@@ -63,12 +69,9 @@ public final class KanjiDtos {
         private String onyomi;
         @Size(max = 200, message = "Kunyomi must not exceed 200 characters")
         private String kunyomi;
-        @Size(max = 500, message = "Stroke order URL must not exceed 500 characters")
-        private String strokeOrderUrl;
         @NotBlank(message = "Meaning is required")
         @Size(max = 300, message = "Meaning must not exceed 300 characters")
         private String meaning;
         private String compoundWords;
-        private Boolean isPreview;
     }
 }

@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST API cho personal Kanji deck. Mọi endpoint đều lấy accountId từ JWT và service
+ * chỉ thao tác deck khớp owner; client không thể chọn studentId thay cho người đăng nhập.
+ */
 @RestController
 @RequestMapping("/personal/kanji-decks")
 @RequiredArgsConstructor
@@ -21,7 +25,7 @@ public class PersonalKanjiDeckController {
 
     @GetMapping
     public ApiResponse<List<PersonalKanjiDeckDto>> getAll(@AuthenticationPrincipal UserPrincipal principal) {
-        // Lay tat ca personal kanji deck cua user dang login; service chi cho account role Student so huu deck.
+        // principal chứa danh tính đã xác thực; service tiếp tục yêu cầu account phải là Student.
         return ApiResponse.success(deckService.getKanjiDecks(principal.getAccountId()));
     }
 
@@ -55,7 +59,7 @@ public class PersonalKanjiDeckController {
     @PostMapping("/{id}/items")
     public ApiResponse<Void> addItem(@PathVariable Long id, @Valid @RequestBody AddKanjiToDeckRequest request,
                                       @AuthenticationPrincipal UserPrincipal principal) {
-        // Them hoac cap nhat mot kanji trong deck; service tao item neu chua co va luu memorization note.
+        // Một endpoint hỗ trợ cả thêm mới và cập nhật note nhờ khóa ghép deckId-kanjiId.
         deckService.addKanji(id, request, principal.getAccountId());
         return ApiResponse.success("Kanji added to deck successfully", null);
     }
@@ -64,7 +68,7 @@ public class PersonalKanjiDeckController {
     public ApiResponse<Void> updateNote(@PathVariable Long id, @PathVariable Long kanjiId,
                                          @Valid @RequestBody UpdateKanjiNoteRequest request,
                                          @AuthenticationPrincipal UserPrincipal principal) {
-        // Cap nhat ghi chu hoc thuoc cho kanji trong deck; service kiem tra item phai ton tai trong deck.
+        // Chỉ sửa ghi chú của bản ghi liên kết, không thay đổi nội dung Kanji gốc.
         deckService.updateKanjiNote(id, kanjiId, request, principal.getAccountId());
         return ApiResponse.success("Memorization note updated successfully", null);
     }

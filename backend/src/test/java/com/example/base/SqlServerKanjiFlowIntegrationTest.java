@@ -25,6 +25,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+/**
+ * Kiểm thử tích hợp toàn bộ luồng Kanji trên database thật: tài khoản -> module -> Kanji
+ * -> Personal Deck -> DTO trả về. Khác unit test dùng mock, test này phát hiện lỗi mapping
+ * JPA, khóa ngoại hoặc truy vấn chỉ xuất hiện khi các bảng thực sự làm việc cùng nhau.
+ */
 class SqlServerKanjiFlowIntegrationTest {
 
     @Autowired private AccountRepository accountRepository;
@@ -34,16 +39,19 @@ class SqlServerKanjiFlowIntegrationTest {
     @Test
     @Transactional
     void kanjiCanFlowFromDatabaseToPersonalDeckDto() {
+        // UUID giúp email không trùng giữa nhiều lần chạy. @Transactional rollback toàn bộ
+        // dữ liệu test sau khi kết thúc, nên database không bị tích lũy bản ghi thử nghiệm.
         String testRun = UUID.randomUUID().toString();
         Account author = saveAccount("author-" + testRun + "@sqlserver.test", "Tác giả", Role.Author);
         Account student = saveAccount("student-" + testRun + "@sqlserver.test", "Học viên", Role.Student);
 
+        // Tạo dữ liệu theo đúng thứ tự phụ thuộc khóa ngoại, sau đó thêm Kanji vào deck
+        // bằng các service công khai giống luồng controller sẽ gọi trong ứng dụng.
         KanjiModuleDto module = kanjiService.createModule(
                 new KanjiModuleRequest(JlptLevel.N5, "Kanji cơ bản", "Bài kiểm tra SQL Server"),
                 author.getAccountId());
         KanjiDetailDto kanji = kanjiService.createKanji(new KanjiDetailRequest(
-                module.getModuleId(), "日", "ニチ", "ひ", "https://example.test/nichi.gif",
-                "Nhật, mặt trời", "日本", true));
+                module.getModuleId(), "日", "ニチ", "ひ", "Nhật, mặt trời", "日本"));
         PersonalKanjiDeckDto deck = deckService.createKanjiDeck(
                 new CreateDeckRequest("N5 của tôi", "Deck kiểm tra"), student.getAccountId());
 
@@ -51,11 +59,12 @@ class SqlServerKanjiFlowIntegrationTest {
                 new AddKanjiToDeckRequest(kanji.getKanjiId(), "Mặt trời có một nét ngang"),
                 student.getAccountId());
 
+        // Đọc lại từ database thay vì kiểm tra object vừa tạo, để xác nhận entity đã được
+        // lưu và mapper đã đưa character, moduleTitle, addedAt vào DTO chi tiết chính xác.
         PersonalKanjiDeckDto loaded = deckService.getKanjiDeck(deck.getDeckId(), student.getAccountId());
         assertEquals(1, loaded.getTotalItems());
         assertEquals("日", loaded.getItems().get(0).getCharacter());
         assertEquals("Kanji cơ bản", loaded.getItems().get(0).getModuleTitle());
-        assertEquals("https://example.test/nichi.gif", loaded.getItems().get(0).getStrokeOrderUrl());
         assertNotNull(loaded.getItems().get(0).getAddedAt());
     }
 

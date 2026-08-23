@@ -10,6 +10,8 @@ export default function Navbar({
   onLogout,
   extraAction
 }) {
+  // currentView và onNavigate tạo thành cơ chế điều hướng dùng chung của ứng dụng:
+  // Navbar không tự quản lý trang hiện tại mà chỉ phát tên view về App.jsx.
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -59,6 +61,15 @@ export default function Navbar({
           </li>
           <li>
             <a
+              className={`nav-link highlight-tab ${currentView === 'vocab' ? 'active' : ''}`}
+              onClick={() => onNavigate('vocab')}
+              title="Japanese Vocabulary"
+            >
+              Vocabulary
+            </a>
+          </li>
+          <li>
+            <a
               className={`nav-link highlight-tab ${currentView === 'kanji' ? 'active' : ''}`}
               onClick={() => onNavigate('kanji')}
               title="Japanese Kanji"
@@ -67,13 +78,15 @@ export default function Navbar({
             </a>
           </li>
           {currentUser?.role === 'Student' && (
+            // Personal Deck gắn với tài khoản học viên, vì vậy không hiển thị cho role khác.
+            // Đây chỉ là kiểm soát giao diện; API vẫn xác định chủ deck từ JWT.
             <li>
               <a
-                className={`nav-link highlight-tab ${currentView === 'kanji-decks' ? 'active' : ''}`}
-                onClick={() => onNavigate('kanji-decks')}
-                title="Manage your personal Kanji decks"
+                className={`nav-link highlight-tab ${currentView === 'decks' ? 'active' : ''}`}
+                onClick={() => onNavigate('decks')}
+                title="Manage your personal decks"
               >
-                Kanji Decks
+                Decks
               </a>
             </li>
           )}
@@ -99,6 +112,8 @@ export default function Navbar({
             </li>
           )}
           {currentUser?.role === 'Lecturer' && (
+            // Các màn hình quản trị Vocab/Kanji nằm bên trong Learning Materials.
+            // Chỉ Lecturer thấy lối vào này; backend tiếp tục bảo vệ API thay đổi dữ liệu.
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}

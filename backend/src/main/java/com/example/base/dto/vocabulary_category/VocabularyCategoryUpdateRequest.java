@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/** Payload cập nhật chỉ chứa field được phép sửa; ID, creator và timestamp không nhận từ client. */
 @Getter
 @Setter
 @NoArgsConstructor

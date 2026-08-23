@@ -12,6 +12,10 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+/**
+ * Khóa ghép của bảng PersonalKanjiDeckItem. Serializable, equals và hashCode là bắt buộc
+ * để JPA nhận diện cùng một cặp deck-Kanji trong persistence context và khi gọi findById.
+ */
 public class PersonalKanjiDeckItemId implements Serializable {
 
     @Column(name = "deck_id")
@@ -22,7 +26,7 @@ public class PersonalKanjiDeckItemId implements Serializable {
 
     @Override
     public boolean equals(Object other) {
-        // So sanh composite key dua tren cap deckId va kanjiId de JPA nhan dien dung item trong deck.
+        // Hai khóa chỉ bằng nhau khi cả deckId và kanjiId đều bằng nhau.
         if (this == other) return true;
         if (!(other instanceof PersonalKanjiDeckItemId that)) return false;
         return Objects.equals(deckId, that.deckId) && Objects.equals(kanjiId, that.kanjiId);
@@ -30,7 +34,7 @@ public class PersonalKanjiDeckItemId implements Serializable {
 
     @Override
     public int hashCode() {
-        // Tao hash tu deckId va kanjiId, dong bo voi equals cho composite key.
+        // hashCode phải dùng cùng hai trường với equals để collection và JPA hoạt động đúng.
         return Objects.hash(deckId, kanjiId);
     }
 }

@@ -24,7 +24,7 @@ public class KanjiServiceImpl implements KanjiService {
 
     @Override
     public List<KanjiModuleDto> getModules(JlptLevel level) {
-        // Lay danh sach module kanji; neu level null thi lay tat ca, nguoc lai loc theo JLPT level, sau do map sang DTO.
+        // null nghĩa là xem tất cả; có level thì repository lọc ngay trong database rồi mới map DTO.
         List<KanjiLessonModule> modules = level == null
                 ? moduleRepository.findByOrderByModuleIdAsc()
                 : moduleRepository.findByJlptLevelOrderByModuleIdAsc(level);
@@ -40,7 +40,7 @@ public class KanjiServiceImpl implements KanjiService {
     @Override
     @Transactional
     public KanjiModuleDto createModule(KanjiModuleRequest request, Long creatorId) {
-        // Tao module kanji moi; load creator hop le, trim title/description, gan creator, save, roi tra ve DTO.
+        // creatorId lấy từ JWT. Service nạp Account thật để khóa ngoại created_by luôn hợp lệ.
         Account creator = accountRepository.findByAccountIdAndDeletedAtIsNull(creatorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "id", creatorId));
         KanjiLessonModule module = KanjiLessonModule.builder()
@@ -66,7 +66,7 @@ public class KanjiServiceImpl implements KanjiService {
     @Override
     @Transactional
     public void deleteModule(Long moduleId) {
-        // Xoa module kanji; load module, chan xoa neu bat ky kanji cua module dang nam trong personal deck, roi delete.
+        // Không cho xóa nếu Kanji con đang nằm trong personal deck, tránh làm mất dữ liệu học của student.
         KanjiLessonModule module = requireModule(moduleId);
         if (kanjiDeckItemRepository.existsByKanji_Module_ModuleId(moduleId)) {
             throw new BadRequestException("Không thể xóa module vì có Kanji đang được lưu trong deck cá nhân");
@@ -76,11 +76,12 @@ public class KanjiServiceImpl implements KanjiService {
 
     @Override
     public List<KanjiDetailDto> getKanji(Long moduleId, JlptLevel level, String search) {
-        // Lay danh sach kanji detail; uu tien search neu co keyword, sau do loc theo moduleId hoac JLPT level neu duoc truyen.
+        // Chọn đúng một nhánh truy vấn. Search ưu tiên trước nhưng vẫn giữ module/JLPT filter nếu được truyền.
         List<KanjiDetail> result;
         if (search != null && !search.isBlank()) {
             String keyword = search.trim();
             if (moduleId != null) {
+                // Kiểm tra module tồn tại để phân biệt "module rỗng" với "ID module sai".
                 requireModule(moduleId);
                 result = kanjiRepository.searchByModule(moduleId, keyword);
             } else if (level != null) {
@@ -108,16 +109,14 @@ public class KanjiServiceImpl implements KanjiService {
     @Override
     @Transactional
     public KanjiDetailDto createKanji(KanjiDetailRequest request) {
-        // Tao kanji detail moi; kiem tra module, trim cac text field, set preview mac dinh false neu request null, roi save.
+        // moduleId từ request được đổi thành entity bằng requireModule trước khi gắn quan hệ.
         KanjiDetail kanji = KanjiDetail.builder()
                 .module(requireModule(request.getModuleId()))
                 .character(request.getCharacter().trim())
                 .onyomi(trimToNull(request.getOnyomi()))
                 .kunyomi(trimToNull(request.getKunyomi()))
-                .strokeOrderUrl(trimToNull(request.getStrokeOrderUrl()))
                 .meaning(request.getMeaning().trim())
                 .compoundWords(trimToNull(request.getCompoundWords()))
-                .isPreview(Boolean.TRUE.equals(request.getIsPreview()))
                 .build();
         return toKanjiDto(kanjiRepository.save(kanji));
     }
@@ -125,23 +124,21 @@ public class KanjiServiceImpl implements KanjiService {
     @Override
     @Transactional
     public KanjiDetailDto updateKanji(Long kanjiId, KanjiDetailRequest request) {
-        // Cap nhat kanji detail; load kanji cu, gan module moi hop le, trim cac field, chi doi preview khi request co gia tri.
+        // Cap nhat kanji detail; load kanji cu, gan module moi hop le va trim cac field.
         KanjiDetail kanji = requireKanji(kanjiId);
         kanji.setModule(requireModule(request.getModuleId()));
         kanji.setCharacter(request.getCharacter().trim());
         kanji.setOnyomi(trimToNull(request.getOnyomi()));
         kanji.setKunyomi(trimToNull(request.getKunyomi()));
-        kanji.setStrokeOrderUrl(trimToNull(request.getStrokeOrderUrl()));
         kanji.setMeaning(request.getMeaning().trim());
         kanji.setCompoundWords(trimToNull(request.getCompoundWords()));
-        if (request.getIsPreview() != null) kanji.setPreview(request.getIsPreview());
         return toKanjiDto(kanjiRepository.save(kanji));
     }
 
     @Override
     @Transactional
     public void deleteKanji(Long kanjiId) {
-        // Xoa kanji detail; chan xoa neu kanji dang nam trong personal deck de tranh mat du lieu hoc tap cua student.
+        // Chặn xóa Kanji nguồn khi đang được personal deck tham chiếu để bảo toàn deck của học viên.
         KanjiDetail kanji = requireKanji(kanjiId);
         if (kanjiDeckItemRepository.existsByKanji_KanjiId(kanjiId)) {
             throw new BadRequestException("Không thể xóa Kanji vì chữ này đang được lưu trong deck cá nhân");
@@ -162,7 +159,7 @@ public class KanjiServiceImpl implements KanjiService {
     }
 
     private KanjiModuleDto toModuleDto(KanjiLessonModule module) {
-        // Map KanjiLessonModule sang DTO; dem so kanji trong module de gan kanjiCount cho response.
+        // Làm phẳng người tạo và chạy count query để UI có kanjiCount mà không tải collection LAZY.
         return KanjiModuleDto.builder()
                 .moduleId(module.getModuleId())
                 .jlptLevel(module.getJlptLevel())
@@ -177,7 +174,7 @@ public class KanjiServiceImpl implements KanjiService {
     }
 
     private KanjiDetailDto toKanjiDto(KanjiDetail kanji) {
-        // Map KanjiDetail sang DTO; lay them thong tin module va JLPT level tu quan he kanji.module.
+        // JLPT thuộc module cha; đưa vào DTO giúp frontend render Kanji bằng một object phẳng.
         return KanjiDetailDto.builder()
                 .kanjiId(kanji.getKanjiId())
                 .moduleId(kanji.getModule().getModuleId())
@@ -186,17 +183,15 @@ public class KanjiServiceImpl implements KanjiService {
                 .character(kanji.getCharacter())
                 .onyomi(kanji.getOnyomi())
                 .kunyomi(kanji.getKunyomi())
-                .strokeOrderUrl(kanji.getStrokeOrderUrl())
                 .meaning(kanji.getMeaning())
                 .compoundWords(kanji.getCompoundWords())
-                .isPreview(kanji.isPreview())
                 .createdAt(kanji.getCreatedAt())
                 .updatedAt(kanji.getUpdatedAt())
                 .build();
     }
 
     private String trimToNull(String value) {
-        // Chuan hoa chuoi optional: null hoac blank thanh null, nguoc lai cat khoang trang dau/cuoi.
+        // Chuẩn hóa field tùy chọn để database không chứa cả null lẫn nhiều dạng chuỗi trắng.
         return value == null || value.isBlank() ? null : value.trim();
     }
 }

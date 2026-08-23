@@ -6,6 +6,7 @@ import QuestionBankManagementView from '../question-bank/QuestionBankManagementV
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryTable from '../../components/vocabulary_category/CategoryTable';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
+import KanjiModuleManagementView from './KanjiModuleManagementView';
 
 export default function LearningMaterialsView({
   currentUser,
@@ -15,7 +16,9 @@ export default function LearningMaterialsView({
   onLogout,
   initialTab = 'grammar_patterns'
 }) {
-  const [materialTab, setMaterialTab] = useState(initialTab); // 'grammar_patterns' | 'grammar_exercises' | 'question_bank' | 'vocabulary_categories'
+  // materialTab quyết định workspace con nào được mount trong Learning Materials.
+  // Nhờ vậy Kanji Categories vẫn thuộc cùng module thay vì trở thành trang độc lập.
+  const [materialTab, setMaterialTab] = useState(initialTab);
 
   // State cho phần Quản lý Danh mục từ vựng
   const [categories, setCategories] = useState([]);
@@ -23,6 +26,8 @@ export default function LearningMaterialsView({
   const [editingCategory, setEditingCategory] = useState(null);
 
   const fetchCategories = useCallback(async () => {
+    // useCallback giữ cùng một tham chiếu hàm giữa các lần render, để useEffect phía dưới
+    // không gọi API lặp vô hạn chỉ vì component vừa cập nhật state categories.
     try {
       const response = await vocabularyCategoryApi.getAll();
       if (response && (response.code === 200 || response.code === 201)) {
@@ -34,6 +39,8 @@ export default function LearningMaterialsView({
   }, []);
 
   useEffect(() => {
+    // Chỉ tải danh mục khi người dùng thật sự mở tab tương ứng. Các tab Grammar/Kanji
+    // có luồng dữ liệu riêng nên không cần chờ request Vocabulary Category này.
     if (materialTab === 'vocabulary_categories') {
       fetchCategories();
     }
@@ -69,6 +76,8 @@ export default function LearningMaterialsView({
     }
 
     try {
+        // Chuẩn hóa chuỗi trước khi gửi để backend không lưu tên chỉ chứa khoảng trắng.
+        // Cùng một payload cơ sở được dùng cho create và update để tránh lệch dữ liệu.
         const payload = {
             name: formData.name.trim(),
             jlptLevel: formData.jlptLevel,
@@ -76,6 +85,8 @@ export default function LearningMaterialsView({
         };
 
         let response;
+        // Có editingCategory thì update theo ID, nếu không thì tạo mới. Backend vẫn lấy
+        // danh tính/quyền từ JWT; createdById được giữ để tương thích hợp đồng API cũ.
         if (editingCategory) {
             response = await vocabularyCategoryApi.update(editingCategory.categoryId, payload);
         } else {
@@ -94,6 +105,8 @@ export default function LearningMaterialsView({
         }
 
         setIsModalOpen(false);
+        // Tải lại từ API thay vì tự chèn form vào bảng để nhận đúng ID, ngày tạo và
+        // mọi giá trị mà backend có thể đã chuẩn hóa trong lúc lưu.
         await fetchCategories();
     } catch (error) {
         console.error("Lỗi khi lưu dữ liệu:", error);
@@ -192,6 +205,23 @@ export default function LearningMaterialsView({
           >
             📚 Vocabulary Categories (Danh mục từ vựng)
           </button>
+
+          <button
+            onClick={() => setMaterialTab('kanji_modules')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'kanji_modules' ? '#2563eb' : 'transparent',
+              color: materialTab === 'kanji_modules' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Kanji Categories (Danh mục Kanji)
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -247,6 +277,12 @@ export default function LearningMaterialsView({
               initialData={editingCategory}
             />
           </div>
+        )}
+
+        {materialTab === 'kanji_modules' && (
+          // Component Kanji tự quản lý bộ lọc, modal và API CRUD của chính nó;
+          // view cha chỉ đặt nó đúng bên trong workspace dành cho Lecturer.
+          <KanjiModuleManagementView currentUser={currentUser} />
         )}
       </main>
     </div>

@@ -5,6 +5,7 @@ import { FlashcardModal } from '../components/FlashcardModal';
 import { ArrowLeft, BookOpen, Edit2, MessageSquare, Play, Plus, Sparkles, Trash2 } from 'lucide-react';
 
 export const PersonalKanjiDecksPage = ({ onNavigate }) => {
+  // decks là summary; activeDeck có items; editingNoteItem là Kanji đang sửa ghi chú.
   const [decks, setDecks] = useState([]);
   const [activeDeck, setActiveDeck] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,6 +21,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchDecks = async () => {
+    // Tải summary trước cho nhẹ; danh sách Kanji chỉ được tải khi mở một deck.
     setLoading(true);
     try {
       setDecks(await deckApi.getMyKanjiDecks());
@@ -35,6 +37,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
   }, []);
 
   const openDeckDetail = async (deckId) => {
+    // Backend kiểm tra deckId cùng accountId từ JWT trước khi trả items.
     try {
       setActiveDeck(await deckApi.getKanjiDeckById(deckId));
     } catch (err) {
@@ -43,6 +46,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
   };
 
   const openDeckModal = (deck = null) => {
+    // Một modal dùng cho cả create/update; editingDeck quyết định API nào được gọi.
     setEditingDeck(deck);
     setDeckForm(deck ? { title: deck.title, description: deck.description || '' } : { title: '', description: '' });
     setIsDeckModalOpen(true);
@@ -61,6 +65,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
       }
       setIsDeckModalOpen(false);
       await fetchDecks();
+      // Nếu đang xem deck vừa sửa, tải lại detail để header cập nhật ngay.
       if (activeDeck && editingDeck && activeDeck.deckId === editingDeck.deckId) {
         await openDeckDetail(activeDeck.deckId);
       }
@@ -84,6 +89,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
   };
 
   const removeKanji = async (kanjiId) => {
+    // Chỉ xóa quan hệ khỏi deck cá nhân, không xóa Kanji trong kho học liệu chung.
     if (!activeDeck) return;
     try {
       await deckApi.removeKanjiFromDeck(activeDeck.deckId, kanjiId);
@@ -96,6 +102,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
   };
 
   const openEditNote = (item) => {
+    // Giữ item để khi submit có kanjiId và nạp note hiện tại vào textarea.
     setEditingNoteItem(item);
     setNoteForm(item.memorizationNote || '');
   };
@@ -105,6 +112,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
     setSubmitting(true);
     try {
       await deckApi.updateKanjiNote(activeDeck.deckId, editingNoteItem.kanjiId, {
+        // Chuỗi trắng thành null nghĩa là xóa ghi chú cũ thay vì lưu khoảng trắng.
         memorizationNote: noteForm.trim(),
       });
       setFeedback({ type: 'success', msg: 'Đã cập nhật mẹo nhớ chữ Hán' });
@@ -174,7 +182,6 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
                     <div style={{ marginTop: '2px' }}><strong>Kun:</strong> {item.kunyomi || '-'}</div>
                   </div>
                   {item.compoundWords && <div className="jp-font" style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '10px' }}><strong>Từ ghép:</strong> {item.compoundWords}</div>}
-                  {item.strokeOrderUrl && <a href={item.strokeOrderUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.78rem', marginBottom: '10px' }}>Xem thứ tự nét ↗</a>}
                   <div style={{ background: '#fef3c7', color: '#92400e', padding: '10px', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '12px', flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <div style={{ fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}><MessageSquare size={13} /> Mẹo nhớ:</div>

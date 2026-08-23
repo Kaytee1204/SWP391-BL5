@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { vocabApi, deckApi } from '../api';
 import { Modal } from '../components/Modal';
-import { BookmarkPlus, Edit2, Folder, FolderPlus, Plus, Search, Trash2, Volume2 } from 'lucide-react';
+import { BookmarkPlus, Edit2, Folder, FolderPlus, Plus, Search, Trash2 } from 'lucide-react';
 
+// Giá trị mặc định dùng chung khi mở form tạo mới hoặc chuẩn hóa dữ liệu lúc chỉnh sửa.
 const emptyItem = {
   categoryId: '',
   word: '',
@@ -11,13 +12,14 @@ const emptyItem = {
   meaning: '',
   exampleSentence: '',
   exampleTranslation: '',
-  isPreview: false,
 };
 
-export const VocabularyPage = () => {
-  const role = JSON.parse(localStorage.getItem('user_info') || 'null')?.role;
+export const VocabularyPage = ({ currentUser }) => {
+  // Phân quyền UI chỉ để ẩn nút không phù hợp; backend vẫn là nơi bắt buộc kiểm tra quyền thật sự.
+  const role = currentUser?.role;
   const isStudent = role === 'Student';
-  const canManageContent = ['Manager', 'Lecturer', 'Author'].includes(role);
+  const canManageCategories = role === 'Lecturer';
+  const canManageVocabulary = role === 'Lecturer';
   const [selectedLevel, setSelectedLevel] = useState('ALL');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [categories, setCategories] = useState([]);
@@ -37,6 +39,7 @@ export const VocabularyPage = () => {
   const [targetDeckId, setTargetDeckId] = useState('');
 
   const fetchData = async () => {
+    // Luồng dữ liệu: state bộ lọc -> query params -> API -> cập nhật state -> React render lại.
     setLoading(true);
     try {
       const cats = await vocabApi.getCategories(selectedLevel === 'ALL' ? null : selectedLevel);
@@ -45,6 +48,7 @@ export const VocabularyPage = () => {
       if (selectedLevel !== 'ALL') params.jlptLevel = selectedLevel;
       if (selectedCategoryId) params.categoryId = selectedCategoryId;
       if (searchQuery) params.search = searchQuery;
+      // Chỉ gửi key có giá trị để backend phân biệt "không lọc" với một filter cụ thể.
       setItems(await vocabApi.getItems(params));
     } catch (err) {
       setFeedback({ type: 'error', msg: 'Lỗi tải dữ liệu từ vựng: ' + err.message });
@@ -54,10 +58,12 @@ export const VocabularyPage = () => {
   };
 
   useEffect(() => {
+    // Đổi JLPT/category tự tải lại; search chỉ chạy khi submit để không gọi API sau mỗi phím gõ.
     fetchData();
   }, [selectedLevel, selectedCategoryId]);
 
   const openCategoryModal = (category = null) => {
+    // Cùng một modal phục vụ create/update; editingCategory khác null là tín hiệu gọi API update.
     setEditingCategory(category);
     setCategoryForm(category
       ? { jlptLevel: category.jlptLevel, name: category.name, description: category.description || '' }
@@ -91,6 +97,7 @@ export const VocabularyPage = () => {
   };
 
   const openItemModal = (item = null) => {
+    // Value của select là chuỗi, nên đổi categoryId sang String để khớp chính xác option.
     setEditingItem(item);
     setItemForm(item
       ? { ...emptyItem, ...item, categoryId: String(item.categoryId) }
@@ -123,6 +130,7 @@ export const VocabularyPage = () => {
   };
 
   const openAddToDeck = async (item) => {
+    // Chỉ khi Student bấm lưu mới tải deck cá nhân, tránh gọi API deck khi chỉ xem trang.
     setSelectedItemForDeck(item);
     const decks = await deckApi.getMyVocabDecks();
     setMyDecks(decks);
@@ -131,18 +139,11 @@ export const VocabularyPage = () => {
   };
 
   const saveToDeck = async () => {
+    // Ghép từ đang chọn với deck đích; backend tiếp tục kiểm tra deck có đúng owner hay không.
     if (!targetDeckId) return;
     await deckApi.addVocabItemToDeck(targetDeckId, selectedItemForDeck.itemId);
     setFeedback({ type: 'success', msg: `Đã thêm "${selectedItemForDeck.word}" vào deck!` });
     setIsAddToDeckModalOpen(false);
-  };
-
-  const playSpeech = (text) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ja-JP';
-      window.speechSynthesis.speak(utterance);
-    }
   };
 
   return (
@@ -162,8 +163,8 @@ export const VocabularyPage = () => {
               </button>
             ))}
           </div>
-          {canManageContent && <button className="btn btn-secondary" onClick={() => openCategoryModal()}><FolderPlus size={16} /> Thêm danh mục</button>}
-          {canManageContent && <button className="btn btn-primary" onClick={() => openItemModal()}><Plus size={16} /> Thêm từ mới</button>}
+          {canManageCategories && <button className="btn btn-secondary" onClick={() => openCategoryModal()}><FolderPlus size={16} /> Thêm danh mục</button>}
+          {canManageVocabulary && <button className="btn btn-primary" onClick={() => openItemModal()}><Plus size={16} /> Thêm từ mới</button>}
         </div>
       </div>
 
@@ -177,7 +178,7 @@ export const VocabularyPage = () => {
               <option value="">-- Tất cả danh mục ({categories.length}) --</option>
               {categories.map((category) => <option key={category.categoryId} value={category.categoryId}>[{category.jlptLevel}] {category.name} ({category.itemCount} từ)</option>)}
             </select>
-            {selectedCategoryId && canManageContent && (
+            {selectedCategoryId && canManageCategories && (
               <div style={{ display: 'flex', gap: '4px' }}>
                 <button className="btn btn-secondary btn-sm" title="Sửa danh mục đã chọn" onClick={() => openCategoryModal(categories.find((c) => String(c.categoryId) === selectedCategoryId))}><Edit2 size={14} /></button>
                 <button className="btn btn-danger btn-sm" title="Xóa danh mục đã chọn" onClick={() => deleteCategory(Number(selectedCategoryId))}><Trash2 size={14} /></button>
@@ -206,12 +207,12 @@ export const VocabularyPage = () => {
               </div>
               <div style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: '12px' }}>{item.meaning}</div>
               {item.exampleSentence && <div style={{ background: 'var(--bg-surface-alt)', padding: '10px 12px', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '16px', flex: 1 }}><div className="jp-font">{item.exampleSentence}</div><div style={{ color: 'var(--text-muted)', marginTop: '4px' }}>{item.exampleTranslation}</div></div>}
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-light)', paddingTop: '12px', marginTop: 'auto' }}>
-                <button className="btn btn-secondary btn-sm" title="Phát âm" onClick={() => playSpeech(item.word)}><Volume2 size={16} /></button>
+              {/* Nhóm thao tác thay đổi theo vai trò; vocabulary không còn chức năng phát âm. */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-light)', paddingTop: '12px', marginTop: 'auto' }}>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   {isStudent && <button className="btn btn-secondary btn-sm" title="Lưu vào Deck" onClick={() => openAddToDeck(item)}><BookmarkPlus size={15} /> Lưu Deck</button>}
-                  {canManageContent && <button className="btn btn-secondary btn-sm" title="Sửa từ vựng" onClick={() => openItemModal(item)}><Edit2 size={15} /></button>}
-                  {canManageContent && <button className="btn btn-danger btn-sm" title="Xóa từ vựng" onClick={() => deleteItem(item.itemId)}><Trash2 size={15} /></button>}
+                  {canManageVocabulary && <button className="btn btn-secondary btn-sm" title="Sửa từ vựng" onClick={() => openItemModal(item)}><Edit2 size={15} /></button>}
+                  {canManageVocabulary && <button className="btn btn-danger btn-sm" title="Xóa từ vựng" onClick={() => deleteItem(item.itemId)}><Trash2 size={15} /></button>}
                 </div>
               </div>
             </div>

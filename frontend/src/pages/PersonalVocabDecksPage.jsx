@@ -8,12 +8,12 @@ import {
   Play,
   Edit2,
   Trash2,
-  Volume2,
   ArrowLeft,
   BookOpen
 } from 'lucide-react';
 
 export const PersonalVocabDecksPage = ({ onNavigate }) => {
+  // Danh sách deck chỉ chứa dữ liệu tóm tắt; activeDeck chứa đầy đủ item của deck đang mở.
   const [decks, setDecks] = useState([]);
   const [activeDeck, setActiveDeck] = useState(null); // Deck đầy đủ kèm items, chỉ load khi mở chi tiết.
   const [loading, setLoading] = useState(true);
@@ -29,6 +29,7 @@ export const PersonalVocabDecksPage = ({ onNavigate }) => {
   const [feedback, setFeedback] = useState({ type: '', msg: '' });
 
   const fetchDecks = async () => {
+    // Endpoint danh sách chỉ trả summary và totalItems, chưa tải items của từng deck.
     setLoading(true);
     try {
       const data = await deckApi.getMyVocabDecks();
@@ -41,10 +42,12 @@ export const PersonalVocabDecksPage = ({ onNavigate }) => {
   };
 
   useEffect(() => {
+    // Dependency rỗng: tải danh sách đúng một lần khi trang được mount.
     fetchDecks();
   }, []);
 
   const handleOpenDeckDetail = async (deckId) => {
+    // Chỉ khi mở deck mới gọi endpoint chi tiết và lưu DTO có items vào activeDeck.
     try {
       const fullDeck = await deckApi.getVocabDeckById(deckId);
       setActiveDeck(fullDeck);
@@ -54,6 +57,7 @@ export const PersonalVocabDecksPage = ({ onNavigate }) => {
   };
 
   const handleOpenDeckModal = (deck = null) => {
+    // Copy dữ liệu vào form; không sửa trực tiếp object đang nằm trong danh sách decks.
     if (deck) {
       setEditingDeck(deck);
       setDeckForm({ title: deck.title, description: deck.description || '' });
@@ -102,18 +106,11 @@ export const PersonalVocabDecksPage = ({ onNavigate }) => {
     try {
       await deckApi.removeVocabItemFromDeck(activeDeck.deckId, itemId);
       setFeedback({ type: 'success', msg: 'Đã bỏ từ vựng khỏi deck' });
+      // Reload detail để mất row vừa xóa và summary để totalItems giảm theo.
       handleOpenDeckDetail(activeDeck.deckId);
       fetchDecks();
     } catch (err) {
       setFeedback({ type: 'error', msg: err.message });
-    }
-  };
-
-  const playSpeech = (text) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ja-JP';
-      window.speechSynthesis.speak(utterance);
     }
   };
 
@@ -212,14 +209,8 @@ export const PersonalVocabDecksPage = ({ onNavigate }) => {
                         </span>
                       </td>
                       <td style={{ textAlign: 'right' }}>
+                        {/* Vocabulary deck chỉ cho phép xóa item; chức năng phát âm đã được loại bỏ. */}
                         <div style={{ display: 'inline-flex', gap: '6px' }}>
-                          <button
-                            className="btn btn-secondary btn-sm"
-                            onClick={() => playSpeech(item.word)}
-                            title="Phát âm"
-                          >
-                            <Volume2 size={14} />
-                          </button>
                           <button
                             className="btn btn-danger btn-sm"
                             onClick={() => handleRemoveItem(item.itemId)}

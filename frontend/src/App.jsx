@@ -19,8 +19,7 @@ import QuestionBankManagementView from './features/question-bank/QuestionBankMan
 import Navbar from './components/common/Navbar';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { KanjiPage } from './pages/KanjiPage';
-import { PersonalVocabDecksPage } from './pages/PersonalVocabDecksPage';
-import { PersonalKanjiDecksPage } from './pages/PersonalKanjiDecksPage';
+import { PersonalDecksPage } from './pages/PersonalDecksPage';
 import { AccountsPage } from './pages/AccountsPage';
 
 
@@ -79,6 +78,8 @@ export default function App() {
   };
 
   const handleLogout = async () => {
+    // Gọi backend để kết thúc phiên nếu có thể, nhưng vẫn luôn xóa dữ liệu cục bộ.
+    // Nhờ vậy người dùng không bị kẹt ở trạng thái đăng nhập nếu request logout lỗi.
     try {
       await apiRequest('/auth/logout', 'POST');
     } catch (e) {}
@@ -103,11 +104,12 @@ export default function App() {
     setCurrentView('article_detail');
   };
 
+  // Các màn hình học dùng chung currentView. App chọn component từ bảng ánh xạ này,
+  // còn Navbar chỉ gửi tên view lên qua onNavigate/setCurrentView.
   const learningViews = {
-    vocab: <VocabularyPage />,
+    vocab: <VocabularyPage currentUser={currentUser} />,
     kanji: <KanjiPage currentUser={currentUser} />,
-    'vocab-decks': <PersonalVocabDecksPage onNavigate={setCurrentView} />,
-    'kanji-decks': <PersonalKanjiDecksPage onNavigate={setCurrentView} />,
+    decks: <PersonalDecksPage onNavigate={setCurrentView} />,
     accounts: <AccountsPage />,
   };
   const learningView = learningViews[currentView];

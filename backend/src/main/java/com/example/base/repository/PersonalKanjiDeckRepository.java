@@ -6,9 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+/** Repository luôn có truy vấn theo studentId để bảo vệ quyền sở hữu ngay từ database. */
 public interface PersonalKanjiDeckRepository extends JpaRepository<PersonalKanjiDeck, Long> {
-    // Lay tat ca personal kanji deck cua student, sap xep deck moi tao len truoc.
+    // Màn danh sách chỉ nhận deck của user đăng nhập, deck mới nhất đứng trước.
     List<PersonalKanjiDeck> findByStudent_AccountIdOrderByCreatedAtDesc(Long studentId);
-    // Tim deck theo id va owner, dung de dam bao student chi thao tac deck cua chinh minh.
+    // Dùng cho đọc/sửa/xóa: sai owner cũng trả empty như deck không tồn tại.
     Optional<PersonalKanjiDeck> findByDeckIdAndStudent_AccountId(Long deckId, Long studentId);
 }
