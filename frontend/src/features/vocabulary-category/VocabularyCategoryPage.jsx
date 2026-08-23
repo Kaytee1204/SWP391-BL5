@@ -129,6 +129,7 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
                 <CategoryItemsModal 
                     category={selectedCategoryForItems}
                     onClose={() => setSelectedCategoryForItems(null)}
+                    currentUser={currentUser}
                 />
             </div>
         </div>

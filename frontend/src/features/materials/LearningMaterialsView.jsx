@@ -1,3 +1,4 @@
+// src/features/materials/LearningMaterialsView.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../../components/common/Navbar';
 import GrammarManagementView from '../grammar/GrammarManagementView';
@@ -147,12 +148,6 @@ export default function LearningMaterialsView({
           width: 'fit-content',
           flexWrap: 'wrap'
         }}>
-          <button onClick={() => setMaterialTab('grammar_patterns')} style={{ padding: '0.55rem 1.25rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialTab === 'grammar_patterns' ? '#7C3AED' : 'transparent', color: materialTab === 'grammar_patterns' ? '#fff' : 'var(--text-body)' }}>📖 Grammar Patterns</button>
-          <button onClick={() => setMaterialTab('grammar_exercises')} style={{ padding: '0.55rem 1.25rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialTab === 'grammar_exercises' ? '#0d9488' : 'transparent', color: materialTab === 'grammar_exercises' ? '#fff' : 'var(--text-body)' }}>📝 Grammar Exercises</button>
-          <button onClick={() => setMaterialTab('question_bank')} style={{ padding: '0.55rem 1.25rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialTab === 'question_bank' ? '#d97706' : 'transparent', color: materialTab === 'question_bank' ? '#fff' : 'var(--text-body)' }}>🗂️ Question Bank</button>
-          <button onClick={() => setMaterialTab('vocabulary_categories')} style={{ padding: '0.55rem 1.25rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialTab === 'vocabulary_categories' ? '#10b981' : 'transparent', color: materialTab === 'vocabulary_categories' ? '#fff' : 'var(--text-body)' }}>📚 Vocabulary Categories</button>
-          <button onClick={() => setMaterialTab('flashcard_decks')} style={{ padding: '0.55rem 1.25rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialTab === 'flashcard_decks' ? '#3b82f6' : 'transparent', color: materialTab === 'flashcard_decks' ? '#fff' : 'var(--text-body)' }}>🃏 Flashcard Decks</button>
-          <button onClick={() => setMaterialTab('error_reports')} style={{ padding: '0.55rem 1.25rem', borderRadius: '10px', border: materialTab === 'error_reports' ? 'none' : '1px solid #fecdd3', fontWeight: 800, cursor: 'pointer', background: materialTab === 'error_reports' ? '#e11d48' : 'transparent', color: materialTab === 'error_reports' ? '#fff' : '#e11d48' }}>⚠️ Error Reports</button>
           <button
             onClick={() => setMaterialTab('grammar_patterns')}
             style={{
@@ -167,7 +162,7 @@ export default function LearningMaterialsView({
               transition: 'all 0.2s ease'
             }}
           >
-            📖 Grammar Patterns (Lý thuyết)
+            📖 Grammar Patterns
           </button>
           
           <button
@@ -184,7 +179,7 @@ export default function LearningMaterialsView({
               transition: 'all 0.2s ease'
             }}
           >
-            📝 Grammar Exercises (Bài tập)
+            📝 Grammar Exercises
           </button>
 
           <button
@@ -201,7 +196,7 @@ export default function LearningMaterialsView({
               transition: 'all 0.2s ease'
             }}
           >
-            🗂️ Question Bank (Ngân hàng câu hỏi)
+            🗂️ Question Bank
           </button>
 
           <button
@@ -218,7 +213,7 @@ export default function LearningMaterialsView({
               transition: 'all 0.2s ease'
             }}
           >
-            📚 Vocabulary Categories (Danh mục từ vựng)
+            📚 Vocabulary Categories
           </button>
 
           <button
@@ -252,7 +247,24 @@ export default function LearningMaterialsView({
               transition: 'all 0.2s ease'
             }}
           >
-            📚 Courses (Khóa học & Giá)
+            📚 Courses
+          </button>
+
+          <button
+            onClick={() => setMaterialTab('error_reports')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: materialTab === 'error_reports' ? 'none' : '1px solid #fecdd3',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'error_reports' ? '#e11d48' : 'transparent',
+              color: materialTab === 'error_reports' ? '#fff' : '#e11d48',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            ⚠️ Error Reports
           </button>
         </div>
 
@@ -356,6 +368,7 @@ export default function LearningMaterialsView({
             <CategoryItemsModal 
               category={selectedCategoryForItems}
               onClose={() => setSelectedCategoryForItems(null)}
+              currentUser={currentUser}
             />
           </div>
         )}
