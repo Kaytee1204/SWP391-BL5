@@ -9,6 +9,7 @@ import CategoryFormModal from '../../components/vocabulary_category/CategoryForm
 import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
 import ReadingPassageManagementView from '../reading-passages/ReadingPassageManagementView';
 import ListeningExerciseManagementView from '../listening-exercises/ListeningExerciseManagementView';
+import CourseManagementView from '../courses/CourseManagementView';
 
 export default function LearningMaterialsView({
   currentUser,
@@ -231,6 +232,23 @@ export default function LearningMaterialsView({
           </button>
 
           <button
+            onClick={() => setMaterialTab('courses')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'courses' ? '#ea580c' : 'transparent',
+              color: materialTab === 'courses' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            📚 Courses (Khóa học & Giá)
+          </button>
+
+          <button
             onClick={() => setMaterialTab('listening_exercises')}
             style={{
               padding: '0.55rem 1.25rem', borderRadius: '10px', border: 'none',
@@ -245,6 +263,10 @@ export default function LearningMaterialsView({
         </div>
 
         {/* Tab Content */}
+        {materialTab === 'courses' && (
+          <CourseManagementView currentUser={currentUser} />
+        )}
+
         {materialTab === 'grammar_patterns' && (
           <GrammarManagementView currentUser={currentUser} />
         )}

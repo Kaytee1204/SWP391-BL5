@@ -92,6 +92,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET,
+                                "/courses", "/courses/**",
+                                "/payments/check-status/**",
+                                "/payments/verify-return",
                                 "/culture-articles", "/culture-articles/**",
                                 "/grammar-patterns", "/grammar-patterns/**",
                                 "/kanji-modules", "/kanji-modules/**",
@@ -100,6 +103,7 @@ public class SecurityConfig {
                                 "/vocabulary-items", "/vocabulary-items/**",
                                 "/media/listening/**",
                                 "/system-flashcards", "/system-flashcards/**").permitAll()
+                        .requestMatchers("/payments/sepay-webhook", "/payments/sepay-webhook/**").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
                 )

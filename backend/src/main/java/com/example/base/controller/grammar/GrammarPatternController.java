@@ -73,10 +73,10 @@ public class GrammarPatternController {
                 .body(ApiResponse.success("Grammar pattern created successfully", response));
     }
 
-    // 5. Giảng viên cập nhật mẫu ngữ pháp (Role: Lecturer owner or Manager)
+    // 5. Giảng viên cập nhật mẫu ngữ pháp
     @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.POST})
     @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
-    @Operation(summary = "Update an existing Grammar Pattern (Lecturer owner or Manager)")
+    @Operation(summary = "Update an existing Grammar Pattern (Lecturer owner)")
     public ResponseEntity<ApiResponse<GrammarPatternResponse>> updatePattern(
             @PathVariable Long id,
             @Valid @RequestBody GrammarPatternUpdateRequest request,

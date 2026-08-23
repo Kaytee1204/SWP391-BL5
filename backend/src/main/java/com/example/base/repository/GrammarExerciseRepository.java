@@ -17,6 +17,10 @@ public interface GrammarExerciseRepository extends JpaRepository<GrammarExercise
 
     Optional<GrammarExercise> findByExerciseId(Long exerciseId);
 
+    boolean existsByQuestionTextIgnoreCase(String questionText);
+
+    boolean existsByQuestionTextIgnoreCaseAndExerciseIdNot(String questionText, Long exerciseId);
+
     @Query(value = "SELECT e FROM GrammarExercise e WHERE " +
            "(:keyword IS NULL OR :keyword = '' OR LOWER(e.questionText) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(e.explanation) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
            "(:jlptLevel IS NULL OR e.jlptLevel = :jlptLevel)",
