@@ -15,7 +15,7 @@ import ManagerDashboardPage from './features/dashboard/ManagerDashboardPage';
 import VocabularyCategoryPage from './features/vocabulary-category/VocabularyCategoryPage';
 import GrammarReaderPage from './features/grammar/GrammarReaderPage';
 import GrammarExercisePracticeView from './features/grammar/GrammarExercisePracticeView';
-import QuestionBankManagementView from './features/question-bank/QuestionBankManagementView';
+import QuestionBankWorkspace from './features/question-bank/QuestionBankWorkspace';
 import Navbar from './components/common/Navbar';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { KanjiPage } from './pages/KanjiPage';
@@ -221,7 +221,7 @@ export default function App() {
             onLogout={handleLogout}
           />
           <main style={{ maxWidth: '1180px', margin: '2rem auto', padding: '0 1.5rem 4rem' }}>
-            <QuestionBankManagementView currentUser={currentUser} />
+            <QuestionBankWorkspace currentUser={currentUser} />
           </main>
         </div>
       )}

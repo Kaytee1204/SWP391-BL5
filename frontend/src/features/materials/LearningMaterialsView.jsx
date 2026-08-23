@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../../components/common/Navbar';
 import GrammarManagementView from '../grammar/GrammarManagementView';
 import GrammarExerciseManagementView from '../grammar/GrammarExerciseManagementView';
-import QuestionBankManagementView from '../question-bank/QuestionBankManagementView';
+import QuestionBankWorkspace from '../question-bank/QuestionBankWorkspace';
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryTable from '../../components/vocabulary_category/CategoryTable';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
@@ -222,7 +222,7 @@ export default function LearningMaterialsView({
         )}
 
         {materialTab === 'question_bank' && (
-          <QuestionBankManagementView currentUser={currentUser} />
+          <QuestionBankWorkspace currentUser={currentUser} />
         )}
 
         {materialTab === 'vocabulary_categories' && (
