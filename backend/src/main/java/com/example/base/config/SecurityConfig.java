@@ -101,10 +101,11 @@ public class SecurityConfig {
                                 "/kanji-modules", "/kanji-modules/**",
                                 "/kanji-details", "/kanji-details/**",
                                 "/vocabulary-categories", "/vocabulary-categories/**",
-                                "/vocab-items", "/vocab-items/**").permitAll()
+                                "/vocab-items", "/vocab-items/**",
                                 "/vocabulary-items", "/vocabulary-items/**",
                                 "/media/listening/**",
-                                "/system-flashcards", "/system-flashcards/**").permitAll()
+                                "/system-flashcards", "/system-flashcards/**"
+                        ).permitAll()
                         .requestMatchers("/payments/sepay-webhook", "/payments/sepay-webhook/**").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()

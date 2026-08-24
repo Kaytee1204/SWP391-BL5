@@ -23,6 +23,8 @@ import FreeCoursesPage from './features/free-courses/FreeCoursesPage';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { KanjiPage } from './pages/KanjiPage';
 import { PersonalDecksPage } from './pages/PersonalDecksPage';
+import { PersonalVocabDecksPage } from './pages/PersonalVocabDecksPage';
+import { PersonalKanjiDecksPage } from './pages/PersonalKanjiDecksPage';
 import { AccountsPage } from './pages/AccountsPage';
 import StudentExamWorkspace from './features/student-exams/StudentExamWorkspace';
 
@@ -137,6 +139,7 @@ export default function App() {
   const learningViews = {
     vocab: currentUser ? <VocabularyPage currentUser={currentUser} /> : null,
     'vocab-decks': <PersonalVocabDecksPage onNavigate={handleNavigate} />,
+    decks: <PersonalDecksPage onNavigate={handleNavigate} />,
     kanji: <KanjiPage currentUser={currentUser} />,
     accounts: <AccountsPage />,
   };
