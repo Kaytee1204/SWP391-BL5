@@ -334,6 +334,7 @@ export default function ManagerDashboardPage({
                 <CategoryItemsModal 
                   category={selectedCategoryForItems}
                   onClose={() => setSelectedCategoryForItems(null)}
+                  currentUser={currentUser}
                 />
               </div>
             )}
