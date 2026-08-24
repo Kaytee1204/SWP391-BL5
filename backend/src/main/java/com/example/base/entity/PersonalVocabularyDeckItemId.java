@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
+/** Khoa ghep xac dinh duy nhat mot muc tu vung trong mot deck ca nhan. */
 @Getter
 @Setter
 @NoArgsConstructor

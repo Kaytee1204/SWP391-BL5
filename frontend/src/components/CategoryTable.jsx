@@ -1,6 +1,8 @@
 import React from 'react';
 
 const CategoryTable = ({ categories, onEdit, onDelete }) => {
+    // Ánh xạ cấp JLPT sang màu badge giúp người học nhận biết nhanh từng nhóm.
+    // Giá trị dự phòng bên dưới vẫn hiển thị được nếu backend trả level chưa khai báo.
     // Hàm tạo màu sắc riêng cho từng level JLPT
     const getJlptBadgeStyle = (level) => {
         const styles = {
@@ -45,6 +47,8 @@ const CategoryTable = ({ categories, onEdit, onDelete }) => {
                     </thead>
                     <tbody>
                         {categories.length > 0 ? (
+                            // categoryId vừa là key ổn định để React đối chiếu từng dòng,
+                            // vừa được gửi về component cha khi người dùng sửa hoặc xóa.
                             categories.map((item) => (
                                 <tr key={item.categoryId} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                                     <td style={{ padding: '16px 20px', color: '#334155', fontWeight: '500' }}>#{item.categoryId}</td>

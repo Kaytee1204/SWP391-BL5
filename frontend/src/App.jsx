@@ -22,8 +22,7 @@ import PaymentReturnView from './features/courses/components/PaymentReturnView';
 import FreeCoursesPage from './features/free-courses/FreeCoursesPage';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { KanjiPage } from './pages/KanjiPage';
-import { PersonalVocabDecksPage } from './pages/PersonalVocabDecksPage';
-import { PersonalKanjiDecksPage } from './pages/PersonalKanjiDecksPage';
+import { PersonalDecksPage } from './pages/PersonalDecksPage';
 import { AccountsPage } from './pages/AccountsPage';
 import StudentExamWorkspace from './features/student-exams/StudentExamWorkspace';
 
@@ -93,6 +92,8 @@ export default function App() {
   };
 
   const handleLogout = async () => {
+    // Gọi backend để kết thúc phiên nếu có thể, nhưng vẫn luôn xóa dữ liệu cục bộ.
+    // Nhờ vậy người dùng không bị kẹt ở trạng thái đăng nhập nếu request logout lỗi.
     try {
       await apiRequest('/auth/logout', 'POST');
     } catch (e) {}
@@ -117,7 +118,7 @@ export default function App() {
     setCurrentView('article_detail');
   };
 
-  // Chặn khách vãng lai (Guest) không được vào trang Vocabulary
+// Chặn khách vãng lai (Guest) không được vào trang Vocabulary
   useEffect(() => {
     if (!currentUser && (currentView === 'vocab' || currentView === 'vocab-decks')) {
       setCurrentView('landing');
@@ -134,8 +135,9 @@ export default function App() {
   };
 
   const learningViews = {
-    vocab: currentUser ? <VocabularyPage /> : null,
+    vocab: currentUser ? <VocabularyPage currentUser={currentUser} /> : null,
     'vocab-decks': <PersonalVocabDecksPage onNavigate={handleNavigate} />,
+    kanji: <KanjiPage currentUser={currentUser} />,
     accounts: <AccountsPage />,
   };
   const learningView = learningViews[currentView];

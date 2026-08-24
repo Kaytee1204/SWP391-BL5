@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+/**
+ * Một chữ Kanji cụ thể trong kho học liệu. Cấp độ JLPT không lưu trực tiếp ở đây mà
+ * được lấy qua module cha, nhờ vậy khi đổi cấp độ module thì toàn bộ Kanji con đồng bộ theo.
+ */
 public class KanjiDetail {
 
     @Id
@@ -21,6 +25,7 @@ public class KanjiDetail {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "module_id", nullable = false)
+    // Đây là phía giữ module_id, nên mỗi Kanji bắt buộc thuộc đúng một module bài học.
     private KanjiLessonModule module;
 
     @Column(name = "character", nullable = false, length = 10)
@@ -32,18 +37,11 @@ public class KanjiDetail {
     @Column(name = "kunyomi", length = 200)
     private String kunyomi;
 
-    @Column(name = "stroke_order_url", length = 500)
-    private String strokeOrderUrl;
-
     @Column(name = "meaning", nullable = false, length = 300)
     private String meaning;
 
     @Column(name = "compound_words", columnDefinition = "NVARCHAR(MAX)")
     private String compoundWords;
-
-    @Builder.Default
-    @Column(name = "is_preview", nullable = false)
-    private boolean isPreview = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -53,6 +51,7 @@ public class KanjiDetail {
 
     @PrePersist
     protected void onCreate() {
+        // Tự gắn thời gian trước khi INSERT, tránh phụ thuộc frontend phải gửi timestamp.
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
@@ -60,6 +59,7 @@ public class KanjiDetail {
 
     @PreUpdate
     protected void onUpdate() {
+        // Chỉ cập nhật mốc sửa cuối; ngày tạo ban đầu không được thay đổi.
         this.updatedAt = LocalDateTime.now();
     }
 }

@@ -32,6 +32,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+/**
+ * Kiểm thử các quy tắc quan trọng của Personal Deck mà controller không nên tự xử lý:
+ * xác minh chủ sở hữu, tạo khóa ghép cho bảng liên kết và tính đúng số lượng item.
+ * Repository được mock để test chỉ tập trung vào logic service, không phụ thuộc database.
+ */
 class PersonalDeckServiceImplTest {
 
     @Mock private PersonalVocabularyDeckRepository vocabDeckRepository;
@@ -47,6 +52,8 @@ class PersonalDeckServiceImplTest {
 
     @Test
     void getKanjiDeckRejectsDeckOwnedByAnotherStudent() {
+        // Truy vấn có cả deckId và studentId trả rỗng mô phỏng trường hợp deck tồn tại
+        // nhưng thuộc người khác. Service cố ý trả "không tìm thấy" để không lộ dữ liệu.
         when(kanjiDeckRepository.findByDeckIdAndStudent_AccountId(10L, 2L))
                 .thenReturn(Optional.empty());
 
@@ -55,6 +62,8 @@ class PersonalDeckServiceImplTest {
 
     @Test
     void addKanjiUsesOwnedDeckAndPersistsTheCompositeKey() {
+        // Chuẩn bị đủ ba phần của quan hệ: học viên sở hữu deck, Kanji cần thêm và request.
+        // ID của item phải gồm cả deckId + kanjiId để một Kanji không bị thêm trùng trong deck.
         Account student = Account.builder().accountId(2L).role(Role.Student).fullName("Student").build();
         PersonalKanjiDeck deck = PersonalKanjiDeck.builder().deckId(10L).student(student).title("N5").build();
         KanjiDetail kanji = KanjiDetail.builder().kanjiId(20L).character("日").build();
@@ -67,6 +76,8 @@ class PersonalDeckServiceImplTest {
 
         service.addKanji(10L, request, 2L);
 
+        // ArgumentCaptor lấy đúng entity service gửi xuống repository. Nhờ đó test được cả
+        // liên kết hai chiều và việc trim ghi chú, thay vì chỉ kiểm tra phương thức save đã gọi.
         ArgumentCaptor<PersonalKanjiDeckItem> captor = ArgumentCaptor.forClass(PersonalKanjiDeckItem.class);
         verify(kanjiItemRepository).save(captor.capture());
         assertEquals(expectedId, captor.getValue().getId());
@@ -77,6 +88,8 @@ class PersonalDeckServiceImplTest {
 
     @Test
     void getKanjiDeckSummaryCountsOnlyItemsInThatDeck() {
+        // Count phải lọc theo deckId. Nếu dùng count toàn bảng, tổng item của deck hiện tại
+        // sẽ vô tình bao gồm dữ liệu trong deck của các học viên khác.
         Account student = Account.builder().accountId(2L).role(Role.Student).fullName("Student").build();
         PersonalKanjiDeck deck = PersonalKanjiDeck.builder().deckId(10L).student(student).title("N5").build();
 

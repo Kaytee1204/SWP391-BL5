@@ -4,12 +4,14 @@ import CategoryTable from '../../components/CategoryTable';
 import CategoryFormModal from '../../components/CategoryFormModal';
 import Navbar from '../../components/common/Navbar';
 
+// Component cha giữ dữ liệu; table chỉ hiển thị và modal chỉ thu thập input.
 export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogout, onViewProfile, onOpenAuth }) {
     const [categories, setCategories] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
 
     const fetchCategories = async () => {
+        // API fetch cũ trả nguyên ApiResponse, nên kiểm tra code rồi lấy response.data.
         try {
             const response = await vocabularyCategoryApi.getAll();
             if (response && (response.code === 200 || response.code === 201)) {
@@ -21,6 +23,7 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
     };
 
     useEffect(() => {
+        // Tải khi mount; sau create/update/delete sẽ gọi lại để đồng bộ với server.
         fetchCategories();
     }, []);
 
@@ -48,6 +51,7 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
     };
 
     const handleFormSubmit = async (formData) => {
+        // editingCategory là cờ phân nhánh PUT/POST, giúp dùng chung một modal.
         try {
             let response;
             if (editingCategory) {
@@ -63,6 +67,7 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
             }
 
             setIsModalOpen(false);
+            // Tải lại để nhận ID, timestamp và giá trị backend đã chuẩn hóa.
             await fetchCategories();
         } catch (error) {
             console.error("Lỗi khi lưu dữ liệu:", error);

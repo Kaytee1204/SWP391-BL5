@@ -2,9 +2,14 @@ import React from 'react';
 import { BookOpen, Layers, LogOut, Users, Sparkles } from 'lucide-react';
 
 export const Navbar = ({ currentTab, setCurrentTab, currentUser }) => {
+  // Navbar này là component được điều khiển bởi trang cha: currentTab cho biết màn hình
+  // đang mở, còn setCurrentTab báo ngược lên cha khi người dùng chọn một chức năng khác.
+  // Kiểm tra role ở đây chỉ dùng để ẩn/hiện menu; backend vẫn phải kiểm tra JWT khi gọi API.
   const isStudent = currentUser?.role === 'Student';
 
   const handleLogout = () => {
+    // Xóa cả token lẫn thông tin hiển thị để phiên cũ không còn được API/Navbar sử dụng,
+    // sau đó quay về trang đăng nhập và giữ địa chỉ cần trở lại sau khi đăng nhập thành công.
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('user_info');
     window.location.replace('/login.html?returnTo=learning.html');

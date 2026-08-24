@@ -9,12 +9,13 @@ export const accountApi = {
 };
 
 export const vocabApi = {
-  // Danh mục từ vựng
-  getCategories: (jlptLevel) => axiosClient.get('/vocab-categories', { params: { jlptLevel } }),
-  getCategoryById: (id) => axiosClient.get(`/vocab-categories/${id}`),
-  createCategory: (data) => axiosClient.post('/vocab-categories', data),
-  updateCategory: (id, data) => axiosClient.put(`/vocab-categories/${id}`, data),
-  deleteCategory: (id) => axiosClient.delete(`/vocab-categories/${id}`),
+  // Các hàm chỉ mô tả endpoint. axiosClient tự gắn JWT và trả thẳng phần data của ApiResponse.
+  // jlptLevel null được Axios bỏ qua, tương ứng yêu cầu backend trả toàn bộ category.
+  getCategories: (jlptLevel) => axiosClient.get('/vocabulary-categories', { params: { jlptLevel } }),
+  getCategoryById: (id) => axiosClient.get(`/vocabulary-categories/${id}`),
+  createCategory: (data) => axiosClient.post('/vocabulary-categories', data),
+  updateCategory: (id, data) => axiosClient.put(`/vocabulary-categories/${id}`, data),
+  deleteCategory: (id) => axiosClient.delete(`/vocabulary-categories/${id}`),
 
   // Mục từ vựng
   getItems: (params) => axiosClient.get('/vocab-items', { params }),
@@ -25,14 +26,14 @@ export const vocabApi = {
 };
 
 export const kanjiApi = {
-  // Module Kanji
+  // Module Kanji: GET dùng cho màn xem/lọc; các hàm ghi sẽ bị backend kiểm tra role Lecturer.
   getModules: (jlptLevel) => axiosClient.get('/kanji-modules', { params: { jlptLevel } }),
   getModuleById: (id) => axiosClient.get(`/kanji-modules/${id}`),
   createModule: (data) => axiosClient.post('/kanji-modules', data),
   updateModule: (id, data) => axiosClient.put(`/kanji-modules/${id}`, data),
   deleteModule: (id) => axiosClient.delete(`/kanji-modules/${id}`),
 
-  // Chi tiết Kanji
+  // params có thể chứa moduleId, jlptLevel và search; service backend quyết định nhánh truy vấn.
   getKanjiDetails: (params) => axiosClient.get('/kanji-details', { params }),
   getKanjiById: (id) => axiosClient.get(`/kanji-details/${id}`),
   createKanji: (data) => axiosClient.post('/kanji-details', data),
@@ -41,7 +42,7 @@ export const kanjiApi = {
 };
 
 export const deckApi = {
-  // Deck từ vựng cá nhân
+  // Không truyền studentId: backend lấy owner từ JWT để không cho client thao tác thay user khác.
   getMyVocabDecks: () => axiosClient.get('/personal/vocab-decks'),
   getVocabDeckById: (id) => axiosClient.get(`/personal/vocab-decks/${id}`),
   createVocabDeck: (data) => axiosClient.post('/personal/vocab-decks', data),
@@ -50,7 +51,7 @@ export const deckApi = {
   addVocabItemToDeck: (deckId, vocabularyItemId) => axiosClient.post(`/personal/vocab-decks/${deckId}/items`, { vocabularyItemId }),
   removeVocabItemFromDeck: (deckId, itemId) => axiosClient.delete(`/personal/vocab-decks/${deckId}/items/${itemId}`),
 
-  // Deck Kanji cá nhân
+  // Kanji deck có thêm API updateNote vì ghi chú nằm trên quan hệ deck-Kanji, không nằm ở Kanji gốc.
   getMyKanjiDecks: () => axiosClient.get('/personal/kanji-decks'),
   getKanjiDeckById: (id) => axiosClient.get(`/personal/kanji-decks/${id}`),
   createKanjiDeck: (data) => axiosClient.post('/personal/kanji-decks', data),

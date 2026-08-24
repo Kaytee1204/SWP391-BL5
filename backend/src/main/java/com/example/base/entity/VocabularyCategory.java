@@ -25,6 +25,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Nhóm các mục từ vựng theo chủ đề và cấp độ JLPT. Category là bảng cha của VocabularyItem;
+ * cấp độ đặt tại đây để mọi từ trong cùng danh mục dùng chung một nguồn dữ liệu JLPT.
+ */
 @Entity
 @Table(name = "VocabularyCategory")
 @Getter
@@ -51,6 +55,7 @@ public class VocabularyCategory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
+    // Chỉ tải Account khi thật sự truy cập người tạo, tránh query dư trong màn danh sách.
     private Account createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -61,10 +66,12 @@ public class VocabularyCategory {
 
     @Builder.Default
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // Cascade ALL khiến thao tác với category được lan xuống các VocabularyItem con.
     private List<VocabularyItem> items = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
+        // Backend tự quản lý timestamp để client không thể giả mạo ngày tạo/cập nhật.
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
@@ -72,6 +79,7 @@ public class VocabularyCategory {
 
     @PreUpdate
     protected void onUpdate() {
+        // Khi chỉnh sửa chỉ làm mới updatedAt, còn createdAt được giữ nguyên.
         this.updatedAt = LocalDateTime.now();
     }
 }

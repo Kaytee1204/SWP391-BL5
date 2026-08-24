@@ -10,6 +10,8 @@ export default function Navbar({
   onLogout,
   extraAction,
 }) {
+  // currentView và onNavigate tạo thành cơ chế điều hướng dùng chung của ứng dụng:
+  // Navbar không tự quản lý trang hiện tại mà chỉ phát tên view về App.jsx.
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -65,11 +67,11 @@ export default function Navbar({
             <>
             <li>
               <a
-                className={`nav-link highlight-tab ${currentView === 'kanji-decks' ? 'active' : ''}`}
-                onClick={() => onNavigate('kanji-decks')}
-                title="Manage your personal Kanji decks"
+                className={`nav-link highlight-tab ${currentView === 'decks' ? 'active' : ''}`}
+                onClick={() => onNavigate('decks')}
+                title="Manage your personal decks"
               >
-                Kanji Decks
+                Decks
               </a>
             </li>
             <li><a className={`nav-link highlight-tab ${currentView === 'student_exams' ? 'active' : ''}`}
@@ -98,6 +100,8 @@ export default function Navbar({
             </li>
           )}
           {currentUser?.role === 'Lecturer' && (
+            // Các màn hình quản trị Vocab/Kanji nằm bên trong Learning Materials.
+            // Chỉ Lecturer thấy lối vào này; backend tiếp tục bảo vệ API thay đổi dữ liệu.
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}

@@ -8,6 +8,10 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/**
+ * Truy cập mục từ vựng và các truy vấn lọc/tìm kiếm. JLPT được đọc qua category cha;
+ * keyword được xử lý ở database để không tải toàn bộ kho từ về backend.
+ */
 public interface VocabularyItemRepository extends JpaRepository<VocabularyItem, Long> {
     List<VocabularyItem> findByCategory_CategoryIdOrderByItemIdAsc(Long categoryId);
 
@@ -16,6 +20,7 @@ public interface VocabularyItemRepository extends JpaRepository<VocabularyItem, 
     @Query("select v from VocabularyItem v where v.category.jlptLevel = :jlptLevel order by v.itemId")
     List<VocabularyItem> findByJlptLevel(@Param("jlptLevel") JlptLevel jlptLevel);
 
+    // coalesce xử lý trường kanji null; lower + LIKE tạo tìm kiếm không phân biệt hoa thường.
     @Query("select v from VocabularyItem v where " +
             "lower(v.word) like lower(concat('%', :keyword, '%')) or " +
             "lower(v.reading) like lower(concat('%', :keyword, '%')) or " +

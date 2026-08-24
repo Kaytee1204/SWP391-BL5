@@ -5,6 +5,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * Biểu diễn một mục từ vựng thuộc một category. Trường word là cách viết bắt buộc;
+ * kanji là tùy chọn, còn jlptLevel được suy ra từ category thay vì lưu lặp ở bảng này.
+ */
 @Entity
 @Table(name = "VocabularyItem")
 @Getter
@@ -21,6 +25,7 @@ public class VocabularyItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
+    // Mỗi từ bắt buộc thuộc một category để có chủ đề và cấp độ JLPT xác định.
     private VocabularyCategory category;
 
     @Column(name = "word", nullable = false, length = 100)
@@ -35,18 +40,11 @@ public class VocabularyItem {
     @Column(name = "meaning", nullable = false, length = 500)
     private String meaning;
 
-    @Column(name = "audio_url", length = 500)
-    private String audioUrl;
-
     @Column(name = "example_sentence", columnDefinition = "NVARCHAR(MAX)")
     private String exampleSentence;
 
     @Column(name = "example_translation", columnDefinition = "NVARCHAR(MAX)")
     private String exampleTranslation;
-
-    @Builder.Default
-    @Column(name = "is_preview", nullable = false)
-    private boolean isPreview = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -56,6 +54,7 @@ public class VocabularyItem {
 
     @PrePersist
     protected void onCreate() {
+        // Timestamp được tạo tại server ngay trước INSERT để dữ liệu luôn nhất quán.
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
@@ -63,6 +62,7 @@ public class VocabularyItem {
 
     @PreUpdate
     protected void onUpdate() {
+        // Không thay createdAt khi sửa nội dung từ vựng.
         this.updatedAt = LocalDateTime.now();
     }
 }
