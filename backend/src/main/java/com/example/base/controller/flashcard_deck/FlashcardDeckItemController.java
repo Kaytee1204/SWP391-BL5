@@ -46,7 +46,7 @@ public class FlashcardDeckItemController {
         itemService.removeItemFromDeck(deckId, itemType, itemId);
         return ResponseEntity.noContent().build(); // Trả về 204 No Content
     }
-    @PutMapping("/items")
+    @PutMapping
     @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')")
     public ResponseEntity<FlashcardDeckItemResponse> updateItem(@Valid @RequestBody FlashcardDeckItemCreateRequest request) {
         FlashcardDeckItemResponse response = itemService.updateItemInDeck(request);

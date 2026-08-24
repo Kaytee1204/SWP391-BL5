@@ -1,9 +1,7 @@
 import React from 'react';
 
-const CategoryTable = ({ categories, onEdit, onDelete }) => {
-    // Ánh xạ cấp JLPT sang màu badge giúp người học nhận biết nhanh từng nhóm.
-    // Giá trị dự phòng bên dưới vẫn hiển thị được nếu backend trả level chưa khai báo.
-    // Hàm tạo màu sắc riêng cho từng level JLPT
+const CategoryTable = ({ categories, onEdit, onDelete, onViewItems }) => {
+    // Map JLPT level to badge colors
     const getJlptBadgeStyle = (level) => {
         const styles = {
             'N5': { bg: '#dcfce7', color: '#166534' },
@@ -39,16 +37,14 @@ const CategoryTable = ({ categories, onEdit, onDelete }) => {
                         <tr>
                             <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>ID</th>
                             <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>JLPT Level</th>
-                            <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Tên danh mục</th>
-                            <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Mô tả</th>
-                            <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Từ vựng con</th>
-                            <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', textAlign: 'center' }}>Thao tác</th>
+                            <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Category Name</th>
+                            <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Description</th>
+                            <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Words</th>
+                            <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', textAlign: 'center' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {categories.length > 0 ? (
-                            // categoryId vừa là key ổn định để React đối chiếu từng dòng,
-                            // vừa được gửi về component cha khi người dùng sửa hoặc xóa.
+                        {categories && categories.length > 0 ? (
                             categories.map((item) => (
                                 <tr key={item.categoryId} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                                     <td style={{ padding: '16px 20px', color: '#334155', fontWeight: '500' }}>#{item.categoryId}</td>
@@ -56,60 +52,47 @@ const CategoryTable = ({ categories, onEdit, onDelete }) => {
                                         <span style={getJlptBadgeStyle(item.jlptLevel)}>{item.jlptLevel}</span>
                                     </td>
                                     <td style={{ padding: '16px 20px', color: '#0f172a', fontWeight: '600' }}>{item.name}</td>
-                                    <td style={{ padding: '16px 20px', color: '#64748b' }}>{item.description || <span style={{fontStyle: 'italic', color: '#cbd5e1'}}>Không có</span>}</td>
-                                    <td style={{ padding: '16px 20px', color: '#64748b' }}>{new Date(item.createdAt).toLocaleDateString('vi-VN')}</td>
+                                    <td style={{ padding: '16px 20px', color: '#64748b' }}>{item.description || <span style={{fontStyle: 'italic', color: '#cbd5e1'}}>None</span>}</td>
+                                    <td style={{ padding: '16px 20px' }}>
+                                        <button 
+                                            onClick={() => onViewItems && onViewItems(item)}
+                                            style={{
+                                                backgroundColor: '#e0e7ff',
+                                                color: '#3730a3',
+                                                border: 'none',
+                                                padding: '6px 12px',
+                                                borderRadius: '6px',
+                                                fontWeight: '600',
+                                                cursor: 'pointer',
+                                                fontSize: '0.85rem'
+                                            }}
+                                        >
+                                            📚 View ({item.itemCount || 0} words)
+                                        </button>
+                                    </td>
                                     <td style={{ padding: '16px 20px', textAlign: 'center' }}>
                                         <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                                            {/* Nút Sửa bo góc */}
                                             <button 
                                                 onClick={() => onEdit(item)} 
-                                                style={{ padding: '6px 12px', backgroundColor: '#fef3c7', color: '#d97706', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem', transition: 'all 0.2s' }}
-                                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fde68a'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fef3c7'}
+                                                style={{ padding: '6px 12px', backgroundColor: '#fef3c7', color: '#d97706', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}
                                             >
-                                                Sửa
+                                                Edit
                                             </button>
-                                            {/* Nút Xóa bo góc */}
                                             <button 
-                                                onClick={() => onViewItems && onViewItems(item)}
-                                                style={{
-                                                    backgroundColor: '#e0e7ff',
-                                                    color: '#3730a3',
-                                                    border: 'none',
-                                                    padding: '6px 12px',
-                                                    borderRadius: '6px',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.85rem'
-                                                }}
+                                                onClick={() => onDelete(item.categoryId)} 
+                                                style={{ padding: '6px 12px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}
                                             >
-                                                📚 Xem ({itemCount} từ)
+                                                Delete
                                             </button>
-                                        </td>
-
-                                        <td style={{ padding: '16px 20px', textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                                                <button 
-                                                    onClick={() => onEdit(item)} 
-                                                    style={{ padding: '6px 12px', backgroundColor: '#fef3c7', color: '#d97706', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}
-                                                >
-                                                    Sửa
-                                                </button>
-                                                <button 
-                                                    onClick={() => onDelete(item.categoryId)} 
-                                                    style={{ padding: '6px 12px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}
-                                                >
-                                                    Xóa
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
                         ) : (
                             <tr>
                                 <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
                                     <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📚</div>
-                                    Chưa có danh mục nào. Hãy tạo mới nhé!
+                                    No categories found. Create a new one!
                                 </td>
                             </tr>
                         )}

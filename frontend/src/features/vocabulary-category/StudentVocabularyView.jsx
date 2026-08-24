@@ -17,7 +17,7 @@ export default function StudentVocabularyView({ currentUser, onNavigate, onViewP
                 setCategories(response.data || []);
             }
         } catch (error) {
-            console.error("Lỗi khi tải danh mục từ vựng:", error);
+            console.error("Error loading vocabulary categories:", error);
         } finally {
             setLoading(false);
         }
@@ -64,11 +64,11 @@ export default function StudentVocabularyView({ currentUser, onNavigate, onViewP
 
             <main style={{ maxWidth: '1180px', margin: '2rem auto', padding: '0 1.5rem 4rem' }}>
                 <div style={{ marginBottom: '24px' }}>
-                    <h1 style={{ margin: 0, color: '#0f172a', fontSize: '2rem', fontWeight: '800' }}>📚 Danh mục Từ vựng JLPT</h1>
-                    <p style={{ margin: '6px 0 0 0', color: '#64748b', fontSize: '0.95rem' }}>Khám phá và học tập hệ thống từ vựng theo từng chủ đề và cấp độ.</p>
+                    <h1 style={{ margin: 0, color: '#0f172a', fontSize: '2rem', fontWeight: '800' }}>📚 JLPT Vocabulary Categories</h1>
+                    <p style={{ margin: '6px 0 0 0', color: '#64748b', fontSize: '0.95rem' }}>Explore and master vocabulary organized by topic and JLPT level.</p>
                 </div>
 
-                {/* Bộ lọc cấp độ JLPT */}
+                {/* Level Filters */}
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
                     {['ALL', 'N5', 'N4', 'N3', 'N2', 'N1'].map((level) => (
                         <button
@@ -86,18 +86,18 @@ export default function StudentVocabularyView({ currentUser, onNavigate, onViewP
                                 transition: 'all 0.2s'
                             }}
                         >
-                            {level === 'ALL' ? 'Tất cả cấp độ' : level}
+                            {level === 'ALL' ? 'All Levels' : level}
                         </button>
                     ))}
                 </div>
 
-                {/* Danh sách danh mục dạng thẻ (Cards) */}
+                {/* Categories Grid */}
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>Đang tải danh mục từ vựng...</div>
+                    <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>Loading vocabulary categories...</div>
                 ) : filteredCategories.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', color: '#94a3b8' }}>
                         <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📭</div>
-                        Không có danh mục từ vựng nào ở cấp độ này.
+                        No vocabulary categories found for this level.
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
@@ -125,13 +125,13 @@ export default function StudentVocabularyView({ currentUser, onNavigate, onViewP
                                         </div>
                                         <h3 style={{ margin: '0 0 8px 0', color: '#0f172a', fontSize: '1.25rem', fontWeight: '700' }}>{cat.name}</h3>
                                         <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem', lineHeight: '1.4' }}>
-                                            {cat.description || <span style={{ fontStyle: 'italic', color: '#cbd5e1' }}>Không có mô tả</span>}
+                                            {cat.description || <span style={{ fontStyle: 'italic', color: '#cbd5e1' }}>No description</span>}
                                         </p>
                                     </div>
 
                                     <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>
                                         <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: '600' }}>
-                                            📖 {itemCount} từ vựng
+                                            📖 {itemCount} words
                                         </span>
                                         <button
                                             onClick={() => setSelectedCategoryForItems(cat)}
@@ -146,7 +146,7 @@ export default function StudentVocabularyView({ currentUser, onNavigate, onViewP
                                                 fontSize: '0.85rem'
                                             }}
                                         >
-                                            Học ngay ➔
+                                            Study Now ➔
                                         </button>
                                     </div>
                                 </div>
@@ -155,7 +155,7 @@ export default function StudentVocabularyView({ currentUser, onNavigate, onViewP
                     </div>
                 )}
 
-                {/* Modal hiển thị danh sách từ vựng con */}
+                {/* Items Modal */}
                 <CategoryItemsModal 
                     category={selectedCategoryForItems}
                     onClose={() => setSelectedCategoryForItems(null)}

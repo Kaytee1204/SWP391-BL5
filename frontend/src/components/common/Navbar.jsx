@@ -10,39 +10,28 @@ export default function Navbar({
   onLogout,
   extraAction,
 }) {
-  // currentView và onNavigate tạo thành cơ chế điều hướng dùng chung của ứng dụng:
-  // Navbar không tự quản lý trang hiện tại mà chỉ phát tên view về App.jsx.
   return (
     <nav className="navbar">
       <div className="navbar-container">
         {/* Brand Group */}
-        <div className="brand-group" onClick={() => onNavigate('home')}>
+        <div className="brand-group" onClick={() => onNavigate('home')} style={{ cursor: 'pointer' }} title="JLMS - Back to Home">
           <div className="brand-icon">⛩️</div>
           <span className="brand-title">
             JLMS
-
           </span>
         </div>
 
         {/* Nav Links */}
         <ul className="nav-links">
-          <li>
-            <a
-              className={`nav-link ${currentView === 'home' || currentView === 'landing' ? 'active' : ''}`}
-              onClick={() => onNavigate('home')}
-            >
-              Home
-            </a>
-          </li>
           
           <li>
             <a
               className={`nav-link highlight-tab ${currentView === 'culture_reader' ? 'active' : ''}`}
               onClick={() => onNavigate('culture_reader')}
-              title="Khám phá tạp chí văn hóa & tiếng lóng"
+              title="Explore Japanese Culture & Slang Articles"
               style={{ whiteSpace: 'nowrap' }}
             >
-              Culture Article
+              Culture Articles
             </a>
           </li>
 
@@ -50,58 +39,53 @@ export default function Navbar({
             <a
               className={`nav-link highlight-tab ${currentView === 'courses' ? 'active' : ''}`}
               onClick={() => onNavigate('courses')}
-              title="Khám phá và đăng ký các khóa học tiếng Nhật JLPT"
+              title="Explore and enroll in JLPT Japanese courses"
             >
               Courses
             </a>
           </li>
+
           <li>
             <a
               className={`nav-link highlight-tab ${(currentView === 'free_courses' || currentView === 'grammar_reader' || currentView === 'kanji' || currentView === 'kanji-decks' || currentView === 'exercise_practice') ? 'active' : ''}`}
               onClick={() => onNavigate('free_courses')}
-              title="Khóa học & Tài nguyên học tiếng Nhật miễn phí (Grammar, Kanji, Quiz)"
+              title="Free Japanese Learning Hub (Grammar, Kanji, Practice Quiz)"
             >
               🎁 Free Courses
             </a>
           </li>
 
-          {/* Phân hệ Role */}
+          {/* Student Role Items */}
           {currentUser?.role === 'Student' && (
             <>
-            <li>
-              <a
-                className={`nav-link highlight-tab ${currentView === 'decks' ? 'active' : ''}`}
-                onClick={() => onNavigate('decks')}
-                title="Manage your personal decks"
-              >
-                Decks
-              </a>
-            </li>
-            <li><a className={`nav-link highlight-tab ${currentView === 'student_exams' ? 'active' : ''}`}
-              onClick={() => onNavigate('student_exams')} title="Làm đề và xem lịch sử điểm">Mock Exams</a></li>
+              <li>
+                <a
+                  className={`nav-link highlight-tab ${currentView === 'decks' ? 'active' : ''}`}
+                  onClick={() => onNavigate('decks')}
+                  title="Manage your personal flashcard decks"
+                >
+                  Decks
+                </a>
+              </li>
+              <li>
+                <a
+                  className={`nav-link highlight-tab ${currentView === 'student_exams' ? 'active' : ''}`}
+                  onClick={() => onNavigate('student_exams')}
+                  title="Take mock exams and view score history"
+                >
+                  Mock Exams
+                </a>
+              </li>
             </>
           )}
-          
-          {currentUser && (currentUser.role === 'Student' || currentUser.role === 'Lecturer' || currentUser.role === 'Manager') && (
-            <li>
-              <a
-                className={`nav-link highlight-tab ${currentView === 'exercise_practice' ? 'active' : ''}`}
-                onClick={() => onNavigate('exercise_practice')}
-                title="Practice Japanese Grammar Multiple-Choice Quizzes"
-                style={{ whiteSpace: 'nowrap' }}
-              >
-                 Practice Quiz
-              </a>
-            </li>
-          )}
 
-          {/* Báo lỗi button */}
+          {/* Error Reports link for Student */}
           {currentUser?.role === 'Student' && (
             <li>
               <a
                 className="nav-link"
                 onClick={() => onNavigate('error-reports')}
-                title="Theo dõi lịch sử báo lỗi"
+                title="View error report history"
                 style={{
                   whiteSpace: 'nowrap',
                   color: '#e11d48',
@@ -117,12 +101,12 @@ export default function Navbar({
                   fontSize: '0.85rem'
                 }}
               >
-                ⚠️ Báo lỗi
+                ⚠️ Error Reports
               </a>
             </li>
           )}
 
-          {/* Phân hệ Role */}
+          {/* Role Portals */}
           {currentUser?.role === 'Author' && (
             <li>
               <a
@@ -135,9 +119,7 @@ export default function Navbar({
             </li>
           )}
           
-          {currentUser?.role === 'Lecturer' && (
-            // Các màn hình quản trị Vocab/Kanji nằm bên trong Learning Materials.
-            // Chỉ Lecturer thấy lối vào này; backend tiếp tục bảo vệ API thay đổi dữ liệu.
+          {(currentUser?.role === 'Lecturer' || currentUser?.role === 'Manager') && (
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}
@@ -156,7 +138,7 @@ export default function Navbar({
                 onClick={() => onNavigate('dashboard')}
                 style={{ whiteSpace: 'nowrap' }}
               >
-                Manager Portal
+                Manager Dashboard
               </a>
             </li>
           )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { CheckCircle, AlertCircle, XCircle, Clock } from 'lucide-react';
+import { apiRequest } from '../../api/apiRequest';
 
 export default function ManagerErrorReportView() {
   const [reports, setReports] = useState([]);
@@ -9,16 +10,8 @@ export default function ManagerErrorReportView() {
   const fetchAllReports = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('jwt_token');
-      const response = await fetch(`http://localhost:8080/api/v1/error-reports/all?page=0&size=50`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-      const data = await response.json();
-      
-      if (response.ok) {
+      const data = await apiRequest('/error-reports/all?page=0&size=50', 'GET');
+      if (data?.data) {
         setReports(data.data.content || []);
       }
     } catch (err) {
@@ -36,30 +29,16 @@ export default function ManagerErrorReportView() {
     if (!window.confirm(`Are you sure you want to change the status to: ${newStatus}?`)) return;
 
     try {
-      const token = localStorage.getItem('jwt_token');
-      const response = await fetch(`http://localhost:8080/api/v1/error-reports/${reportId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (response.ok) {
-        const updatedData = await response.json();
-        
+      const updatedData = await apiRequest(`/error-reports/${reportId}/status`, 'PATCH', { status: newStatus });
+      if (updatedData?.data) {
         setReports(prevReports => 
           prevReports.map(r => 
             r.reportId === reportId ? updatedData.data : r
           )
         );
-      } else {
-        const errorData = await response.json();
-        alert(errorData.message || 'Failed to update status!');
       }
     } catch (err) {
-      alert('Network error while updating status');
+      alert(err.message || 'Failed to update status!');
     }
   };
 

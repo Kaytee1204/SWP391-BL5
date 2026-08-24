@@ -15,6 +15,7 @@ import CategoryFormModal from '../../components/vocabulary_category/CategoryForm
 import CategoryItemsModal from '../../components/vocabulary_category/CategoryItemsModal';
 import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
 import CourseManagementView from '../courses/CourseManagementView';
+import ManagerErrorReportView from '../error_report/ManagerErrorReportView';
 
 export default function ManagerDashboardPage({
   currentUser,
@@ -166,10 +167,6 @@ export default function ManagerDashboardPage({
             <div className="nav-item-left"><span>📝</span><span>Learning Materials</span></div>
             <span>›</span>
           </div>
-          <div className={`nav-item ${activeTab === 'materials' ? 'active' : ''}`} onClick={() => setActiveTab('materials')}>
-            <div className="nav-item-left"><span>📝</span><span>Learning Materials</span></div>
-            <span>›</span>
-          </div>
           <div className={`nav-item ${activeTab === 'culture_articles' ? 'active' : ''}`} onClick={() => setActiveTab('culture_articles')}>
             <div className="nav-item-left"><span>⛩️</span><span>Cultural Articles</span></div>
             <span>›</span>
@@ -217,10 +214,6 @@ export default function ManagerDashboardPage({
         </div>
 
         {activeTab === 'accounts' && <AccountManagementView currentUser={currentUser} onAccountUpdated={() => {}} />}
-
-        {activeTab === 'courses' && (
-          <CourseManagementView currentUser={currentUser} />
-        )}
 
         {activeTab === 'courses' && (
           <CourseManagementView currentUser={currentUser} />

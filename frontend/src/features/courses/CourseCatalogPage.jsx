@@ -105,7 +105,7 @@ export default function CourseCatalogPage({
           Danh Mục Khóa Học & Lộ Trình Toàn Diện
         </h1>
         <p className="culture-page-sub">
-          Luyện thi JLPT, từ vựng, ngữ pháp, kanji và giao tiếp thực tế cùng đội ngũ Giảng viên JLMS. Thanh toán tiện lợi qua cổng <strong>SePay (VietinBank VietQR)</strong>.
+          Luyện thi JLPT, từ vựng, ngữ pháp, kanji và giao tiếp thực tế cùng đội ngũ Giảng viên JLMS. Thanh toán tiện lợi qua cổng <strong>SePay</strong>.
         </p>
       </header>
 

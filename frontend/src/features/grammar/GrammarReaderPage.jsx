@@ -343,7 +343,7 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
                           </div>
                         ))
                       ) : (
-                        <div style={{ color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic' }}>Chưa có câu ví dụ nào cho mẫu này.</div>
+                        <div style={{ color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic' }}>No example sentences available for this pattern yet.</div>
                       )}
                     </div>
 

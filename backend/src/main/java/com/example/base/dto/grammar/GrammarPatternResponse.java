@@ -34,11 +34,16 @@ public class GrammarPatternResponse {
     @Schema(description = "Lecturer Account ID who created the pattern", example = "5")
     private Long createdById;
 
+    private Long createdByAccountId;
+
     @Schema(description = "Lecturer Full Name", example = "Yamada Sensei")
     private String createdByName;
 
     @Schema(description = "Lecturer Email", example = "lecturer@japanlearning.com")
     private String createdByEmail;
+
+    @Schema(description = "Lecturer Avatar URL", example = "https://...")
+    private String createdByAvatarUrl;
 
     @Schema(description = "Created timestamp", example = "2026-08-18T10:00:00")
     private LocalDateTime createdAt;

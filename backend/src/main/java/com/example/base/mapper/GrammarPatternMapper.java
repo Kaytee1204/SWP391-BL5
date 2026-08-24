@@ -63,8 +63,10 @@ public class GrammarPatternMapper {
                 .structure(pattern.getStructure())
                 .usageNote(pattern.getUsageNote())
                 .createdById(lecturer != null ? lecturer.getAccountId() : null)
+                .createdByAccountId(lecturer != null ? lecturer.getAccountId() : null)
                 .createdByName(lecturer != null ? lecturer.getFullName() : "Unknown Lecturer")
                 .createdByEmail(lecturer != null ? lecturer.getEmail() : null)
+                .createdByAvatarUrl(lecturer != null ? lecturer.getAvatarUrl() : null)
                 .createdAt(pattern.getCreatedAt())
                 .updatedAt(pattern.getUpdatedAt())
                 .build();

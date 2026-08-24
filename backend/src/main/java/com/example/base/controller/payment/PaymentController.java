@@ -98,8 +98,10 @@ public class PaymentController {
      */
     @GetMapping
     @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')")
-    @Operation(summary = "Get all payment transactions (Manager & Lecturer only)")
-    public ResponseEntity<ApiResponse<Page<PaymentResponse>>> getAllPayments(
+    @Operation(summary = "Get all payment transactions with search, status filter, and pagination (Manager & Lecturer only)")
+    public ResponseEntity<ApiResponse<com.example.base.dto.common.PageResponse<PaymentResponse>>> getAllPayments(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "15") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
@@ -110,8 +112,46 @@ public class PaymentController {
                 ? Sort.Direction.ASC : Sort.Direction.DESC;
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
-        Page<PaymentResponse> result = paymentService.getAllPayments(pageable);
+        Page<PaymentResponse> result = paymentService.getAllPayments(keyword, status, pageable);
+        return ResponseEntity.ok(ApiResponse.success(com.example.base.dto.common.PageResponse.from(result)));
+    }
+
+    /**
+     * API Báo cáo thanh toán tổng hợp cho Manager Dashboard (Thống kê & Tìm kiếm xử lý 100% ở Backend)
+     */
+    @GetMapping("/report")
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')")
+    @Operation(summary = "Get overall payment statistics and search results (Manager & Lecturer only)")
+    public ResponseEntity<ApiResponse<com.example.base.dto.payment.PaymentReportResponse>> getPaymentReport(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        com.example.base.dto.payment.PaymentReportResponse result = paymentService.getPaymentReport(keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    /**
+     * Đồng bộ giao dịch SePay thủ công (Manager & Lecturer)
+     */
+    @PostMapping("/sync")
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')")
+    @Operation(summary = "Sync pending payments with SePay API (Manager & Lecturer only)")
+    public ResponseEntity<ApiResponse<Integer>> syncPaymentsWithSePay() {
+        int syncedCount = paymentService.syncPendingPaymentsWithSePay();
+        return ResponseEntity.ok(ApiResponse.success("Đã đồng bộ thành công " + syncedCount + " giao dịch từ SePay!", syncedCount));
+    }
+
+    /**
+     * Xem sao kê tài khoản ngân hàng SePay trực tiếp (Manager & Lecturer)
+     */
+    @GetMapping("/sepay-transactions")
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')")
+    @Operation(summary = "Get raw bank transactions from SePay API (Manager & Lecturer only)")
+    public ResponseEntity<ApiResponse<java.util.List<java.util.Map<String, Object>>>> getSePayTransactions() {
+        java.util.List<java.util.Map<String, Object>> list = paymentService.getSePayBankTransactions();
+        return ResponseEntity.ok(ApiResponse.success(list));
     }
 
     /**

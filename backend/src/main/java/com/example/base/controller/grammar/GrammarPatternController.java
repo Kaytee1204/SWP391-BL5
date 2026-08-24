@@ -40,10 +40,10 @@ public class GrammarPatternController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // 2. Giảng viên xem danh sách các mẫu ngữ pháp do chính mình tạo
+    // 2. Giảng viên / Quản lý xem danh sách các mẫu ngữ pháp do chính mình tạo
     @GetMapping("/my-patterns")
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')")
-    @Operation(summary = "View Grammar Patterns created by the logged-in Lecturer")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @Operation(summary = "View Grammar Patterns created by the logged-in Lecturer or Manager")
     public ResponseEntity<ApiResponse<PageResponse<GrammarPatternResponse>>> getMyPatterns(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) JlptLevel jlptLevel,
@@ -61,10 +61,10 @@ public class GrammarPatternController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // 4. Giảng viên tạo mẫu ngữ pháp mới (Role: Lecturer)
+    // 4. Giảng viên & Quản lý tạo mẫu ngữ pháp mới (Role: Lecturer, Manager)
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')")
-    @Operation(summary = "Create a new Grammar Pattern (Lecturer only)")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @Operation(summary = "Create a new Grammar Pattern (Lecturer and Manager)")
     public ResponseEntity<ApiResponse<GrammarPatternResponse>> createPattern(
             @Valid @RequestBody GrammarPatternCreateRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
@@ -73,10 +73,10 @@ public class GrammarPatternController {
                 .body(ApiResponse.success("Grammar pattern created successfully", response));
     }
 
-    // 5. Giảng viên cập nhật mẫu ngữ pháp
+    // 5. Giảng viên & Quản lý cập nhật mẫu ngữ pháp
     @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.POST})
     @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
-    @Operation(summary = "Update an existing Grammar Pattern (Lecturer owner)")
+    @Operation(summary = "Update an existing Grammar Pattern (Lecturer owner or Manager)")
     public ResponseEntity<ApiResponse<GrammarPatternResponse>> updatePattern(
             @PathVariable Long id,
             @Valid @RequestBody GrammarPatternUpdateRequest request,

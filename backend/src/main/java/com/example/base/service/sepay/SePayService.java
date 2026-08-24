@@ -1,5 +1,8 @@
 package com.example.base.service.sepay;
 
+import java.util.List;
+import java.util.Map;
+
 public interface SePayService {
 
     String generateQrCodeUrl(Long amount, String transferContent);
@@ -17,4 +20,9 @@ public interface SePayService {
      * để tự động xác nhận thanh toán ngay lập tức khi học viên bấm kiểm tra
      */
     boolean checkRecentTransactionsViaApi(Long orderCode, Long expectedAmount);
+
+    /**
+     * Lấy danh sách giao dịch gần nhất từ SePay API để đồng bộ hàng loạt
+     */
+    List<Map<String, Object>> fetchRecentTransactionsFromApi(int limit);
 }

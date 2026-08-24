@@ -1,5 +1,6 @@
-// API cũ của màn category độc lập dùng fetch trực tiếp, vì vậy cần tự ghép URL, header và parse response.
-const BASE_URL = 'http://localhost:8080/api/v1/vocabulary-categories';
+import { API_BASE } from './apiRequest';
+
+const BASE_URL = `${API_BASE}/vocabulary-categories`;
 
 // Lấy JWT từ localStorage và đưa vào Authorization để backend xác định user/role.
 const getAuthHeaders = () => {
@@ -17,7 +18,6 @@ const handleResponse = async (response) => {
         return { code: response.status, message: "Success (No Content)" };
     }
     try {
-        // Khi có JSON hợp lệ, giữ nguyên toàn bộ ApiResponse vì component này còn kiểm tra code/message.
         return JSON.parse(text);
     } catch (error) {
         console.error("Phản hồi từ server không phải định dạng JSON hợp lệ:", text);

@@ -3,7 +3,6 @@ import { apiRequest } from '../../api/apiRequest';
 import { JLPT_LEVELS } from '../../assets/constants';
 import CreateGrammarModal from './components/CreateGrammarModal';
 import EditGrammarModal from './components/EditGrammarModal';
-import ManageExamplesModal from './components/ManageExamplesModal'; // 1. IMPORT MODAL VÍ DỤ
 
 export default function GrammarManagementView({ currentUser }) {
   const [patterns, setPatterns] = useState([]);
@@ -14,9 +13,6 @@ export default function GrammarManagementView({ currentUser }) {
   const [onlyMyPatterns, setOnlyMyPatterns] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingPattern, setEditingPattern] = useState(null);
-  
-  // 2. KHAI BÁO STATE QUẢN LÝ MODAL VÍ DỤ
-  const [selectedPatternForExamples, setSelectedPatternForExamples] = useState(null);
 
   const fetchPatterns = async () => {
     setLoading(true);
@@ -144,132 +140,169 @@ export default function GrammarManagementView({ currentUser }) {
                   cursor: 'pointer'
                 }}
               >
-                {lvl.value}
+                {lvl.label}
               </button>
             ))}
           </div>
 
-          {/* Toggle for Lecturer */}
-          {currentUser?.role === 'Lecturer' && (
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', color: '#6d28d9' }}>
+          {/* Toggle "My Patterns" for Lecturers / Managers */}
+          {isLecturer && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 checked={onlyMyPatterns}
                 onChange={e => setOnlyMyPatterns(e.target.checked)}
                 style={{ accentColor: '#7C3AED', width: '16px', height: '16px' }}
               />
-              Show only my patterns
+              Show Only My Created Patterns
             </label>
           )}
         </div>
 
-        {/* Search Box */}
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem' }}>
+        {/* Search Input */}
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.6rem' }}>
           <input
             type="text"
-            placeholder="Search by pattern name, structure formula, or usage explanation..."
+            placeholder="Search grammar title, formula structure, or meaning..."
             value={keyword}
             onChange={e => setKeyword(e.target.value)}
             className="form-input"
             style={{ flex: 1 }}
           />
-          <button type="submit" className="btn-dash btn-dash-primary" style={{ padding: '0.6rem 1.25rem' }}>
+          <button type="submit" className="btn-dash btn-dash-primary" style={{ padding: '0.55rem 1.25rem' }}>
             🔍 Search
           </button>
+          {keyword && (
+            <button
+              type="button"
+              className="btn-dash btn-dash-secondary"
+              onClick={() => {
+                setKeyword('');
+                fetchPatterns();
+              }}
+            >
+              Clear
+            </button>
+          )}
         </form>
       </div>
 
-      {/* Table Content */}
+      {/* Grammar Patterns Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-            Loading grammar patterns...
+          <div style={{ padding: '3.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            ⏳ Loading Japanese grammar patterns...
           </div>
         ) : error ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#e11d48' }}>
             ⚠️ {error}
           </div>
         ) : patterns.length === 0 ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-            No grammar patterns found. Click <strong>"➕ Add Grammar Pattern"</strong> to create one.
+          <div style={{ padding: '3.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📖</div>
+            <div style={{ fontWeight: 700 }}>No grammar patterns found.</div>
+            <div style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>
+              Try adjusting your search criteria or add a new pattern above.
+            </div>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+            <table className="clean-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: 'var(--text-muted)' }}>
-                  <th style={{ padding: '0.85rem 1rem', width: '60px' }}>ID</th>
-                  <th style={{ padding: '0.85rem 1rem', width: '90px' }}>JLPT</th>
-                  <th style={{ padding: '0.85rem 1rem' }}>Pattern Title</th>
+                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', fontSize: '0.8rem', color: '#64748b' }}>
+                  <th style={{ padding: '0.85rem 1rem' }}>Level</th>
+                  <th style={{ padding: '0.85rem 1rem' }}>Grammar Pattern</th>
                   <th style={{ padding: '0.85rem 1rem' }}>Structure Formula</th>
-                  <th style={{ padding: '0.85rem 1rem' }}>Created By</th>
-                  <th style={{ padding: '0.85rem 1rem', width: '120px' }}>Updated</th>
-                  <th style={{ padding: '0.85rem 1rem', textAlign: 'right', width: '220px' }}>Actions</th>
+                  <th style={{ padding: '0.85rem 1rem' }}>Author / Creator</th>
+                  <th style={{ padding: '0.85rem 1rem' }}>Updated</th>
+                  <th style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {patterns.map((p) => {
-                  const canEdit = currentUser?.role === 'Manager' || (currentUser?.role === 'Lecturer' && p.createdById === currentUser?.accountId);
+                  const isOwner = currentUser && (
+                    p.createdByAccountId === currentUser.accountId ||
+                    p.createdById === currentUser.accountId ||
+                    currentUser.role === 'Manager'
+                  );
+                  const canEdit = isOwner;
 
                   return (
                     <tr key={p.patternId} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '0.85rem 1rem', fontWeight: 600, color: '#94a3b8' }}>
-                        #{p.patternId}
-                      </td>
                       <td style={{ padding: '0.85rem 1rem' }}>
                         <span style={{
-                          padding: '0.2rem 0.55rem',
+                          padding: '0.25rem 0.55rem',
                           borderRadius: '6px',
-                          fontSize: '0.78rem',
+                          fontSize: '0.75rem',
                           fontWeight: 800,
-                          background: p.jlptLevel === 'N5' ? '#dcfce7' : p.jlptLevel === 'N4' ? '#e0e7ff' : p.jlptLevel === 'N3' ? '#fef3c7' : p.jlptLevel === 'N2' ? '#ffedd5' : '#fee2e2',
-                          color: p.jlptLevel === 'N5' ? '#15803d' : p.jlptLevel === 'N4' ? '#4338ca' : p.jlptLevel === 'N3' ? '#b45309' : p.jlptLevel === 'N2' ? '#c2410c' : '#b91c1c'
+                          background: p.jlptLevel === 'N1' ? '#fee2e2' : p.jlptLevel === 'N2' ? '#fef3c7' : p.jlptLevel === 'N3' ? '#dcfce7' : p.jlptLevel === 'N4' ? '#e0e7ff' : '#ede9fe',
+                          color: p.jlptLevel === 'N1' ? '#991b1b' : p.jlptLevel === 'N2' ? '#92400e' : p.jlptLevel === 'N3' ? '#166534' : p.jlptLevel === 'N4' ? '#3730a3' : '#5b21b6'
                         }}>
                           {p.jlptLevel}
                         </span>
                       </td>
-                      <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: 'var(--text-heading)' }}>
-                        {p.title}
+                      <td style={{ padding: '0.85rem 1rem' }}>
+                        <div style={{ fontWeight: 800, color: 'var(--text-heading)', fontSize: '0.95rem' }}>
+                          {p.title}
+                        </div>
+                        {p.usageNote && (
+                          <div style={{
+                            fontSize: '0.78rem',
+                            color: 'var(--text-muted)',
+                            marginTop: '0.2rem',
+                            maxWidth: '320px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            {p.usageNote}
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '0.85rem 1rem' }}>
                         <code style={{
                           background: '#f1f5f9',
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: '6px',
-                          fontSize: '0.84rem',
-                          color: '#6d28d9',
-                          fontWeight: 600,
-                          fontFamily: 'monospace'
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '5px',
+                          fontSize: '0.82rem',
+                          color: '#0f172a',
+                          fontWeight: 600
                         }}>
-                          {p.structure}
+                          {p.structure || '—'}
                         </code>
                       </td>
-                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.82rem', color: 'var(--text-body)' }}>
-                        {p.createdByName}
+                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.85rem', color: 'var(--text-body)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                          <img
+                            src={p.createdByAvatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${p.createdByName || 'Sensei'}`}
+                            alt="avt"
+                            style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '1.5px solid #e2e8f0',
+                              background: '#f8fafc',
+                              flexShrink: 0
+                            }}
+                          />
+                          <div>
+                            <strong style={{ color: 'var(--text-heading)', display: 'block', fontSize: '0.85rem', lineHeight: 1.2 }}>
+                              {p.createdByName || 'System'}
+                            </strong>
+                            {p.createdByEmail && (
+                              <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                                {p.createdByEmail}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </td>
                       <td style={{ padding: '0.85rem 1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                         {new Date(p.updatedAt || p.createdAt).toLocaleDateString()}
                       </td>
                       <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
-                          
-                          {/* 3. NÚT MỞ MODAL VÍ DỤ (Tất cả mọi người đều được xem, nhưng CRUD phụ thuộc vào Modal) */}
-                          <button
-                            onClick={() => setSelectedPatternForExamples(p)}
-                            style={{
-                              padding: '0.35rem 0.65rem',
-                              borderRadius: '6px',
-                              border: '1px solid #c7d2fe',
-                              background: '#e0e7ff',
-                              color: '#4f46e5',
-                              fontSize: '0.78rem',
-                              fontWeight: 700,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            💬 Ví dụ
-                          </button>
-
                           {canEdit ? (
                             <>
                               <button
@@ -330,15 +363,6 @@ export default function GrammarManagementView({ currentUser }) {
           pattern={editingPattern}
           onClose={() => setEditingPattern(null)}
           onUpdateSuccess={() => fetchPatterns()}
-        />
-      )}
-
-      {/* 4. RENDER MODAL QUẢN LÝ VÍ DỤ (Sẽ chỉ render khi selectedPatternForExamples có giá trị) */}
-      {selectedPatternForExamples && (
-        <ManageExamplesModal
-          pattern={selectedPatternForExamples}
-          currentUser={currentUser}
-          onClose={() => setSelectedPatternForExamples(null)}
         />
       )}
     </div>

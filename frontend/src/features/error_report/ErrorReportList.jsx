@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Edit2, XCircle, Clock, CheckCircle, AlertCircle, X, PlusCircle } from 'lucide-react';
+import { apiRequest } from '../../api/apiRequest';
 
 export const ErrorReportList = () => {
   const [reports, setReports] = useState([]);
@@ -25,22 +26,14 @@ export const ErrorReportList = () => {
   const fetchMyReports = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('jwt_token');
-      const response = await fetch('http://localhost:8080/api/v1/error-reports/my-reports?page=0&size=50', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-      const data = await response.json();
-      
-      if (response.ok) {
+      const data = await apiRequest('/error-reports/my-reports?page=0&size=50', 'GET');
+      if (data?.data) {
         setReports(data.data.content || []);
       } else {
-        setError(data.message || 'Failed to load error reports');
+        setError('Failed to load error reports');
       }
     } catch (err) {
-      setError('Unable to connect to the server');
+      setError(err.message || 'Unable to connect to the server');
     } finally {
       setLoading(false);
     }
@@ -54,34 +47,24 @@ export const ErrorReportList = () => {
     }
     setCreateLoading(true);
     try {
-      const token = localStorage.getItem('jwt_token');
       const payload = {
         targetType: createForm.targetType,
         targetId: parseInt(createForm.targetId, 10),
-        description: createForm.description
+        description: createForm.description.trim()
       };
 
-      const response = await fetch('http://localhost:8080/api/v1/error-reports', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+      const data = await apiRequest('/error-reports', 'POST', payload);
 
-      const data = await response.json();
-
-      if (response.ok || response.status === 201) {
+      if (data?.data) {
         setReports([data.data, ...reports]); 
         setIsCreateModalOpen(false);
         setCreateForm({ targetType: 'GRAMMAR', targetId: '', description: '' });
         setCreateError('');
       } else {
-        setCreateError(data.message || 'Failed to create report.');
+        setCreateError('Failed to create report.');
       }
     } catch (err) {
-      setCreateError('Network error while creating report');
+      setCreateError(err.message || 'Error while creating report');
     } finally {
       setCreateLoading(false);
     }
@@ -91,22 +74,10 @@ export const ErrorReportList = () => {
     if (!window.confirm('Are you sure you want to cancel this report?')) return;
     
     try {
-      const token = localStorage.getItem('jwt_token');
-      const response = await fetch(`http://localhost:8080/api/v1/error-reports/${reportId}/cancel`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        setReports(reports.map(r => r.reportId === reportId ? { ...r, status: 'CANCELLED' } : r));
-      } else {
-        alert('Error cancelling report');
-      }
+      await apiRequest(`/error-reports/${reportId}/cancel`, 'PATCH');
+      setReports(reports.map(r => r.reportId === reportId ? { ...r, status: 'CANCELLED' } : r));
     } catch (err) {
-      alert('Network error while cancelling report');
+      alert(err.message || 'Error cancelling report');
     }
   };
 
@@ -124,30 +95,17 @@ export const ErrorReportList = () => {
     }
     setActionLoading(true);
     try {
-      const token = localStorage.getItem('jwt_token');
       const payload = {
         targetType: editingReport.targetType,
         targetId: editingReport.targetId,
-        description: newDescription
+        description: newDescription.trim()
       };
 
-      const response = await fetch(`http://localhost:8080/api/v1/error-reports/${editingReport.reportId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        setReports(reports.map(r => r.reportId === editingReport.reportId ? { ...r, description: newDescription } : r));
-        setEditingReport(null);
-      } else {
-        alert('Update failed.');
-      }
+      await apiRequest(`/error-reports/${editingReport.reportId}`, 'PUT', payload);
+      setReports(reports.map(r => r.reportId === editingReport.reportId ? { ...r, description: newDescription.trim() } : r));
+      setEditingReport(null);
     } catch (err) {
-      alert('Network error while updating');
+      alert(err.message || 'Network error while updating');
     } finally {
       setActionLoading(false);
     }

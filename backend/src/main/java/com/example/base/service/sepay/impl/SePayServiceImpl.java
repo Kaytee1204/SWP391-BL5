@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -33,7 +34,7 @@ public class SePayServiceImpl implements SePayService {
     @Value("${app.sepay.account-name:TRINH BAO KHANH}")
     private String accountName;
 
-    @Value("${app.sepay.api-key:}")
+    @Value("${app.sepay.api-key:LOC0GNYOOSV5M5WKE6JXBFDGVHB29G7836SIXKQXYPCTDRUNLZ3C2BWQZFJMD9R1}")
     private String apiKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -88,13 +89,13 @@ public class SePayServiceImpl implements SePayService {
     }
 
     @Override
-    public boolean checkRecentTransactionsViaApi(Long orderCode, Long expectedAmount) {
+    public List<Map<String, Object>> fetchRecentTransactionsFromApi(int limit) {
         if (apiKey == null || apiKey.isBlank() || apiKey.contains("SEPAY_API_KEY")) {
-            return false;
+            return Collections.emptyList();
         }
 
         try {
-            String url = "https://my.sepay.vn/userapi/transactions/list?limit=20";
+            String url = "https://my.sepay.vn/userapi/transactions/list?limit=" + Math.max(limit, 20);
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + apiKey.trim());
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -106,26 +107,34 @@ public class SePayServiceImpl implements SePayService {
                 Map body = response.getBody();
                 List<Map<String, Object>> transactions = (List<Map<String, Object>>) body.get("transactions");
                 if (transactions != null) {
-                    for (Map<String, Object> tx : transactions) {
-                        String txContent = (String) tx.get("transaction_content");
-                        if (txContent == null) txContent = (String) tx.get("content");
-
-                        Long extractedCode = extractOrderCodeFromContent(txContent);
-                        if (extractedCode != null && extractedCode.equals(orderCode)) {
-                            Object amountInObj = tx.get("amount_in");
-                            double amountIn = amountInObj != null ? Double.parseDouble(amountInObj.toString()) : 0;
-                            if (amountIn >= (expectedAmount != null ? expectedAmount : 0)) {
-                                log.info("Matched transaction from SePay API for orderCode={}: amount={}", orderCode, amountIn);
-                                return true;
-                            }
-                        }
-                    }
+                    return transactions;
                 }
             }
         } catch (Exception e) {
-            log.warn("Could not query SePay transactions API: {}", e.getMessage());
+            log.warn("Could not fetch recent transactions from SePay API: {}", e.getMessage());
         }
 
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean checkRecentTransactionsViaApi(Long orderCode, Long expectedAmount) {
+        List<Map<String, Object>> transactions = fetchRecentTransactionsFromApi(30);
+        for (Map<String, Object> tx : transactions) {
+            String txContent = (String) tx.get("transaction_content");
+            if (txContent == null) txContent = (String) tx.get("content");
+            if (txContent == null) txContent = (String) tx.get("description");
+
+            Long extractedCode = extractOrderCodeFromContent(txContent);
+            if (extractedCode != null && extractedCode.equals(orderCode)) {
+                Object amountInObj = tx.get("amount_in");
+                double amountIn = amountInObj != null ? Double.parseDouble(amountInObj.toString()) : 0;
+                if (amountIn >= (expectedAmount != null ? expectedAmount : 0)) {
+                    log.info("Matched transaction from SePay API for orderCode={}: amount={}", orderCode, amountIn);
+                    return true;
+                }
+            }
+        }
         return false;
     }
 }

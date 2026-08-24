@@ -33,7 +33,7 @@ export default function FreeCoursesPage({
       />
 
       <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '1.5rem 1.25rem 0' }}>
-        {/* Thanh chọn Tab gọn gàng, chuẩn Jasper Theme */}
+        {/* Sub-tab navigation in English */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -69,7 +69,7 @@ export default function FreeCoursesPage({
             }}
           >
             <span>📖</span>
-            <span>Grammar (Ngữ Pháp)</span>
+            <span>Grammar Patterns</span>
           </button>
 
           <button
@@ -95,7 +95,7 @@ export default function FreeCoursesPage({
             }}
           >
             <span>🏮</span>
-            <span>Kanji (Hán Tự)</span>
+            <span>Kanji Dictionary</span>
           </button>
 
           {currentUser?.role === 'Student' && (
@@ -122,7 +122,7 @@ export default function FreeCoursesPage({
               }}
             >
               <span>🗂️</span>
-              <span>Kanji Decks</span>
+              <span>My Kanji Decks</span>
             </button>
           )}
 
@@ -149,12 +149,12 @@ export default function FreeCoursesPage({
             }}
           >
             <span>✍️</span>
-            <span>Practice Quiz (Trắc Nghiệm)</span>
+            <span>Practice Quiz</span>
           </button>
         </div>
       </div>
 
-      {/* Vùng hiển thị nội dung chính không bị bó hẹp giao diện */}
+      {/* Main Content Area */}
       <main style={{ paddingBottom: '3.5rem' }}>
         {activeTab === 'grammar' && (
           <GrammarReaderPage

@@ -12,6 +12,7 @@ import AuthorWorkspacePage from './features/culture-articles/AuthorWorkspacePage
 import LearningMaterialsView from './features/materials/LearningMaterialsView';
 import ManagerDashboardPage from './features/dashboard/ManagerDashboardPage';
 import ManagerErrorReportView from './features/error_report/ManagerErrorReportView';
+import { ErrorReportList } from './features/error_report/ErrorReportList';
 
 import VocabularyCategoryPage from './features/vocabulary-category/VocabularyCategoryPage';
 import GrammarReaderPage from './features/grammar/GrammarReaderPage';
@@ -89,7 +90,7 @@ export default function App() {
     } else if (authData.account.role === 'Lecturer') {
       setCurrentView('materials');
     } else {
-      setCurrentView('kanji');
+      setCurrentView('home');
     }
   };
 
@@ -140,9 +141,10 @@ export default function App() {
     vocab: currentUser ? <VocabularyPage currentUser={currentUser} /> : null,
     'vocab-decks': <PersonalVocabDecksPage onNavigate={handleNavigate} />,
     decks: <PersonalDecksPage onNavigate={handleNavigate} />,
-    kanji: <KanjiPage currentUser={currentUser} />,
     accounts: <AccountsPage />,
-    'error-reports': <ManagerErrorReportView currentUser={currentUser} /> // Đã trỏ đúng component quản lý báo cáo lỗi
+    'error-reports': currentUser?.role === 'Student'
+      ? <ErrorReportList />
+      : <ManagerErrorReportView currentUser={currentUser} />
   };
   const learningView = learningViews[currentView];
 

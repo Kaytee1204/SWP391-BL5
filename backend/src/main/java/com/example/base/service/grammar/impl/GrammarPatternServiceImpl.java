@@ -43,7 +43,7 @@ public class GrammarPatternServiceImpl implements GrammarPatternService {
         return PageResponse.from(page.map(grammarPatternMapper::toResponse));
     }
 
-    // 2. GIẢNG VIÊN XEM DANH SÁCH MẪU NGỮ PHÁP DO CHÍNH MÌNH TẠO
+    // 2. GIẢNG VIÊN / QUẢN TRỊ VIÊN XEM DANH SÁCH MẪU NGỮ PHÁP DO CHÍNH MÌNH TẠO
     @Override
     @Transactional(readOnly = true)
     public PageResponse<GrammarPatternResponse> searchMyPatterns(String keyword, JlptLevel jlptLevel, UserPrincipal currentUser, Pageable pageable) {
@@ -67,20 +67,21 @@ public class GrammarPatternServiceImpl implements GrammarPatternService {
         return grammarPatternMapper.toResponse(pattern);
     }
 
-    // 4. GIẢNG VIÊN TẠO MẪU NGỮ PHÁP MỚI (Create Grammar Pattern)
+    // 4. GIẢNG VIÊN & QUẢN TRỊ VIÊN TẠO MẪU NGỮ PHÁP MỚI (Create Grammar Pattern)
     @Override
     @Transactional
     public GrammarPatternResponse createPattern(GrammarPatternCreateRequest request, UserPrincipal currentUser) {
         if (currentUser == null) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, "Yêu cầu đăng nhập tài khoản Giảng viên để tạo ngữ pháp");
+            throw new AppException(ErrorCode.UNAUTHORIZED, "Yêu cầu đăng nhập tài khoản Giảng viên hoặc Quản lý để tạo ngữ pháp");
         }
 
-        boolean isLecturer = currentUser.getAuthorities().stream()
+        boolean isAuthorized = currentUser.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch(a -> a.equalsIgnoreCase("ROLE_Lecturer") || a.equalsIgnoreCase("Lecturer"));
+                .anyMatch(a -> a.equalsIgnoreCase("ROLE_Lecturer") || a.equalsIgnoreCase("Lecturer")
+                            || a.equalsIgnoreCase("ROLE_Manager") || a.equalsIgnoreCase("Manager"));
 
-        if (!isLecturer) {
-            throw new AppException(ErrorCode.FORBIDDEN, "Chỉ tài khoản Giảng viên (Lecturer) mới có quyền tạo mẫu ngữ pháp!");
+        if (!isAuthorized) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Chỉ tài khoản Giảng viên (Lecturer) hoặc Quản trị viên (Manager) mới có quyền tạo mẫu ngữ pháp!");
         }
 
         // Kiểm tra tiêu đề mẫu ngữ pháp không được trùng lặp
@@ -89,22 +90,22 @@ public class GrammarPatternServiceImpl implements GrammarPatternService {
             throw new AppException(ErrorCode.BAD_REQUEST, "Mẫu ngữ pháp '" + cleanTitle + "' đã tồn tại! Vui lòng đặt tên khác.");
         }
 
-        // Tìm thông tin tài khoản Giảng viên trong database
-        Account lecturer = accountRepository.findByEmailAndDeletedAtIsNull(currentUser.getEmail())
+        // Tìm thông tin tài khoản người tạo trong database
+        Account creator = accountRepository.findByEmailAndDeletedAtIsNull(currentUser.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "email", currentUser.getEmail()));
 
-        // Chuyển DTO thành Entity và gán lecturer là người tạo (created_by)
-        GrammarPattern pattern = grammarPatternMapper.toEntity(request, lecturer);
+        // Chuyển DTO thành Entity và gán creator là người tạo (created_by)
+        GrammarPattern pattern = grammarPatternMapper.toEntity(request, creator);
         pattern.setTitle(cleanTitle);
         GrammarPattern saved = grammarPatternRepository.save(pattern);
 
-        log.info("Lecturer {} (ID: {}) created grammar pattern '{}' (ID: {})",
-                lecturer.getEmail(), lecturer.getAccountId(), saved.getTitle(), saved.getPatternId());
+        log.info("User {} (Role: {}, ID: {}) created grammar pattern '{}' (ID: {})",
+                creator.getEmail(), creator.getRole(), creator.getAccountId(), saved.getTitle(), saved.getPatternId());
 
         return grammarPatternMapper.toResponse(saved);
     }
 
-    // 5. GIẢNG VIÊN CẬP NHẬT MẪU NGỮ PHÁP (Update Grammar Pattern)
+    // 5. GIẢNG VIÊN HOẶC QUẢN TRỊ VIÊN CẬP NHẬT MẪU NGỮ PHÁP (Update Grammar Pattern)
     @Override
     @Transactional
     public GrammarPatternResponse updatePattern(Long patternId, GrammarPatternUpdateRequest request, UserPrincipal currentUser) {
@@ -123,7 +124,7 @@ public class GrammarPatternServiceImpl implements GrammarPatternService {
                 .anyMatch(a -> a.equalsIgnoreCase("ROLE_Manager") || a.equalsIgnoreCase("Manager"));
 
         if (!isOwner && !isManager) {
-            throw new AppException(ErrorCode.FORBIDDEN, "Bạn không có quyền chỉnh sửa mẫu ngữ pháp do giảng viên khác tạo");
+            throw new AppException(ErrorCode.FORBIDDEN, "Bạn không có quyền chỉnh sửa mẫu ngữ pháp do giảng viên khác tạo (cần quyền Manager)");
         }
 
         // Kiểm tra tiêu đề mẫu ngữ pháp không được trùng lặp với mẫu khác
