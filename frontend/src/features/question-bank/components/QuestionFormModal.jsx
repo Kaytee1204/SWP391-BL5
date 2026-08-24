@@ -9,6 +9,14 @@ const SKILL_OPTIONS = [
   { value: 'reading', label: '📑 Reading (Đọc hiểu)' }
 ];
 
+const isChoiceType = (questionType) =>
+  questionType === 'multiple_choice' || questionType === 'multiple_select';
+const normalizeChoice = (value) =>
+    value
+        .normalize('NFKC')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLocaleLowerCase();
 const emptyQuestion = {
   skillType: 'vocabulary',
   jlptLevel: 'N5',
@@ -19,18 +27,29 @@ const emptyQuestion = {
   explanation: ''
 };
 
-export default function QuestionFormModal({ question, onClose, onSaved }) {
+export default function QuestionFormModal({
+  question,
+  onClose,
+  onSaved,
+  fixedClassification,
+  onCreateRequest,
+  contextLabel
+}) {
   const initial = useMemo(() => question ? {
     skillType: question.skillType || 'vocabulary',
     jlptLevel: question.jlptLevel || 'N5',
     questionType: question.questionType || 'multiple_choice',
     questionText: question.questionText || '',
-    choices: question.questionType === 'multiple_choice'
+    choices: isChoiceType(question.questionType)
       ? (question.choices?.length ? [...question.choices] : ['', '', '', ''])
       : ['', ''],
     correctAnswers: question.correctAnswers?.length ? [...question.correctAnswers] : [],
     explanation: question.explanation || ''
-  } : emptyQuestion, [question]);
+  } : {
+    ...emptyQuestion,
+    skillType: fixedClassification?.skillType || emptyQuestion.skillType,
+    jlptLevel: fixedClassification?.jlptLevel || emptyQuestion.jlptLevel
+  }, [fixedClassification, question]);
 
   const [form, setForm] = useState(initial);
   const [blankAnswers, setBlankAnswers] = useState(
@@ -38,16 +57,49 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
   );
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const isMultipleChoice = form.questionType === 'multiple_choice';
+  const isSingleChoice =
+      form.questionType === 'multiple_choice';
+
+  const isMultipleSelect =
+      form.questionType === 'multiple_select';
+
+  const isChoiceQuestion =
+      isSingleChoice || isMultipleSelect;
 
   const updateChoice = (index, value) => {
     const previousValue = form.choices[index];
+
     const nextChoices = [...form.choices];
     nextChoices[index] = value;
+
+    const normalizedChoices = nextChoices
+        .map(normalizeChoice)
+        .filter(Boolean);
+
+    const hasDuplicate =
+        new Set(normalizedChoices).size
+        !== normalizedChoices.length;
+
+    setError(
+        hasDuplicate
+            ? 'Các lựa chọn đáp án không được trùng nội dung.'
+            : ''
+    );
+
     setForm(prev => ({
       ...prev,
       choices: nextChoices,
-      correctAnswers: prev.correctAnswers.map(answer => answer === previousValue ? value : answer)
+
+      /*
+       * Nếu lựa chọn đang là đáp án đúng và nội dung
+       * bị thay đổi, cập nhật lại correctAnswers.
+       */
+      correctAnswers: prev.correctAnswers.map(
+          answer =>
+              answer === previousValue
+                  ? value
+                  : answer
+      )
     }));
   };
 
@@ -62,25 +114,48 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
 
   const toggleCorrectAnswer = (choice) => {
     if (!choice.trim()) return;
-    setForm(prev => ({
-      ...prev,
-      correctAnswers: prev.correctAnswers.includes(choice)
-        ? prev.correctAnswers.filter(answer => answer !== choice)
-        : [...prev.correctAnswers, choice]
-    }));
+
+    setForm(prev => {
+      if (prev.questionType === 'multiple_choice') {
+        return {
+          ...prev,
+          correctAnswers: [choice]
+        };
+      }
+
+      if (prev.questionType === 'multiple_select') {
+        const selected =
+            prev.correctAnswers.includes(choice);
+
+        return {
+          ...prev,
+          correctAnswers: selected
+              ? prev.correctAnswers.filter(
+                  answer => answer !== choice
+              )
+              : [...prev.correctAnswers, choice]
+        };
+      }
+
+      return prev;
+    });
   };
 
   const handleTypeChange = (questionType) => {
     setError('');
+
+    if (questionType === 'fill_blank' && isChoiceType(form.questionType)) {
+      setBlankAnswers(form.correctAnswers.join('\n'));
+    }
+
     setForm(prev => ({
       ...prev,
       questionType,
-      choices: prev.choices.length >= 2 ? prev.choices : ['', '', '', ''],
-      correctAnswers: questionType === 'multiple_choice' ? [] : prev.correctAnswers
+      choices: isChoiceType(questionType) && prev.choices.length < 2
+        ? ['', '', '', '']
+        : prev.choices,
+      correctAnswers: isChoiceType(questionType) ? [] : prev.correctAnswers
     }));
-    if (questionType === 'fill_blank' && form.questionType === 'multiple_choice') {
-      setBlankAnswers(form.correctAnswers.join('\n'));
-    }
   };
 
   const handleSubmit = async (event) => {
@@ -88,7 +163,13 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
     setError('');
 
     const choices = form.choices.map(value => value.trim()).filter(Boolean);
-    const correctAnswers = isMultipleChoice
+    const normalizedChoices =
+        choices.map(normalizeChoice);
+
+    const hasDuplicateChoices =
+        new Set(normalizedChoices).size
+        !== normalizedChoices.length;
+    const correctAnswers = isChoiceQuestion
       ? form.correctAnswers.map(value => value.trim()).filter(Boolean)
       : blankAnswers.split('\n').map(value => value.trim()).filter(Boolean);
 
@@ -96,16 +177,33 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
       setError('Please enter the question text.');
       return;
     }
-    if (isMultipleChoice && choices.length < 2) {
-      setError('Multiple choice questions require at least 2 choices.');
+    if (isChoiceQuestion && choices.length < 2) {
+      setError('Câu hỏi lựa chọn phải có ít nhất 2 lựa chọn.');
+      return;
+    }
+    if (
+        isChoiceQuestion
+        && hasDuplicateChoices
+    ) {
+      setError(
+          'Các lựa chọn đáp án không được trùng nội dung.'
+      );
       return;
     }
     if (correctAnswers.length === 0) {
       setError('Please select or input at least one correct answer.');
       return;
     }
-    if (isMultipleChoice && !correctAnswers.every(answer => choices.includes(answer))) {
-      setError('All correct answers must be among the provided choices.');
+    if (isSingleChoice && correctAnswers.length !== 1) {
+      setError('Câu hỏi chọn một phải có đúng một đáp án đúng.');
+      return;
+    }
+    if (isMultipleSelect && correctAnswers.length < 2) {
+      setError('Câu hỏi chọn nhiều phải có ít nhất 2 đáp án đúng.');
+      return;
+    }
+    if (isChoiceQuestion && !correctAnswers.every(answer => choices.includes(answer))) {
+      setError('Tất cả đáp án đúng phải nằm trong danh sách lựa chọn.');
       return;
     }
 
@@ -114,18 +212,28 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
       jlptLevel: form.jlptLevel,
       questionType: form.questionType,
       questionText: form.questionText.trim(),
-      choices: isMultipleChoice ? choices : [],
+      choices: isChoiceQuestion ? choices : [],
       correctAnswers: [...new Set(correctAnswers)],
       explanation: form.explanation.trim()
     };
 
     setSaving(true);
     try {
-      const endpoint = question ? `/question-bank/${question.questionId}` : '/question-bank';
-      const response = await apiRequest(endpoint, question ? 'PUT' : 'POST', payload);
+      let response;
+      if (!question && onCreateRequest) {
+        response = await onCreateRequest(payload);
+      } else {
+        const endpoint = question ? `/question-bank/${question.questionId}` : '/question-bank';
+        response = await apiRequest(endpoint, question ? 'PUT' : 'POST', payload);
+      }
       onSaved(response.data);
       onClose();
     } catch (err) {
+      if(err.status === 409){
+        setError( 'A question with the same content and answer already exists. ' +
+            'Please check the question bank.');
+        return;
+      }
       setError(err.message || 'Failed to save question.');
     } finally {
       setSaving(false);
@@ -133,16 +241,16 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose} style={onCreateRequest ? { zIndex: 1200 } : undefined}>
       <div className="modal-card" onClick={event => event.stopPropagation()} style={{ maxWidth: '680px', width: '92%', maxHeight: '90vh', overflowY: 'auto' }}>
         {/* Modal Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem' }}>
           <div>
             <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#7c3aed', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              🗂️ JLPT QUESTION BANK
+              {contextLabel ? '🧩 QUESTION SET BUILDER' : '🗂️ JLPT QUESTION BANK'}
             </div>
             <h3 style={{ fontSize: '1.35rem', fontWeight: 800, margin: '0.2rem 0 0', color: 'var(--text-heading)' }}>
-              {question ? `Edit Question #${question.questionId}` : 'Create New Question'}
+              {question ? `Edit Question #${question.questionId}` : contextLabel || 'Create New Question'}
             </h3>
           </div>
           <button
@@ -179,7 +287,12 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
               <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-body)', display: 'block', marginBottom: '0.35rem' }}>
                 Skill Type (Kỹ năng) *
               </label>
-              <select className="form-select" value={form.skillType} onChange={e => setForm({ ...form, skillType: e.target.value })}>
+              <select
+                className="form-select"
+                value={form.skillType}
+                onChange={e => setForm({ ...form, skillType: e.target.value })}
+                disabled={Boolean(fixedClassification?.skillType)}
+              >
                 {SKILL_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
               </select>
             </div>
@@ -188,7 +301,12 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
               <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-body)', display: 'block', marginBottom: '0.35rem' }}>
                 JLPT Level (Cấp độ) *
               </label>
-              <select className="form-select" value={form.jlptLevel} onChange={e => setForm({ ...form, jlptLevel: e.target.value })}>
+              <select
+                className="form-select"
+                value={form.jlptLevel}
+                onChange={e => setForm({ ...form, jlptLevel: e.target.value })}
+                disabled={Boolean(fixedClassification?.jlptLevel)}
+              >
                 {JLPT_LEVELS.map(level => <option key={level.value} value={level.value}>{level.label}</option>)}
               </select>
             </div>
@@ -198,11 +316,20 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
                 Question Type (Dạng bài) *
               </label>
               <select className="form-select" value={form.questionType} onChange={e => handleTypeChange(e.target.value)}>
-                <option value="multiple_choice">Multiple Choice (Trắc nghiệm)</option>
+                <option value="multiple_choice">
+                  Single Choice (Chọn một đáp án)
+                </option>
+                <option value="multiple_select">Multiple Select (Chọn nhiều đáp án)</option>
                 <option value="fill_blank">Fill in the Blank (Điền từ)</option>
               </select>
             </div>
           </div>
+
+          {fixedClassification && (
+            <div style={{ marginTop: '-0.55rem', padding: '0.6rem 0.75rem', color: '#4338ca', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: '9px', fontSize: '0.78rem', fontWeight: 650 }}>
+              Skill và JLPT level được lấy tự động từ bộ câu hỏi hiện tại.
+            </div>
+          )}
 
           {/* Question Text */}
           <div>
@@ -220,12 +347,16 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
           </div>
 
           {/* Choices Section */}
-          {isMultipleChoice ? (
+          {isChoiceQuestion ? (
             <div style={{ background: '#fafafa', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                 <div>
                   <strong style={{ fontSize: '0.85rem', color: 'var(--text-heading)' }}>Answer Choices & Correct Answer:</strong>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Click checkbox on the left to mark an option as correct.</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                    {isSingleChoice
+                      ? 'Chọn đúng một đáp án.'
+                      : 'Chọn từ hai đáp án đúng trở lên.'}
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -247,19 +378,42 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 {form.choices.map((choice, index) => {
-                  const labelChar = String.fromCharCode(65 + index);
-                  const isChecked = form.correctAnswers.includes(choice) && Boolean(choice.trim());
+                  const labelChar =
+                      String.fromCharCode(65 + index);
+
+                  const normalizedCurrentChoice =
+                      normalizeChoice(choice);
+
+                  const isDuplicateChoice =
+                      Boolean(normalizedCurrentChoice)
+                      && form.choices.some(
+                          (otherChoice, otherIndex) =>
+                              otherIndex !== index
+                              && normalizeChoice(otherChoice)
+                              === normalizedCurrentChoice
+                      );
+
+                  const isChecked =
+                      !isDuplicateChoice
+                      && form.correctAnswers.includes(choice)
+                      && Boolean(choice.trim());
                   return (
                     <div
                       key={index}
                       style={{
                         display: 'flex',
-                        alignItems: 'center',
+                        alignItems: isDuplicateChoice ? 'flex-start' : 'center',
                         gap: '0.65rem',
                         background: isChecked ? '#ecfdf5' : '#fff',
                         padding: '0.4rem 0.65rem',
                         borderRadius: '10px',
-                        border: `1.5px solid ${isChecked ? '#10b981' : '#e2e8f0'}`
+                        border: `1.5px solid ${
+                          isDuplicateChoice
+                            ? '#fecaca'
+                            : isChecked
+                              ? '#10b981'
+                              : '#e2e8f0'
+                        }`
                       }}
                     >
                       <label
@@ -267,7 +421,7 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '0.35rem',
-                          cursor: choice.trim() ? 'pointer' : 'not-allowed',
+                          cursor: choice.trim() && !isDuplicateChoice ? 'pointer' : 'not-allowed',
                           padding: '0.25rem 0.5rem',
                           borderRadius: '6px',
                           background: isChecked ? '#10b981' : '#f1f5f9',
@@ -275,27 +429,64 @@ export default function QuestionFormModal({ question, onClose, onSaved }) {
                           fontWeight: 800,
                           fontSize: '0.78rem'
                         }}
-                        title={choice.trim() ? 'Click to mark as correct' : 'Enter text first'}
+                        title={
+                          isDuplicateChoice
+                            ? 'Lựa chọn này đang bị trùng nội dung'
+                            : choice.trim()
+                              ? 'Chọn làm đáp án đúng'
+                              : 'Hãy nhập nội dung trước'
+                        }
                       >
                         <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => toggleCorrectAnswer(choice)}
-                          disabled={!choice.trim()}
-                          style={{ cursor: 'pointer' }}
+                            type={isSingleChoice ? 'radio' : 'checkbox'}
+                            name={
+                              isSingleChoice
+                                  ? 'correctAnswer'
+                                  : `correctAnswer-${index}`
+                            }
+                            checked={isChecked}
+                            onChange={() => toggleCorrectAnswer(choice)}
+                            disabled={!choice.trim() || isDuplicateChoice}
                         />
                         <span>{labelChar}</span>
                       </label>
 
-                      <input
-                        type="text"
-                        className="form-input"
-                        value={choice}
-                        onChange={e => updateChoice(index, e.target.value)}
-                        placeholder={`Choice ${labelChar}...`}
-                        style={{ flex: 1, padding: '0.45rem 0.75rem', border: '1px solid #cbd5e1' }}
-                        required
-                      />
+                      <div
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.25rem'
+                        }}
+                      >
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={choice}
+                          onChange={e => updateChoice(index, e.target.value)}
+                          placeholder={`Choice ${labelChar}...`}
+                          style={{
+                            width: '100%',
+                            padding: '0.45rem 0.75rem',
+                            border: isDuplicateChoice
+                              ? '1px solid #dc2626'
+                              : '1px solid #cbd5e1'
+                          }}
+                          required
+                        />
+
+                        {isDuplicateChoice && (
+                          <span
+                            style={{
+                              color: '#dc2626',
+                              fontSize: '0.72rem',
+                              fontWeight: 700
+                            }}
+                          >
+                            Lựa chọn này bị trùng nội dung
+                          </span>
+                        )}
+                      </div>
 
                       {form.choices.length > 2 && (
                         <button

@@ -15,7 +15,7 @@ import ManagerDashboardPage from './features/dashboard/ManagerDashboardPage';
 import VocabularyCategoryPage from './features/vocabulary-category/VocabularyCategoryPage';
 import GrammarReaderPage from './features/grammar/GrammarReaderPage';
 import GrammarExercisePracticeView from './features/grammar/GrammarExercisePracticeView';
-import QuestionBankManagementView from './features/question-bank/QuestionBankManagementView';
+import QuestionBankWorkspace from './features/question-bank/QuestionBankWorkspace';
 import Navbar from './components/common/Navbar';
 import CourseCatalogPage from './features/courses/CourseCatalogPage';
 import PaymentReturnView from './features/courses/components/PaymentReturnView';
@@ -25,6 +25,7 @@ import { KanjiPage } from './pages/KanjiPage';
 import { PersonalVocabDecksPage } from './pages/PersonalVocabDecksPage';
 import { PersonalKanjiDecksPage } from './pages/PersonalKanjiDecksPage';
 import { AccountsPage } from './pages/AccountsPage';
+import StudentExamWorkspace from './features/student-exams/StudentExamWorkspace';
 
 
 export default function App() {
@@ -245,7 +246,7 @@ export default function App() {
             onLogout={handleLogout}
           />
           <main style={{ maxWidth: '1180px', margin: '2rem auto', padding: '0 1.5rem 4rem' }}>
-            <QuestionBankManagementView currentUser={currentUser} />
+            <QuestionBankWorkspace currentUser={currentUser} />
           </main>
         </div>
       )}
@@ -259,6 +260,11 @@ export default function App() {
           onOpenArticleDetail={(art) => handleOpenArticleDetail(art, 'dashboard')}
           onLogout={handleLogout}
         />
+      )}
+
+      {currentView === 'student_exams' && (
+        <StudentExamWorkspace currentUser={currentUser} onNavigate={setCurrentView}
+          onViewProfile={() => setShowProfileModal(true)} onLogout={handleLogout} />
       )}
 
       {/* 7. Quản Lý Danh Mục Từ Vựng (Vocabulary Category Management) */}

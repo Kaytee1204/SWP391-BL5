@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../../components/common/Navbar';
 import GrammarManagementView from '../grammar/GrammarManagementView';
 import GrammarExerciseManagementView from '../grammar/GrammarExerciseManagementView';
-import QuestionBankManagementView from '../question-bank/QuestionBankManagementView';
+import QuestionBankWorkspace from '../question-bank/QuestionBankWorkspace';
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryTable from '../../components/vocabulary_category/CategoryTable';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
 import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
+import ReadingPassageManagementView from '../reading-passages/ReadingPassageManagementView';
+import ListeningExerciseManagementView from '../listening-exercises/ListeningExerciseManagementView';
 import CourseManagementView from '../courses/CourseManagementView';
 
 export default function LearningMaterialsView({
@@ -196,6 +198,23 @@ export default function LearningMaterialsView({
           </button>
 
           <button
+            onClick={() => setMaterialTab('reading_passages')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'reading_passages' ? '#0f766e' : 'transparent',
+              color: materialTab === 'reading_passages' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            📚 Reading Passages
+          </button>
+
+          <button
             onClick={() => setMaterialTab('flashcard_decks')}
             style={{
               padding: '0.55rem 1.25rem',
@@ -228,6 +247,19 @@ export default function LearningMaterialsView({
           >
             📚 Courses (Khóa học & Giá)
           </button>
+
+          <button
+            onClick={() => setMaterialTab('listening_exercises')}
+            style={{
+              padding: '0.55rem 1.25rem', borderRadius: '10px', border: 'none',
+              fontSize: '0.9rem', fontWeight: 800, cursor: 'pointer',
+              background: materialTab === 'listening_exercises' ? '#2563eb' : 'transparent',
+              color: materialTab === 'listening_exercises' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            🎧 Listening Exercises
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -244,7 +276,11 @@ export default function LearningMaterialsView({
         )}
 
         {materialTab === 'question_bank' && (
-          <QuestionBankManagementView currentUser={currentUser} />
+          <QuestionBankWorkspace currentUser={currentUser} />
+        )}
+
+        {materialTab === 'reading_passages' && (
+          <ReadingPassageManagementView currentUser={currentUser} />
         )}
 
         {materialTab === 'vocabulary_categories' && (
@@ -291,6 +327,10 @@ export default function LearningMaterialsView({
 
         {materialTab === 'flashcard_decks' && (
           <FlashcardDeckManagementPage currentUser={currentUser} />
+        )}
+
+        {materialTab === 'listening_exercises' && (
+          <ListeningExerciseManagementView currentUser={currentUser} />
         )}
       </main>
     </div>

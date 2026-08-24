@@ -18,7 +18,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionUpsertRequest {
+public class QuestionUpsertRequest { //nhận dữ liệu mà frontend gửi
     @NotNull(message = "Kỹ năng không được để trống")
     private QuestionSkillType skillType;
 

@@ -18,7 +18,7 @@ export default function Navbar({
           <div className="brand-icon">⛩️</div>
           <span className="brand-title">
             JLMS
-            
+
           </span>
         </div>
 
@@ -61,6 +61,32 @@ export default function Navbar({
           </li>
 
           {/* Phân hệ Role */}
+          {currentUser?.role === 'Student' && (
+            <>
+            <li>
+              <a
+                className={`nav-link highlight-tab ${currentView === 'kanji-decks' ? 'active' : ''}`}
+                onClick={() => onNavigate('kanji-decks')}
+                title="Manage your personal Kanji decks"
+              >
+                Kanji Decks
+              </a>
+            </li>
+            <li><a className={`nav-link highlight-tab ${currentView === 'student_exams' ? 'active' : ''}`}
+              onClick={() => onNavigate('student_exams')} title="Làm đề và xem lịch sử điểm">Mock Exams</a></li>
+            </>
+          )}
+          {currentUser && (currentUser.role === 'Student' || currentUser.role === 'Lecturer' || currentUser.role === 'Manager') && (
+            <li>
+              <a
+                className={`nav-link highlight-tab ${currentView === 'exercise_practice' ? 'active' : ''}`}
+                onClick={() => onNavigate('exercise_practice')}
+                title="Practice Japanese Grammar Multiple-Choice Quizzes"
+              >
+                 Practice Quiz
+              </a>
+            </li>
+          )}
           {currentUser?.role === 'Author' && (
             <li>
               <a

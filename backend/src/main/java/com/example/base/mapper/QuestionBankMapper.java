@@ -27,7 +27,7 @@ public class QuestionBankMapper {
         return QuestionBank.builder()
                 .skillType(request.getSkillType())
                 .jlptLevel(request.getJlptLevel())
-                .questionText(request.getQuestionText())
+                .questionText(request.getQuestionText().trim())
                 .questionType(request.getQuestionType())
                 .choices(toChoicesJson(request))
                 .correctAnswer(toJson(request.getCorrectAnswers()))

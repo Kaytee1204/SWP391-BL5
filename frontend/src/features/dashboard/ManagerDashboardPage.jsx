@@ -8,7 +8,7 @@ import RefundInfoView from './components/RefundInfoView';
 
 import GrammarManagementView from '../grammar/GrammarManagementView';
 import GrammarExerciseManagementView from '../grammar/GrammarExerciseManagementView';
-import QuestionBankManagementView from '../question-bank/QuestionBankManagementView';
+import QuestionBankWorkspace from '../question-bank/QuestionBankWorkspace';
 
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryTable from '../../components/vocabulary_category/CategoryTable';
@@ -323,7 +323,7 @@ export default function ManagerDashboardPage({
               <GrammarExerciseManagementView currentUser={currentUser} />
             )}
             {materialSubTab === 'question_bank' && (
-              <QuestionBankManagementView currentUser={currentUser} />
+              <QuestionBankWorkspace currentUser={currentUser} />
             )}
             {materialSubTab === 'vocabulary_categories' && (
               <div style={{ backgroundColor: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '32px 24px' }}>

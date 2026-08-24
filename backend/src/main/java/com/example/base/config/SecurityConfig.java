@@ -101,6 +101,7 @@ public class SecurityConfig {
                                 "/kanji-details", "/kanji-details/**",
                                 "/vocabulary-categories", "/vocabulary-categories/**",
                                 "/vocabulary-items", "/vocabulary-items/**",
+                                "/media/listening/**",
                                 "/system-flashcards", "/system-flashcards/**").permitAll()
                         .requestMatchers("/payments/sepay-webhook", "/payments/sepay-webhook/**").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
