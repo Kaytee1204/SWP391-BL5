@@ -78,15 +78,6 @@ public class QuestionSetServiceImpl implements QuestionSetService {
                 if(jlptLevel!=null){
                     predicates.add(cb.equal(root.get("jlptLevel"),jlptLevel));
                 }
-                if (!isManager(currentUser)) {
-                    predicates.add(
-                            cb.equal(
-                                    root.get("createBy")
-                                            .get("accountId"),
-                                    currentUser.getAccountId()
-                            )
-                    );
-                }
                 return cb.and(
                         predicates.toArray(
                                 new Predicate[0]
@@ -113,7 +104,7 @@ public class QuestionSetServiceImpl implements QuestionSetService {
     @Override
     @Transactional(readOnly = true)
     public QuestionSetResponse getById(Long setId, UserPrincipal currentUser) {
-        QuestionSet set = findOwnedSet(setId,currentUser);
+        QuestionSet set = findSharedSet(setId, currentUser);
         List<QuestionSetItem> items =
                 questionSetItemRepository.findByQuestionSetQuestionSetIdOrderByQuestionOrderAsc(setId);
 
@@ -136,7 +127,7 @@ public class QuestionSetServiceImpl implements QuestionSetService {
     @Override
     @Transactional
     public QuestionSetResponse update(Long setId, QuestionSetUpsertRequest  request, UserPrincipal currentUser) {
-        QuestionSet set = findOwnedSet(setId, currentUser);
+        QuestionSet set = findSharedSet(setId, currentUser);
 
         long questionCount = questionSetItemRepository.countByQuestionSetQuestionSetId(setId);
 
@@ -162,7 +153,7 @@ public class QuestionSetServiceImpl implements QuestionSetService {
     @Override
     @Transactional
     public QuestionSetResponse replaceQuestions(Long setId, QuestionSetItemsReplaceRequest request, UserPrincipal currentUser) {
-        QuestionSet set = findOwnedSet(setId,currentUser);
+        QuestionSet set = findSharedSet(setId, currentUser);
         List<Long> questionIds = request.getQuestionIds() ==null ? List.of() : request.getQuestionIds();
 
         long uniqueCount = questionIds.stream().distinct().count();
@@ -232,7 +223,7 @@ public class QuestionSetServiceImpl implements QuestionSetService {
     @Override
     @Transactional
     public QuestionSetResponse createQuestionInsideSet(Long setId, QuestionUpsertRequest request, UserPrincipal currentUser){
-        QuestionSet set = findOwnedSet(setId, currentUser);
+        QuestionSet set = findSharedSet(setId, currentUser);
         if (set.getSkillType() != QuestionSkillType.mixed) {
             request.setSkillType(set.getSkillType());
         }
@@ -273,6 +264,55 @@ public class QuestionSetServiceImpl implements QuestionSetService {
 
         }
         return set;
+    }
+
+    private QuestionSet findSharedSet(
+            Long setId,
+            UserPrincipal currentUser
+    ) {
+        if (currentUser == null) {
+            throw new AppException(
+                    ErrorCode.UNAUTHORIZED,
+                    "Bạn cần đăng nhập để xem bộ câu hỏi"
+            );
+        }
+
+        boolean canAccess =
+                isManager(currentUser)
+                        || isLecturer(currentUser);
+
+        if (!canAccess) {
+            throw new AppException(
+                    ErrorCode.FORBIDDEN,
+                    "Bạn không có quyền truy cập bộ câu hỏi"
+            );
+        }
+
+        return questionSetRepository
+                .findById(setId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "QuestionSet",
+                                "questionSetId",
+                                setId
+                        )
+                );
+    }
+
+    private boolean isLecturer(
+            UserPrincipal currentUser
+    ) {
+        return currentUser.getAuthorities()
+                .stream()
+                .map(authority ->
+                        authority.getAuthority()
+                )
+                .anyMatch(authority ->
+                        authority.equalsIgnoreCase("Lecturer")
+                                || authority.equalsIgnoreCase(
+                                "ROLE_Lecturer"
+                        )
+                );
     }
 }
 

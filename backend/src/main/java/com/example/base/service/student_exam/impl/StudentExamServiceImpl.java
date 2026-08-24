@@ -41,7 +41,214 @@ public class StudentExamServiceImpl implements StudentExamService {
     @Override @Transactional(readOnly=true) public PageResponse<TestAttemptResponse> history(Pageable p,UserPrincipal u){ student(u); return PageResponse.from(attemptRepo.findByStudentAccountId(u.getAccountId(),p).map(a->response(a,false))); }
     @Override @Transactional public TestAttemptResponse updateNote(Long id,UpdateAttemptNoteRequest r,UserPrincipal u){ TestAttempt a=owned(id,u); a.setReviewNote(trim(r.getNote())); return response(attemptRepo.save(a),!a.getStatus().equals("in_progress")); }
     private void grade(TestAttempt a,String status){ List<TestAttemptAnswer> answers=answerRepo.findByAttemptAttemptId(a.getAttemptId()); long score=0; for(TestAttemptAnswer x:answers){ boolean ok=normalize(read(x.getSelectedAnswer())).equals(normalize(read(x.getQuestion().getCorrectAnswer()))); x.setCorrect(ok); if(ok)score++; } answerRepo.saveAll(answers); a.setScore(score); a.setTotalScore(itemRepo.countByQuestionSetQuestionSetId(a.getQuestionSet().getQuestionSetId())); a.setStatus(status); a.setSubmittedAt(LocalDateTime.now()); attemptRepo.save(a); }
-    private TestAttemptResponse response(TestAttempt a,boolean reveal){ Map<Long,TestAttemptAnswer> answers=new HashMap<>(); answerRepo.findByAttemptAttemptId(a.getAttemptId()).forEach(x->answers.put(x.getQuestion().getQuestionId(),x)); List<StudentExamQuestionResponse> qs=itemRepo.findByQuestionSetQuestionSetIdOrderByQuestionOrderAsc(a.getQuestionSet().getQuestionSetId()).stream().map(i->{QuestionBank q=i.getQuestion();TestAttemptAnswer x=answers.get(q.getQuestionId());return StudentExamQuestionResponse.builder().questionId(q.getQuestionId()).questionOrder(i.getQuestionOrder()).questionText(q.getQuestionText()).questionType(q.getQuestionType()).choices(read(q.getChoices())).selectedAnswers(x==null?List.of():read(x.getSelectedAnswer())).note(x==null?null:x.getNote()).correct(reveal&&x!=null?x.getCorrect():null).correctAnswers(reveal?read(q.getCorrectAnswer()):null).explanation(reveal?q.getExplanation():null).build();}).toList(); QuestionSet s=a.getQuestionSet(); return TestAttemptResponse.builder().attemptId(a.getAttemptId()).questionSetId(s.getQuestionSetId()).title(s.getTitle()).jlptLevel(s.getJlptLevel().name()).skillType(s.getSkillType().name()).durationMinutes(s.getDurationMinutes()).score(a.getScore()).totalScore(a.getTotalScore()).status(a.getStatus()).reviewNote(a.getReviewNote()).startedAt(a.getStartedAt()).submittedAt(a.getSubmittedAt()).remainingSeconds(a.getStatus().equals("in_progress")?remaining(a):0L).questions(qs).build(); }
+    private TestAttemptResponse response(
+            TestAttempt attempt,
+            boolean reveal
+    ) {
+        /*
+         * Lấy những đáp án học viên đã lưu trong lượt thi.
+         *
+         * Map có dạng:
+         * questionId -> TestAttemptAnswer
+         */
+        Map<Long, TestAttemptAnswer> answerMap =
+                new HashMap<>();
+
+        answerRepo.findByAttemptAttemptId(
+                attempt.getAttemptId()
+        ).forEach(answer ->
+                answerMap.put(
+                        answer.getQuestion().getQuestionId(),
+                        answer
+                )
+        );
+
+        /*
+         * Lấy các câu hỏi trong đề theo đúng thứ tự.
+         */
+        Long questionSetId =
+                attempt.getQuestionSet()
+                        .getQuestionSetId();
+
+        List<QuestionSetItem> items =
+                itemRepo
+                        .findByQuestionSetQuestionSetIdOrderByQuestionOrderAsc(
+                                questionSetId
+                        );
+
+        /*
+         * Chuyển từng QuestionSetItem thành response gửi cho frontend.
+         */
+        List<StudentExamQuestionResponse> questions =
+                items.stream()
+                        .map(item -> {
+                            QuestionBank question =
+                                    item.getQuestion();
+
+                            TestAttemptAnswer answer =
+                                    answerMap.get(
+                                            question.getQuestionId()
+                                    );
+
+                            return toQuestionResponse(
+                                    item,
+                                    question,
+                                    answer,
+                                    reveal
+                            );
+                        })
+                        .toList();
+
+        QuestionSet questionSet =
+                attempt.getQuestionSet();
+
+        return TestAttemptResponse.builder()
+                .attemptId(attempt.getAttemptId())
+                .questionSetId(
+                        questionSet.getQuestionSetId()
+                )
+                .title(questionSet.getTitle())
+                .jlptLevel(
+                        questionSet.getJlptLevel().name()
+                )
+                .skillType(
+                        questionSet.getSkillType().name()
+                )
+                .durationMinutes(
+                        questionSet.getDurationMinutes()
+                )
+                .score(attempt.getScore())
+                .totalScore(attempt.getTotalScore())
+                .status(attempt.getStatus())
+                .reviewNote(attempt.getReviewNote())
+                .startedAt(attempt.getStartedAt())
+                .submittedAt(attempt.getSubmittedAt())
+                .remainingSeconds(
+                        attempt.getStatus()
+                                .equals("in_progress")
+                                ? remaining(attempt)
+                                : 0L
+                )
+                .questions(questions)
+                .build();
+    }
+
+    private StudentExamQuestionResponse toQuestionResponse(
+            QuestionSetItem item,
+            QuestionBank question,
+            TestAttemptAnswer answer,
+            boolean reveal
+    ) {
+        ReadingPassage passage =
+                question.getReadingPassage();
+
+        ListeningExercise listening =
+                question.getListeningExercise();
+
+        return StudentExamQuestionResponse.builder()
+                /*
+                 * Thông tin câu hỏi.
+                 */
+                .questionId(
+                        question.getQuestionId()
+                )
+                .questionOrder(
+                        item.getQuestionOrder()
+                )
+                .questionText(
+                        question.getQuestionText()
+                )
+                .questionType(
+                        question.getQuestionType()
+                )
+                .choices(
+                        read(question.getChoices())
+                )
+
+                /*
+                 * Đáp án học viên đã chọn.
+                 */
+                .selectedAnswers(
+                        answer == null
+                                ? List.of()
+                                : read(
+                                answer.getSelectedAnswer()
+                        )
+                )
+                .note(
+                        answer == null
+                                ? null
+                                : answer.getNote()
+                )
+
+                /*
+                 * Chỉ trả kết quả, đáp án đúng và giải thích
+                 * sau khi bài thi kết thúc.
+                 */
+                .correct(
+                        reveal && answer != null
+                                ? answer.getCorrect()
+                                : null
+                )
+                .correctAnswers(
+                        reveal
+                                ? read(
+                                question.getCorrectAnswer()
+                        )
+                                : null
+                )
+                .explanation(
+                        reveal
+                                ? question.getExplanation()
+                                : null
+                )
+
+                /*
+                 * Tài nguyên Reading.
+                 *
+                 * Nếu câu hỏi không phải Reading thì passage sẽ null.
+                 */
+                .readingPassageId(
+                        passage == null
+                                ? null
+                                : passage.getPassageId()
+                )
+                .readingPassageTitle(
+                        passage == null
+                                ? null
+                                : passage.getTitle()
+                )
+                .readingContentHtml(
+                        passage == null
+                                ? null
+                                : passage.getContentHtml()
+                )
+
+                /*
+                 * Tài nguyên Listening.
+                 *
+                 * Chỉ trả audioUrl, không trả scriptText hoặc
+                 * translation để tránh lộ nội dung bài nghe.
+                 */
+                .listeningExerciseId(
+                        listening == null
+                                ? null
+                                : listening
+                                .getListeningExerciseId()
+                )
+                .listeningTitle(
+                        listening == null
+                                ? null
+                                : listening.getTitle()
+                )
+                .listeningAudioUrl(
+                        listening == null
+                                ? null
+                                : listening.getAudioUrl()
+                )
+                .build();
+    }
+
     private long remaining(TestAttempt a){return Math.max(0,Duration.between(LocalDateTime.now(),a.getStartedAt().plusMinutes(a.getQuestionSet().getDurationMinutes())).getSeconds());}
     private void ensureOpen(TestAttempt a){if(!a.getStatus().equals("in_progress"))throw new AppException(ErrorCode.CONFLICT,"Lượt thi đã kết thúc");if(remaining(a)<=0){grade(a,"expired");throw new AppException(ErrorCode.CONFLICT,"Đã hết thời gian làm bài");}}
     private TestAttempt owned(Long id,UserPrincipal u){student(u);TestAttempt a=attemptRepo.findById(id).orElseThrow(()->new ResourceNotFoundException("TestAttempt","id",id));if(!a.getStudent().getAccountId().equals(u.getAccountId()))throw new AppException(ErrorCode.FORBIDDEN);return a;}

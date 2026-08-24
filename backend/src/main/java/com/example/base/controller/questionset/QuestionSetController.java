@@ -50,8 +50,8 @@ public class QuestionSetController {
 
             @PageableDefault( page = 0,
                     size = 10,
-                    sort = "updatedAt",
-                    direction = Sort.Direction.DESC)
+                    sort = "questionSetId",
+                    direction = Sort.Direction.ASC)
             Pageable pageable,
 
             @AuthenticationPrincipal

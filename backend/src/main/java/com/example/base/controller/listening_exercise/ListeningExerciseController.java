@@ -31,7 +31,7 @@ public class ListeningExerciseController {
     public ResponseEntity<ApiResponse<PageResponse<ListeningExerciseResponse>>> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) JlptLevel jlptLevel,
-            @PageableDefault(size = 10, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(size = 10, sort = "listeningExerciseId", direction = Sort.Direction.ASC) Pageable pageable
     ) {
         return ResponseEntity.ok(ApiResponse.success(service.search(keyword, jlptLevel, pageable)));
     }
