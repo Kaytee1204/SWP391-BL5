@@ -17,6 +17,10 @@ public interface GrammarPatternRepository extends JpaRepository<GrammarPattern, 
 
     Optional<GrammarPattern> findByPatternId(Long patternId);
 
+    boolean existsByTitleIgnoreCase(String title);
+
+    boolean existsByTitleIgnoreCaseAndPatternIdNot(String title, Long patternId);
+
     @Query(value = "SELECT g FROM GrammarPattern g WHERE " +
            "(:keyword IS NULL OR :keyword = '' OR LOWER(g.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(g.structure) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(g.usageNote) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
            "(:jlptLevel IS NULL OR g.jlptLevel = :jlptLevel)",

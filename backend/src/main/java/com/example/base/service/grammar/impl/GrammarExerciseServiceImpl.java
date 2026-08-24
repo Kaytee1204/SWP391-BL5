@@ -84,12 +84,19 @@ public class GrammarExerciseServiceImpl implements GrammarExerciseService {
             throw new AppException(ErrorCode.FORBIDDEN, "Chỉ tài khoản Giảng viên (Lecturer) hoặc Quản trị viên (Manager) mới có quyền tạo bài tập!");
         }
 
+        // Kiểm tra câu hỏi bài tập không được trùng lặp
+        String cleanQuestion = request.getQuestionText() != null ? request.getQuestionText().trim() : "";
+        if (grammarExerciseRepository.existsByQuestionTextIgnoreCase(cleanQuestion)) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Câu hỏi bài tập '" + cleanQuestion + "' đã tồn tại! Vui lòng tạo câu hỏi khác.");
+        }
+
         // Lấy thông tin tài khoản Giảng viên tạo bài
         Account lecturer = accountRepository.findByEmailAndDeletedAtIsNull(currentUser.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "email", currentUser.getEmail()));
 
         // Chuyển Request DTO sang Entity và lưu DB
         GrammarExercise exercise = grammarExerciseMapper.toEntity(request, lecturer);
+        exercise.setQuestionText(cleanQuestion);
         GrammarExercise saved = grammarExerciseRepository.save(exercise);
 
         log.info("User {} (ID: {}) created grammar exercise ID: {}",
@@ -120,8 +127,15 @@ public class GrammarExerciseServiceImpl implements GrammarExerciseService {
             throw new AppException(ErrorCode.FORBIDDEN, "Bạn không có quyền chỉnh sửa bài tập do giảng viên khác tạo");
         }
 
+        // Kiểm tra câu hỏi bài tập không được trùng lặp với bài khác
+        String cleanQuestion = request.getQuestionText() != null ? request.getQuestionText().trim() : "";
+        if (grammarExerciseRepository.existsByQuestionTextIgnoreCaseAndExerciseIdNot(cleanQuestion, exerciseId)) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Câu hỏi bài tập '" + cleanQuestion + "' đã được sử dụng bởi bài tập khác! Vui lòng chọn câu hỏi khác.");
+        }
+
         // Cập nhật thông tin và lưu
         grammarExerciseMapper.updateEntityFromDto(request, exercise);
+        exercise.setQuestionText(cleanQuestion);
         GrammarExercise updated = grammarExerciseRepository.save(exercise);
 
         log.info("User {} updated grammar exercise ID: {}", currentUser.getEmail(), updated.getExerciseId());

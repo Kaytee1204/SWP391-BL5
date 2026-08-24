@@ -107,20 +107,27 @@ public class CultureArticleServiceImpl implements CultureArticleService {
             throw new AppException(ErrorCode.FORBIDDEN, "Chỉ tài khoản Author mới có quyền đăng bài viết văn hóa!");
         }
 
-        // BƯỚC 3: Lấy thông tin Account của tác giả từ database
+        // BƯỚC 3: Kiểm tra tiêu đề bài viết không được trùng lặp
+        String cleanTitle = request.getTitle() != null ? request.getTitle().trim() : "";
+        if (cultureArticleRepository.existsByTitleIgnoreCase(cleanTitle)) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Tiêu đề bài viết '" + cleanTitle + "' đã tồn tại! Vui lòng chọn tiêu đề khác.");
+        }
+
+        // BƯỚC 4: Lấy thông tin Account của tác giả từ database
         Account author = accountRepository.findById(currentUser.getAccountId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "id", currentUser.getAccountId()));
 
-        // BƯỚC 4: Chuyển đổi DTO Request -> Entity CultureArticle
+        // BƯỚC 5: Chuyển đổi DTO Request -> Entity CultureArticle
         CultureArticle article = cultureArticleMapper.toEntity(request, author);
+        article.setTitle(cleanTitle);
         
-        // BƯỚC 5: Lưu xuống cơ sở dữ liệu SQL Server
+        // BƯỚC 6: Lưu xuống cơ sở dữ liệu SQL Server
         CultureArticle saved = cultureArticleRepository.save(article);
 
         log.info("Created new culture article: id={}, title='{}', author='{}'", 
                 saved.getArticleId(), saved.getTitle(), author.getEmail());
 
-        // BƯỚC 6: Chuyển Entity đã lưu -> DTO Response để trả về cho Controller
+        // BƯỚC 7: Chuyển Entity đã lưu -> DTO Response để trả về cho Controller
         return cultureArticleMapper.toResponse(saved);
     }
 
@@ -142,16 +149,23 @@ public class CultureArticleServiceImpl implements CultureArticleService {
         // BƯỚC 3: Kiểm tra quyền sở hữu (Chỉ người viết ra bài này mới được sửa)
         validateOwnership(article, currentUser);
 
-        // BƯỚC 4: Cập nhật các trường dữ liệu từ DTO sang Entity
+        // BƯỚC 4: Kiểm tra tiêu đề không trùng với bài viết khác
+        String cleanTitle = request.getTitle() != null ? request.getTitle().trim() : "";
+        if (cultureArticleRepository.existsByTitleIgnoreCaseAndArticleIdNot(cleanTitle, articleId)) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Tiêu đề bài viết '" + cleanTitle + "' đã được sử dụng bởi bài viết khác! Vui lòng chọn tiêu đề khác.");
+        }
+
+        // BƯỚC 5: Cập nhật các trường dữ liệu từ DTO sang Entity
         cultureArticleMapper.updateEntityFromDto(request, article);
+        article.setTitle(cleanTitle);
         
-        // BƯỚC 5: Lưu thay đổi vào DB
+        // BƯỚC 6: Lưu thay đổi vào DB
         CultureArticle updated = cultureArticleRepository.save(article);
 
         log.info("Updated culture article: id={}, title='{}', updatedBy='{}'", 
                 updated.getArticleId(), updated.getTitle(), currentUser.getEmail());
 
-        // BƯỚC 6: Trả về DTO Response
+        // BƯỚC 7: Trả về DTO Response
         return cultureArticleMapper.toResponse(updated);
     }
 

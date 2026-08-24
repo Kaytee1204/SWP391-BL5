@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+ import React, { useCallback, useEffect, useState } from 'react';
 import { apiRequest } from '../../api/apiRequest';
 import { JLPT_LEVELS } from '../../assets/constants';
 import PaginationBar from '../../components/common/PaginationBar';
@@ -27,6 +27,19 @@ const LEVEL_COLORS = {
   N1: { color: '#e11d48', bg: '#fff1f2', border: '#fecdd3' }
 };
 
+const getQuestionTypeLabel = (type) => {
+  switch (type) {
+    case 'multiple_choice':
+      return 'Single Choice';
+    case 'multiple_select':
+      return 'Multiple Select';
+    case 'fill_blank':
+      return 'Fill in Blank';
+    default:
+      return type || 'Unknown';
+  }
+};
+ const PAGE_SIZE = 10;
 export default function QuestionBankManagementView({ currentUser }) {
   const [questions, setQuestions] = useState([]);
   const [pageInfo, setPageInfo] = useState({ page: 0, totalPages: 0, totalElements: 0 });
@@ -38,11 +51,10 @@ export default function QuestionBankManagementView({ currentUser }) {
   const [showCreate, setShowCreate] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
-
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
     setError('');
-    const params = new URLSearchParams({ page: String(page), size: '10', sort: 'createdAt,desc' });
+    const params = new URLSearchParams({ page: String(page), size: String(PAGE_SIZE), sort: 'questionId,asc' });
     Object.entries(appliedFilters).forEach(([key, value]) => {
       if (value && value.trim()) params.set(key, value.trim());
     });
@@ -217,7 +229,8 @@ export default function QuestionBankManagementView({ currentUser }) {
           onChange={e => setFilters({ ...filters, questionType: e.target.value })}
         >
           <option value="">All Types (Tất cả dạng)</option>
-          <option value="multiple_choice">Multiple Choice (Trắc nghiệm)</option>
+          <option value="multiple_choice">Single Choice (Chọn một)</option>
+          <option value="multiple_select">Multiple Select (Chọn nhiều)</option>
           <option value="fill_blank">Fill in the Blank (Điền từ)</option>
         </select>
 
@@ -269,6 +282,7 @@ export default function QuestionBankManagementView({ currentUser }) {
               </thead>
               <tbody>
                 {questions.map((q, idx) => {
+                  const displayNumber = page * PAGE_SIZE + idx + 1;
                   const isExpanded = expandedId === q.questionId;
                   const levelCfg = LEVEL_COLORS[q.jlptLevel] || LEVEL_COLORS.N5;
                   const skillCfg = SKILL_CONFIG[q.skillType] || { label: q.skillType, icon: '📌', color: '#475569', bg: '#f1f5f9' };
@@ -291,7 +305,7 @@ export default function QuestionBankManagementView({ currentUser }) {
                               fontSize: '0.75rem',
                               fontWeight: 800
                             }}>
-                              #{q.questionId}
+                              #{displayNumber}
                             </span>
                             <div style={{ flex: 1 }}>
                               <div
@@ -308,7 +322,7 @@ export default function QuestionBankManagementView({ currentUser }) {
                                 {q.questionText}
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: '#64748b' }}>
-                                <span>Type: <strong>{q.questionType === 'multiple_choice' ? 'Multiple Choice' : 'Fill in Blank'}</strong></span>
+                                <span>Type: <strong>{getQuestionTypeLabel(q.questionType)}</strong></span>
                                 <span>•</span>
                                 <span
                                   onClick={() => setExpandedId(isExpanded ? null : q.questionId)}

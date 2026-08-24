@@ -66,25 +66,25 @@ export default function CultureSlangReaderPage({
           <span>Japanese Culture, Slang & Career Insights</span>
         </div>
         <h1 className="culture-page-title">
-          Explore Japanese Culture & Modern Slang
+          Khám Phá Văn Hóa & Tiếng Lóng Nhật Bản
         </h1>
         <p className="culture-page-sub">
-          Authentic articles on workplace etiquette, youth language (若者言葉), tea ceremonies, and career growth in Japan written by JLMS Authors and Lecturers.
+          Kho bài đọc thực tế về văn hóa ứng xử công sở, ngôn ngữ giới trẻ (若者言葉), văn hóa trà đạo, và chiến lược phát triển sự nghiệp tại Nhật Bản từ các Tác giả và Giảng viên JLMS.
         </p>
       </header>
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⏳</div>
-          <p>Loading the latest cultural articles...</p>
+          <p>Đang tải các bài viết văn hóa mới nhất...</p>
         </div>
       ) : articles.length === 0 ? (
         /* Empty State */
         <div style={{ maxWidth: '640px', margin: '2rem auto', textAlign: 'center', background: 'white', padding: '4rem 2rem', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 8px 25px rgba(0,0,0,0.03)' }}>
           <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🌸</div>
-          <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-heading)' }}>No articles published yet</h3>
+          <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-heading)' }}>Chưa có bài viết nào được đăng tải</h3>
           <p style={{ color: 'var(--text-body)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
-            There are currently no articles in the system. Log in with an <strong>Author</strong> account to publish the first story!
+            Hệ thống chưa có bài viết văn hóa. Bạn có thể đăng nhập bằng tài khoản <strong>Author</strong> để đăng bài viết đầu tiên nhé!
           </p>
           {currentUser?.role === 'Author' ? (
             <button
@@ -92,7 +92,7 @@ export default function CultureSlangReaderPage({
               style={{ marginTop: '1.5rem', background: 'linear-gradient(135deg, #db2777 0%, #be185d 100%)' }}
               onClick={() => onNavigate('culture_articles')}
             >
-              ✍️ Go to Workspace to Write an Article
+              ✍️ Đến Trang Quản Lý Để Viết Bài Ngay
             </button>
           ) : !currentUser ? (
             <button
@@ -100,13 +100,13 @@ export default function CultureSlangReaderPage({
               style={{ marginTop: '1.5rem' }}
               onClick={() => onOpenAuth('login')}
             >
-              Sign In as Author
+              Đăng Nhập Tài Khoản Author
             </button>
           ) : null}
         </div>
       ) : (
         <>
-          {/* LATEST ARTICLE HERO */}
+          {/* LATEST ARTICLE HERO (Bài đọc mới nhất) */}
           {latestArticle && (
             <section className="latest-hero-container">
               <div className="latest-hero-card" onClick={() => onReadArticle(latestArticle)}>
@@ -118,7 +118,7 @@ export default function CultureSlangReaderPage({
                   />
                   <div className="latest-hero-tag">
                     <span>✨</span>
-                    <span>LATEST FEATURED STORY</span>
+                    <span>BÀI ĐỌC MỚI NHẤT</span>
                   </div>
                 </div>
 
@@ -155,7 +155,7 @@ export default function CultureSlangReaderPage({
                     </div>
 
                     <button className="btn-primary-purple" style={{ padding: '0.65rem 1.35rem', fontSize: '0.88rem' }}>
-                      Read Full Article →
+                      Đọc toàn bộ bài viết →
                     </button>
                   </div>
                 </div>
@@ -168,12 +168,12 @@ export default function CultureSlangReaderPage({
             <div className="section-header-bar">
               <div className="section-header-title">
                 <span>📚</span>
-                <span>Discover More Stories ({otherArticles.length})</span>
+                <span>Khám phá thêm các bài viết khác ({otherArticles.length})</span>
               </div>
 
               <input
                 type="text"
-                placeholder="🔍 Search articles by title or keywords..."
+                placeholder="🔍 Tìm kiếm bài viết theo tiêu đề, nội dung..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="search-pill-input"
@@ -184,7 +184,7 @@ export default function CultureSlangReaderPage({
             {otherArticles.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3rem', background: 'white', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
                 <p style={{ color: 'var(--text-muted)' }}>
-                  {searchQuery ? 'No articles found matching your search query.' : 'The latest article is featured above.'}
+                  {searchQuery ? 'Không tìm thấy bài viết nào khớp với từ khóa tìm kiếm.' : 'Hiện tại đã hiển thị toàn bộ bài viết mới nhất ở trên.'}
                 </p>
               </div>
             ) : (
@@ -211,7 +211,7 @@ export default function CultureSlangReaderPage({
                           <span style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{art.authorName}</span>
                         </div>
                         <span className="article-read-btn">
-                          Read Story →
+                          Đọc bài viết →
                         </span>
                       </div>
                     </div>

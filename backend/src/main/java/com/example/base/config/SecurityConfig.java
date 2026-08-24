@@ -93,12 +93,19 @@ public class SecurityConfig {
                          * tạo, sửa, xóa vẫn đi qua xác thực và @PreAuthorize tại controller.
                          */
                         .requestMatchers(HttpMethod.GET,
+                                "/courses", "/courses/**",
+                                "/payments/check-status/**",
+                                "/payments/verify-return",
                                 "/culture-articles", "/culture-articles/**",
                                 "/grammar-patterns", "/grammar-patterns/**",
                                 "/kanji-modules", "/kanji-modules/**",
                                 "/kanji-details", "/kanji-details/**",
                                 "/vocabulary-categories", "/vocabulary-categories/**",
                                 "/vocab-items", "/vocab-items/**").permitAll()
+                                "/vocabulary-items", "/vocabulary-items/**",
+                                "/media/listening/**",
+                                "/system-flashcards", "/system-flashcards/**").permitAll()
+                        .requestMatchers("/payments/sepay-webhook", "/payments/sepay-webhook/**").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
                 )

@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionResponse {
+public class QuestionResponse { // chứa dữ liệu câu hỏi trả về fe
     private Long questionId;
     private QuestionSkillType skillType;
     private JlptLevel jlptLevel;

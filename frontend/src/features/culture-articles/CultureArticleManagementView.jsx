@@ -41,15 +41,15 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
   }, [fetchArticles]);
 
   const handleDeleteArticle = async (article) => {
-    if (!confirm(`Are you sure you want to permanently delete the article: "${article.title}"?`)) {
+    if (!confirm(`Bạn có chắc chắn muốn xóa bài viết: "${article.title}"? Hành động này không thể hoàn tác.`)) {
       return;
     }
     try {
       await apiRequest(`/culture-articles/${article.articleId}`, 'DELETE');
-      alert('Article deleted successfully!');
+      alert('Đã xóa bài viết thành công!');
       fetchArticles();
     } catch (err) {
-      alert(`Error: ${err.message}`);
+      alert(`Lỗi: ${err.message}`);
     }
   };
 
@@ -92,16 +92,16 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
 
       <div className="card-header-row">
         <div>
-          <h3 style={{ fontSize: '1.35rem', fontWeight: 800 }}>⛩️ Culture & Educational Articles Management</h3>
+          <h3 style={{ fontSize: '1.35rem', fontWeight: 800 }}>⛩️ Quản Lý Bài Viết Văn Hóa & Giáo Dục</h3>
           <div style={{ color: '#059669', fontWeight: 600, fontSize: '0.85rem' }}>
-            Manage Japanese culture essays, modern youth slang, and life insights in Japan
+            Quản lý các bài viết văn hóa, tiếng lóng giới trẻ và kinh nghiệm làm việc tại Nhật
           </div>
         </div>
 
         <div className="card-actions-group">
           <input
             type="text"
-            placeholder="Search by title or keywords..."
+            placeholder="Tìm theo tiêu đề, từ khóa..."
             value={keyword}
             onChange={e => { setKeyword(e.target.value); setPage(0); }}
             className="search-pill-input"
@@ -113,8 +113,8 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
               onChange={e => { setAuthorFilter(e.target.value); setPage(0); }}
               className="select-pill"
             >
-              <option value="all">View: All System Articles</option>
-              <option value="my">View: Authored by Me</option>
+              <option value="all">Xem: Tất cả bài viết hệ thống</option>
+              <option value="my">Xem: Bài do tôi viết</option>
             </select>
           )}
 
@@ -123,14 +123,14 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
             onChange={e => { setStatusFilter(e.target.value); setPage(0); }}
             className="select-pill"
           >
-            <option value="">Status: All</option>
+            <option value="">Trạng thái: Tất cả</option>
             <option value="published">Published</option>
             <option value="draft">Draft</option>
           </select>
 
           {currentUser?.role === 'Author' && (
             <button className="btn-dash btn-dash-primary" onClick={() => setShowCreateModal(true)}>
-              + Write New Article
+              + Viết Bài Mới
             </button>
           )}
         </div>
@@ -140,12 +140,12 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
         <table className="clean-table">
           <thead>
             <tr style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              <th>Article</th>
-              <th>Author</th>
-              <th>Created At</th>
-              <th>Published At</th>
-              <th style={{ textAlign: 'center' }}>Status</th>
-              <th style={{ textAlign: 'center' }}>Actions</th>
+              <th>Bài viết</th>
+              <th>Tác giả</th>
+              <th>Ngày tạo</th>
+              <th>Ngày xuất bản</th>
+              <th style={{ textAlign: 'center' }}>Trạng thái</th>
+              <th style={{ textAlign: 'center' }}>Hành động</th>
             </tr>
           </thead>
           <tbody>
@@ -153,7 +153,7 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
               <tr>
                 <td colSpan="6" style={{ textAlign: 'center', padding: '3.5rem', color: '#94a3b8' }}>
                   <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🌸</div>
-                  <div>No articles found. {currentUser?.role === 'Author' ? 'Click "+ Write New Article" to publish your first post!' : ''}</div>
+                  <div>Chưa có bài viết nào. {currentUser?.role === 'Author' ? 'Nhấp "+ Viết Bài Mới" để đăng bài viết đầu tiên nhé!' : ''}</div>
                 </td>
               </tr>
             ) : (
@@ -186,10 +186,10 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
                       </div>
                     </td>
                     <td style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                      {art.createdAt ? new Date(art.createdAt).toLocaleDateString('en-US') : '-'}
+                      {art.createdAt ? new Date(art.createdAt).toLocaleDateString('vi-VN') : '-'}
                     </td>
                     <td style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                      {art.publishedAt ? new Date(art.publishedAt).toLocaleDateString('en-US') : 'Unpublished'}
+                      {art.publishedAt ? new Date(art.publishedAt).toLocaleDateString('vi-VN') : 'Chưa xuất bản'}
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       <span className={`status-badge ${art.status}`}>
@@ -201,16 +201,16 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
                         <button
                           className="btn-action-view"
                           onClick={() => onReadArticle && onReadArticle(art)}
-                          title="Read full article"
+                          title="Đọc toàn bộ bài viết"
                         >
-                          📖 Read
+                          📖 Đọc bài
                         </button>
 
                         {isAuthorOwner && (
                           <button
                             className="btn-action-edit"
                             onClick={() => setEditingArticle(art)}
-                            title="Edit article content"
+                            title="Sửa nội dung bài viết"
                           >
                             ✏️ Edit
                           </button>
@@ -220,7 +220,7 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
                           <button
                             className="btn-action-delete"
                             onClick={() => handleDeleteArticle(art)}
-                            title="Delete article"
+                            title="Xóa bài viết"
                           >
                             🗑️
                           </button>

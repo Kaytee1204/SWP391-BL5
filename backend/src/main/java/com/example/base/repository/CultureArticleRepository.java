@@ -16,6 +16,10 @@ public interface CultureArticleRepository extends JpaRepository<CultureArticle, 
 
     Optional<CultureArticle> findByArticleId(Long articleId);
 
+    boolean existsByTitleIgnoreCase(String title);
+
+    boolean existsByTitleIgnoreCaseAndArticleIdNot(String title, Long articleId);
+
     Page<CultureArticle> findByStatus(String status, Pageable pageable);
 
     @Query(value = "SELECT a FROM CultureArticle a WHERE " +

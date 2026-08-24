@@ -15,12 +15,16 @@ import ManagerDashboardPage from './features/dashboard/ManagerDashboardPage';
 import VocabularyCategoryPage from './features/vocabulary-category/VocabularyCategoryPage';
 import GrammarReaderPage from './features/grammar/GrammarReaderPage';
 import GrammarExercisePracticeView from './features/grammar/GrammarExercisePracticeView';
-import QuestionBankManagementView from './features/question-bank/QuestionBankManagementView';
+import QuestionBankWorkspace from './features/question-bank/QuestionBankWorkspace';
 import Navbar from './components/common/Navbar';
+import CourseCatalogPage from './features/courses/CourseCatalogPage';
+import PaymentReturnView from './features/courses/components/PaymentReturnView';
+import FreeCoursesPage from './features/free-courses/FreeCoursesPage';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { KanjiPage } from './pages/KanjiPage';
 import { PersonalDecksPage } from './pages/PersonalDecksPage';
 import { AccountsPage } from './pages/AccountsPage';
+import StudentExamWorkspace from './features/student-exams/StudentExamWorkspace';
 
 
 export default function App() {
@@ -58,6 +62,16 @@ export default function App() {
         });
     }
   }, [currentUser]);
+
+  // Kiểm tra nếu được redirect từ SePay về (?view=payment_return hoặc có orderCode)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewParam = urlParams.get('view');
+    const orderCode = urlParams.get('orderCode');
+    if (viewParam === 'payment_return' || orderCode) {
+      setCurrentView('payment_return');
+    }
+  }, []);
 
   const handleLoginSuccess = (authData) => {
     localStorage.setItem('jwt_token', authData.accessToken);
@@ -104,12 +118,26 @@ export default function App() {
     setCurrentView('article_detail');
   };
 
-  // Các màn hình học dùng chung currentView. App chọn component từ bảng ánh xạ này,
-  // còn Navbar chỉ gửi tên view lên qua onNavigate/setCurrentView.
+// Chặn khách vãng lai (Guest) không được vào trang Vocabulary
+  useEffect(() => {
+    if (!currentUser && (currentView === 'vocab' || currentView === 'vocab-decks')) {
+      setCurrentView('landing');
+      setAuthModalMode('login');
+    }
+  }, [currentUser, currentView]);
+
+  const handleNavigate = (view) => {
+    if ((view === 'vocab' || view === 'vocab-decks') && !currentUser) {
+      setAuthModalMode('login');
+      return;
+    }
+    setCurrentView(view);
+  };
+
   const learningViews = {
-    vocab: <VocabularyPage currentUser={currentUser} />,
+    vocab: currentUser ? <VocabularyPage currentUser={currentUser} /> : null,
+    'vocab-decks': <PersonalVocabDecksPage onNavigate={handleNavigate} />,
     kanji: <KanjiPage currentUser={currentUser} />,
-    decks: <PersonalDecksPage onNavigate={setCurrentView} />,
     accounts: <AccountsPage />,
   };
   const learningView = learningViews[currentView];
@@ -120,7 +148,7 @@ export default function App() {
       {(currentView === 'home' || currentView === 'landing') && (
         <HomePage
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onOpenAuth={(mode) => setAuthModalMode(mode)}
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
@@ -131,7 +159,7 @@ export default function App() {
       {currentView === 'culture_reader' && (
         <CultureSlangReaderPage
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onOpenAuth={(mode) => setAuthModalMode(mode)}
           onViewProfile={() => setShowProfileModal(true)}
           onReadArticle={(article) => handleOpenArticleDetail(article, 'culture_reader')}
@@ -139,44 +167,41 @@ export default function App() {
         />
       )}
 
-      {/* 2.5. Tra Cứu Ngữ Pháp JLPT (Japanese Grammar Reader) */}
-      {currentView === 'grammar_reader' && (
-        <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }}>
-          <Navbar
-            currentView="grammar_reader"
-            currentUser={currentUser}
-            onNavigate={(view) => setCurrentView(view)}
-            onOpenAuth={(mode) => setAuthModalMode(mode)}
-            onViewProfile={() => setShowProfileModal(true)}
-            onLogout={handleLogout}
-          />
-          <main style={{ paddingBottom: '3rem' }}>
-            <GrammarReaderPage
-              currentUser={currentUser}
-              onOpenAuth={(mode) => setAuthModalMode(mode)}
-            />
-          </main>
-        </div>
+      {/* 2.1. Danh Mục Khóa Học & Đăng Ký / Mua Khóa Học (Course Catalog & SePay VietQR) */}
+      {currentView === 'courses' && (
+        <CourseCatalogPage
+          currentUser={currentUser}
+          onNavigate={handleNavigate}
+          onOpenAuth={(mode) => setAuthModalMode(mode)}
+          onViewProfile={() => setShowProfileModal(true)}
+          onLogout={handleLogout}
+        />
       )}
 
-      {/* 2.6. Luyện Tập Trắc Nghiệm Ngữ Pháp JLPT (Grammar Exercise Practice Quiz) */}
-      {currentView === 'exercise_practice' && (
-        <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }}>
-          <Navbar
-            currentView="exercise_practice"
-            currentUser={currentUser}
-            onNavigate={(view) => setCurrentView(view)}
-            onOpenAuth={(mode) => setAuthModalMode(mode)}
-            onViewProfile={() => setShowProfileModal(true)}
-            onLogout={handleLogout}
-          />
-          <main>
-            <GrammarExercisePracticeView
-              currentUser={currentUser}
-              onOpenAuth={(mode) => setAuthModalMode(mode)}
-            />
-          </main>
-        </div>
+      {/* 2.2. Kết Quả Thanh Toán SePay (Return Verification) */}
+      {currentView === 'payment_return' && (
+        <PaymentReturnView
+          currentUser={currentUser}
+          onNavigate={handleNavigate}
+          onViewProfile={() => setShowProfileModal(true)}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {/* 2.5. Trang Khóa Học & Tài Liệu Miễn Phí Tổng Hợp (Free Courses Hub) */}
+      {(currentView === 'free_courses' || currentView === 'grammar_reader' || currentView === 'kanji' || currentView === 'kanji-decks' || currentView === 'exercise_practice') && (
+        <FreeCoursesPage
+          currentUser={currentUser}
+          onNavigate={handleNavigate}
+          onOpenAuth={(mode) => setAuthModalMode(mode)}
+          onViewProfile={() => setShowProfileModal(true)}
+          onLogout={handleLogout}
+          initialTab={
+            currentView === 'kanji' ? 'kanji' :
+            currentView === 'kanji-decks' ? 'kanji-decks' :
+            currentView === 'exercise_practice' ? 'quiz' : 'grammar'
+          }
+        />
       )}
 
       {/* 3. Trang Đọc Chi Tiết 1 Bài Viết (Full-Page Article Reader) */}
@@ -185,7 +210,7 @@ export default function App() {
           article={readingArticle}
           previousView={previousView}
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
         />
@@ -195,7 +220,7 @@ export default function App() {
       {currentView === 'culture_articles' && (
         <AuthorWorkspacePage
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onViewProfile={() => setShowProfileModal(true)}
           onOpenArticleDetail={(art) => handleOpenArticleDetail(art, 'culture_articles')}
           onLogout={handleLogout}
@@ -206,7 +231,7 @@ export default function App() {
       {currentView === 'materials' && (
         <LearningMaterialsView
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
         />
@@ -218,12 +243,12 @@ export default function App() {
           <Navbar
             currentView="question_bank"
             currentUser={currentUser}
-            onNavigate={(view) => setCurrentView(view)}
+            onNavigate={handleNavigate}
             onViewProfile={() => setShowProfileModal(true)}
             onLogout={handleLogout}
           />
           <main style={{ maxWidth: '1180px', margin: '2rem auto', padding: '0 1.5rem 4rem' }}>
-            <QuestionBankManagementView currentUser={currentUser} />
+            <QuestionBankWorkspace currentUser={currentUser} />
           </main>
         </div>
       )}
@@ -232,18 +257,23 @@ export default function App() {
       {currentView === 'dashboard' && (
         <ManagerDashboardPage
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onViewProfile={() => setShowProfileModal(true)}
           onOpenArticleDetail={(art) => handleOpenArticleDetail(art, 'dashboard')}
           onLogout={handleLogout}
         />
       )}
 
+      {currentView === 'student_exams' && (
+        <StudentExamWorkspace currentUser={currentUser} onNavigate={setCurrentView}
+          onViewProfile={() => setShowProfileModal(true)} onLogout={handleLogout} />
+      )}
+
       {/* 7. Quản Lý Danh Mục Từ Vựng (Vocabulary Category Management) */}
       {currentView === 'vocabulary_category' && (
         <VocabularyCategoryPage
           currentUser={currentUser}
-          onNavigate={(view) => setCurrentView(view)}
+          onNavigate={handleNavigate}
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
         />
@@ -254,7 +284,7 @@ export default function App() {
           <Navbar
             currentView={currentView}
             currentUser={currentUser}
-            onNavigate={(view) => setCurrentView(view)}
+            onNavigate={handleNavigate}
             onOpenAuth={(mode) => setAuthModalMode(mode)}
             onViewProfile={() => setShowProfileModal(true)}
             onLogout={handleLogout}

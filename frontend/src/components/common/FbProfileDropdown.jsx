@@ -15,37 +15,84 @@ export default function FbProfileDropdown({ currentUser, onViewProfile, onNaviga
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const getRoleBadgeStyle = (role) => {
+    switch (role?.toLowerCase()) {
+      case 'manager':
+        return { color: '#7c3aed', background: '#ede9fe', border: '1px solid #ddd6fe' };
+      case 'lecturer':
+        return { color: '#b45309', background: '#fef3c7', border: '1px solid #fde68a' };
+      case 'author':
+        return { color: '#be185d', background: '#fce7f3', border: '1px solid #fbcfe8' };
+      default:
+        return { color: '#059669', background: '#dcfce7', border: '1px solid #bbf7d0' };
+    }
+  };
+
+  const badgeStyle = getRoleBadgeStyle(currentUser?.role);
+
   return (
     <div style={{ position: 'relative' }} ref={dropdownRef}>
       <button
         className={`fb-profile-btn ${isOpen ? 'active' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
         title="User Profile"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '4px 12px 4px 6px',
+          borderRadius: '9999px',
+          border: '1px solid #e2e8f0',
+          background: isOpen ? '#f8fafc' : '#fff',
+          cursor: 'pointer',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+        }}
       >
-        <div className="fb-avatar-wrap">
-          <img src={currentUser.avatarUrl || AVATAR_PRESETS[0].url} alt="avt" />
+        <div className="fb-avatar-wrap" style={{ width: '32px', height: '32px', position: 'relative', flexShrink: 0 }}>
+          <img
+            src={currentUser?.avatarUrl || AVATAR_PRESETS[0].url}
+            alt="avt"
+            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+          />
           <div className="fb-avatar-badge">▼</div>
         </div>
-        <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', paddingRight: '4px' }}>
-          {currentUser.fullName}
-        </span>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: 1.15 }}>
+          <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#0f172a', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {currentUser?.fullName || 'User'}
+          </span>
+          <span
+            style={{
+              fontSize: '0.62rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.3px',
+              padding: '1px 5px',
+              borderRadius: '4px',
+              marginTop: '2px',
+              ...badgeStyle
+            }}
+          >
+            {currentUser?.role || 'Student'}
+          </span>
+        </div>
       </button>
 
       {isOpen && (
         <div className="fb-dropdown-menu">
           <div className="fb-user-card">
             <div className="fb-user-card-header">
-              <img src={currentUser.avatarUrl || AVATAR_PRESETS[0].url} alt="avt" className="fb-user-card-avatar" />
+              <img src={currentUser?.avatarUrl || AVATAR_PRESETS[0].url} alt="avt" className="fb-user-card-avatar" />
               <div style={{ overflow: 'hidden' }}>
                 <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {currentUser.fullName}
+                  {currentUser?.fullName}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {currentUser.email}
+                  {currentUser?.email}
                 </div>
                 <div style={{ marginTop: '3px' }}>
-                  <span className={`role-badge role-${currentUser.role?.toLowerCase()}`} style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
-                    {currentUser.role}
+                  <span className={`role-badge role-${currentUser?.role?.toLowerCase()}`} style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
+                    {currentUser?.role}
                   </span>
                 </div>
               </div>
@@ -63,7 +110,7 @@ export default function FbProfileDropdown({ currentUser, onViewProfile, onNaviga
             </button>
           </div>
 
-          {currentUser.role === 'Manager' && (
+          {currentUser?.role === 'Manager' && (
             <div
               className="fb-menu-item"
               onClick={() => {
@@ -82,7 +129,7 @@ export default function FbProfileDropdown({ currentUser, onViewProfile, onNaviga
             </div>
           )}
 
-          {currentUser.role === 'Lecturer' && (
+          {currentUser?.role === 'Lecturer' && (
             <div
               className="fb-menu-item"
               onClick={() => {
@@ -101,7 +148,7 @@ export default function FbProfileDropdown({ currentUser, onViewProfile, onNaviga
             </div>
           )}
 
-          {currentUser.role === 'Author' && (
+          {currentUser?.role === 'Author' && (
             <div
               className="fb-menu-item"
               onClick={() => {
