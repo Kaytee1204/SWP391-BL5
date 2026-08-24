@@ -20,14 +20,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/grammar-patterns")
-@SecurityRequirement(name = "BearerAuth") // Khớp 100% với OpenApiConfig
+@SecurityRequirement(name = "BearerAuth")
 @Tag(name = "Grammar Examples", description = "APIs for viewing, creating, updating, and deleting Grammar Examples")
 @RequiredArgsConstructor
 public class GrammarExampleController {
 
     private final GrammarExampleService exampleService;
 
-    // 1. Học sinh, Giảng viên, Khách đều có thể xem danh sách ví dụ theo patternId
+    // 1. Xem danh sách ví dụ theo patternId (All Roles & Public)
     @GetMapping("/{patternId}/examples")
     @Operation(summary = "Get list of examples by Pattern ID (Public / All Roles)")
     public ResponseEntity<ApiResponse<List<GrammarExampleResponse>>> getExamplesByPattern(
@@ -45,7 +45,7 @@ public class GrammarExampleController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // 3. Giảng viên tạo câu ví dụ mới
+    // 3. Giảng viên / Quản lý tạo câu ví dụ mới
     @PostMapping("/{patternId}/examples")
     @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     @Operation(summary = "Create a new grammar example (Lecturer & Manager only)")
@@ -58,7 +58,7 @@ public class GrammarExampleController {
                 .body(ApiResponse.success("Grammar example created successfully", response));
     }
 
-    // 4. Giảng viên/Quản lý cập nhật câu ví dụ
+    // 4. Giảng viên / Quản lý cập nhật câu ví dụ
     @RequestMapping(value = "/examples/{exampleId}", method = {RequestMethod.PUT, RequestMethod.PATCH})
     @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     @Operation(summary = "Update an existing grammar example (Lecturer & Manager only)")
@@ -70,7 +70,7 @@ public class GrammarExampleController {
         return ResponseEntity.ok(ApiResponse.success("Grammar example updated successfully", response));
     }
 
-    // 5. Giảng viên/Quản lý xóa câu ví dụ
+    // 5. Giảng viên / Quản lý xóa câu ví dụ
     @DeleteMapping("/examples/{exampleId}")
     @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     @Operation(summary = "Delete a grammar example (Lecturer & Manager only)")

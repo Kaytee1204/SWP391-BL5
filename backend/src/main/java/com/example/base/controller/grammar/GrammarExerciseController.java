@@ -29,10 +29,9 @@ public class GrammarExerciseController {
 
     private final GrammarExerciseService grammarExerciseService;
 
-    // 1. Xem danh sách bài tập (Chỉ dành cho Student, Lecturer, Manager)
+    // 1. Xem danh sách bài tập (Dành cho mọi user/học sinh luyện tập)
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('Student', 'ROLE_Student', 'ROLE_STUDENT', 'student', 'Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
-    @Operation(summary = "View Grammar Exercises with keyword and JLPT level filters (Student, Lecturer, Manager only)")
+    @Operation(summary = "View Grammar Exercises with keyword and JLPT level filters (Public / Practice Quiz)")
     public ResponseEntity<ApiResponse<PageResponse<GrammarExerciseResponse>>> getExercises(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) JlptLevel jlptLevel,

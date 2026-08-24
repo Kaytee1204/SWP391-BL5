@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/common/Navbar';
 import GrammarReaderPage from '../grammar/GrammarReaderPage';
+import StudentVocabularyView from '../vocabulary/StudentVocabularyView';
 import { KanjiPage } from '../../pages/KanjiPage';
 import GrammarExercisePracticeView from '../grammar/GrammarExercisePracticeView';
 import { PersonalKanjiDecksPage } from '../../pages/PersonalKanjiDecksPage';
@@ -33,7 +34,7 @@ export default function FreeCoursesPage({
       />
 
       <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '1.5rem 1.25rem 0' }}>
-        {/* Sub-tab navigation in English */}
+        {/* Sub-tab navigation */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -51,16 +52,16 @@ export default function FreeCoursesPage({
             onClick={() => setActiveTab('grammar')}
             style={{
               flex: 1,
-              minWidth: '160px',
+              minWidth: '150px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.4rem',
-              padding: '0.6rem 1.2rem',
+              padding: '0.6rem 1.1rem',
               borderRadius: '9999px',
               border: 'none',
               fontWeight: 700,
-              fontSize: '0.9rem',
+              fontSize: '0.88rem',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               background: activeTab === 'grammar' ? 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)' : 'transparent',
@@ -74,19 +75,45 @@ export default function FreeCoursesPage({
 
           <button
             type="button"
-            onClick={() => setActiveTab('kanji')}
+            onClick={() => setActiveTab('vocabulary')}
             style={{
               flex: 1,
-              minWidth: '160px',
+              minWidth: '150px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.4rem',
-              padding: '0.6rem 1.2rem',
+              padding: '0.6rem 1.1rem',
               borderRadius: '9999px',
               border: 'none',
               fontWeight: 700,
-              fontSize: '0.9rem',
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              background: activeTab === 'vocabulary' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'transparent',
+              color: activeTab === 'vocabulary' ? '#fff' : '#475569',
+              boxShadow: activeTab === 'vocabulary' ? '0 4px 12px rgba(16, 185, 129, 0.25)' : 'none'
+            }}
+          >
+            <span>📚</span>
+            <span>Vocabulary (語彙)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('kanji')}
+            style={{
+              flex: 1,
+              minWidth: '150px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.4rem',
+              padding: '0.6rem 1.1rem',
+              borderRadius: '9999px',
+              border: 'none',
+              fontWeight: 700,
+              fontSize: '0.88rem',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               background: activeTab === 'kanji' ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : 'transparent',
@@ -104,16 +131,16 @@ export default function FreeCoursesPage({
               onClick={() => setActiveTab('kanji-decks')}
               style={{
                 flex: 1,
-                minWidth: '160px',
+                minWidth: '150px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.4rem',
-                padding: '0.6rem 1.2rem',
+                padding: '0.6rem 1.1rem',
                 borderRadius: '9999px',
                 border: 'none',
                 fontWeight: 700,
-                fontSize: '0.9rem',
+                fontSize: '0.88rem',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 background: activeTab === 'kanji-decks' ? 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)' : 'transparent',
@@ -131,16 +158,16 @@ export default function FreeCoursesPage({
             onClick={() => setActiveTab('quiz')}
             style={{
               flex: 1,
-              minWidth: '160px',
+              minWidth: '150px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.4rem',
-              padding: '0.6rem 1.2rem',
+              padding: '0.6rem 1.1rem',
               borderRadius: '9999px',
               border: 'none',
               fontWeight: 700,
-              fontSize: '0.9rem',
+              fontSize: '0.88rem',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               background: activeTab === 'quiz' ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' : 'transparent',
@@ -163,11 +190,21 @@ export default function FreeCoursesPage({
           />
         )}
 
+        {activeTab === 'vocabulary' && (
+          <div className="app-shell" style={{ paddingTop: '0' }}>
+            <StudentVocabularyView
+              currentUser={currentUser}
+              onNavigate={onNavigate}
+            />
+          </div>
+        )}
+
         {activeTab === 'kanji' && (
           <div className="app-shell" style={{ paddingTop: '0' }}>
             <KanjiPage
               currentUser={currentUser}
               onNavigate={onNavigate}
+              readOnly={true}
             />
           </div>
         )}

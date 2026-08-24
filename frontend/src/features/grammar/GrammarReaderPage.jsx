@@ -15,6 +15,10 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
 
   // State lưu danh sách ví dụ theo từng patternId (Ví dụ: { 1: [ex1, ex2], 4: [ex3] })
   const [examplesMap, setExamplesMap] = useState({});
+  const [addingExamplePatternId, setAddingExamplePatternId] = useState(null);
+  const [editingExample, setEditingExample] = useState(null);
+  const [exampleForm, setExampleForm] = useState({ sentenceJp: '', translation: '', audioUrl: '' });
+  const [exampleSubmitting, setExampleSubmitting] = useState(false);
 
   const isGuest = !currentUser;
 
@@ -80,6 +84,76 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
       } catch (err) {
         console.error("Không thể tải câu ví dụ cho pattern này", err);
       }
+    }
+  };
+
+  const openAddExample = (patternId) => {
+    setEditingExample(null);
+    setAddingExamplePatternId(patternId);
+    setExampleForm({ sentenceJp: '', translation: '', audioUrl: '' });
+  };
+
+  const openEditExample = (patternId, ex) => {
+    setAddingExamplePatternId(patternId);
+    setEditingExample(ex);
+    setExampleForm({
+      sentenceJp: ex.sentenceJp || '',
+      translation: ex.translation || '',
+      audioUrl: ex.audioUrl || ''
+    });
+  };
+
+  const handleSaveExample = async (patternId) => {
+    if (!exampleForm.sentenceJp.trim() || !exampleForm.translation.trim()) {
+      alert('Vui lòng nhập cả câu tiếng Nhật và bản dịch!');
+      return;
+    }
+
+    setExampleSubmitting(true);
+    try {
+      if (editingExample) {
+        const res = await apiRequest(`/grammar-patterns/examples/${editingExample.exampleId}`, 'PUT', {
+          sentenceJp: exampleForm.sentenceJp.trim(),
+          translation: exampleForm.translation.trim(),
+          audioUrl: exampleForm.audioUrl?.trim() || null
+        });
+        const updated = res.data;
+        setExamplesMap(prev => ({
+          ...prev,
+          [patternId]: (prev[patternId] || []).map(item => item.exampleId === editingExample.exampleId ? updated : item)
+        }));
+      } else {
+        const res = await apiRequest(`/grammar-patterns/${patternId}/examples`, 'POST', {
+          sentenceJp: exampleForm.sentenceJp.trim(),
+          translation: exampleForm.translation.trim(),
+          audioUrl: exampleForm.audioUrl?.trim() || null
+        });
+        const created = res.data;
+        setExamplesMap(prev => ({
+          ...prev,
+          [patternId]: [...(prev[patternId] || []), created]
+        }));
+      }
+      setAddingExamplePatternId(null);
+      setEditingExample(null);
+      setExampleForm({ sentenceJp: '', translation: '', audioUrl: '' });
+    } catch (err) {
+      alert(`Lưu câu ví dụ thất bại: ${err.message}`);
+    } finally {
+      setExampleSubmitting(false);
+    }
+  };
+
+  const handleDeleteExample = async (patternId, exampleId) => {
+    if (!window.confirm('Bạn có chắc muốn xóa câu ví dụ này?')) return;
+    try {
+      await apiRequest(`/grammar-patterns/examples/${exampleId}`, 'DELETE');
+      setExamplesMap(prev => ({
+        ...prev,
+        [patternId]: (prev[patternId] || []).filter(item => item.exampleId !== exampleId)
+      }));
+    } catch (err) {
+      alert(`Xóa câu ví dụ thất bại: ${err.message}`);
     }
   };
 
@@ -328,17 +402,109 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
 
                     {/* HIỂN THỊ DANH SÁCH CÂU VÍ DỤ TỪ API */}
                     <div style={{ marginTop: '1rem' }}>
-                      <div style={{ fontWeight: 800, color: 'var(--text-heading)', marginBottom: '0.5rem', fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        🗣️ Example Sentences:
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div style={{ fontWeight: 800, color: 'var(--text-heading)', fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          🗣️ Example Sentences:
+                        </div>
+                        {currentUser && (
+                          <button
+                            type="button"
+                            onClick={() => openAddExample(p.patternId)}
+                            style={{
+                              background: '#ede9fe',
+                              color: '#6d28d9',
+                              border: '1px solid #c4b5fd',
+                              padding: '0.25rem 0.65rem',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ➕ Add Example
+                          </button>
+                        )}
                       </div>
+
+                      {/* Inline Form Thêm/Sửa câu ví dụ */}
+                      {addingExamplePatternId === p.patternId && (
+                        <div style={{ background: '#f5f3ff', border: '1.5px solid #c4b5fd', borderRadius: '10px', padding: '0.85rem', marginBottom: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#5b21b6' }}>
+                            {editingExample ? '✏️ Edit Example Sentence' : '➕ Add New Example Sentence'}
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="Japanese Sentence (e.g. 毎日日本語を勉強しています。)"
+                            value={exampleForm.sentenceJp}
+                            onChange={e => setExampleForm({ ...exampleForm, sentenceJp: e.target.value })}
+                            style={{ padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="Vietnamese Translation (e.g. Tôi học tiếng Nhật mỗi ngày.)"
+                            value={exampleForm.translation}
+                            onChange={e => setExampleForm({ ...exampleForm, translation: e.target.value })}
+                            style={{ padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="Audio URL (Optional)"
+                            value={exampleForm.audioUrl}
+                            onChange={e => setExampleForm({ ...exampleForm, audioUrl: e.target.value })}
+                            style={{ padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem', outline: 'none' }}
+                          />
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem', marginTop: '0.2rem' }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAddingExamplePatternId(null);
+                                setEditingExample(null);
+                              }}
+                              style={{ padding: '0.35rem 0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '0.78rem', cursor: 'pointer' }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              disabled={exampleSubmitting}
+                              onClick={() => handleSaveExample(p.patternId)}
+                              style={{ padding: '0.35rem 0.95rem', borderRadius: '6px', border: 'none', background: '#7c3aed', color: '#fff', fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }}
+                            >
+                              {exampleSubmitting ? 'Saving...' : (editingExample ? 'Update Example' : 'Save Example')}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                       
                       {examplesMap[p.patternId] && examplesMap[p.patternId].length > 0 ? (
                         examplesMap[p.patternId].map((ex, index) => (
-                          <div key={ex.exampleId || index} style={{ background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '0.5rem', border: '1px solid #e2e8f0' }}>
-                            <div style={{ fontWeight: 700, color: '#1e293b' }}>{index + 1}. {ex.sentenceJp}</div>
-                            <div style={{ color: '#475569', fontSize: '0.88rem', marginTop: '0.2rem' }}>{ex.translation}</div>
-                            {ex.audioUrl && (
-                              <audio controls src={ex.audioUrl} style={{ height: '30px', marginTop: '0.4rem', maxWidth: '100%' }} />
+                          <div key={ex.exampleId || index} style={{ background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '0.5rem', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, color: '#1e293b' }}>{index + 1}. {ex.sentenceJp}</div>
+                              <div style={{ color: '#475569', fontSize: '0.88rem', marginTop: '0.2rem' }}>{ex.translation}</div>
+                              {ex.audioUrl && (
+                                <audio controls src={ex.audioUrl} style={{ height: '30px', marginTop: '0.4rem', maxWidth: '100%' }} />
+                              )}
+                            </div>
+                            {currentUser && (
+                              <div style={{ display: 'flex', gap: '0.3rem', flexShrink: 0 }}>
+                                <button
+                                  type="button"
+                                  onClick={() => openEditExample(p.patternId, ex)}
+                                  style={{ padding: '0.25rem 0.5rem', borderRadius: '5px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                                  title="Edit Example"
+                                >
+                                  ✏️ Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteExample(p.patternId, ex.exampleId)}
+                                  style={{ padding: '0.25rem 0.5rem', borderRadius: '5px', border: '1px solid #fca5a5', background: '#fff1f2', color: '#e11d48', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                                  title="Delete Example"
+                                >
+                                  🗑️
+                                </button>
+                              </div>
                             )}
                           </div>
                         ))

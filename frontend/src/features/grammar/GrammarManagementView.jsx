@@ -3,6 +3,7 @@ import { apiRequest } from '../../api/apiRequest';
 import { JLPT_LEVELS } from '../../assets/constants';
 import CreateGrammarModal from './components/CreateGrammarModal';
 import EditGrammarModal from './components/EditGrammarModal';
+import ManageExamplesModal from './components/ManageExamplesModal';
 
 export default function GrammarManagementView({ currentUser }) {
   const [patterns, setPatterns] = useState([]);
@@ -13,6 +14,7 @@ export default function GrammarManagementView({ currentUser }) {
   const [onlyMyPatterns, setOnlyMyPatterns] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingPattern, setEditingPattern] = useState(null);
+  const [selectedPatternForExamples, setSelectedPatternForExamples] = useState(null);
 
   const fetchPatterns = async () => {
     setLoading(true);
@@ -303,6 +305,22 @@ export default function GrammarManagementView({ currentUser }) {
                       </td>
                       <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                          <button
+                            onClick={() => setSelectedPatternForExamples(p)}
+                            style={{
+                              padding: '0.35rem 0.65rem',
+                              borderRadius: '6px',
+                              border: '1px solid #c4b5fd',
+                              background: '#ede9fe',
+                              color: '#6d28d9',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                            title="Quản lý câu ví dụ cho mẫu ngữ pháp này"
+                          >
+                            💬 Ví dụ
+                          </button>
                           {canEdit ? (
                             <>
                               <button
@@ -363,6 +381,14 @@ export default function GrammarManagementView({ currentUser }) {
           pattern={editingPattern}
           onClose={() => setEditingPattern(null)}
           onUpdateSuccess={() => fetchPatterns()}
+        />
+      )}
+
+      {selectedPatternForExamples && (
+        <ManageExamplesModal
+          pattern={selectedPatternForExamples}
+          currentUser={currentUser}
+          onClose={() => setSelectedPatternForExamples(null)}
         />
       )}
     </div>

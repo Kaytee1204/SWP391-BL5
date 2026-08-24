@@ -72,21 +72,21 @@ public class GrammarExerciseMapper {
 
         Account lecturer = exercise.getCreatedBy();
 
-        return GrammarExerciseResponse.builder()
-                .exerciseId(exercise.getExerciseId())
-                .jlptLevel(exercise.getJlptLevel())
-                .questionText(exercise.getQuestionText())
-                .optionA(exercise.getOptionA())
-                .optionB(exercise.getOptionB())
-                .optionC(exercise.getOptionC())
-                .optionD(exercise.getOptionD())
-                .correctOption(exercise.getCorrectOption())
-                .explanation(exercise.getExplanation())
-                .createdById(lecturer != null ? lecturer.getAccountId() : null)
-                .createdByName(lecturer != null ? lecturer.getFullName() : "Unknown Lecturer")
-                .createdByEmail(lecturer != null ? lecturer.getEmail() : null)
-                .createdAt(exercise.getCreatedAt())
-                .updatedAt(exercise.getUpdatedAt())
-                .build();
+        GrammarExerciseResponse response = new GrammarExerciseResponse();
+        response.setExerciseId(exercise.getExerciseId());
+        response.setJlptLevel(exercise.getJlptLevel());
+        response.setQuestionText(exercise.getQuestionText());
+        response.setOptionA(exercise.getOptionA());
+        response.setOptionB(exercise.getOptionB());
+        response.setOptionC(exercise.getOptionC());
+        response.setOptionD(exercise.getOptionD());
+        response.setCorrectOption(exercise.getCorrectOption());
+        response.setExplanation(exercise.getExplanation());
+        response.setCreatedById(lecturer != null ? lecturer.getAccountId() : null);
+        response.setCreatedByName(lecturer != null ? lecturer.getFullName() : "Unknown Lecturer");
+        response.setCreatedByEmail(lecturer != null ? lecturer.getEmail() : null);
+        response.setCreatedAt(exercise.getCreatedAt());
+        response.setUpdatedAt(exercise.getUpdatedAt());
+        return response;
     }
 }

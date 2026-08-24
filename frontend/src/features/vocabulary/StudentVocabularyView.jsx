@@ -1,110 +1,75 @@
-import React, { useEffect, useState } from 'react';
-import { kanjiApi, deckApi } from '../api';
-import { Modal } from '../components/Modal';
-import { BookmarkPlus, Edit2, Folder, Plus, Search, Trash2 } from 'lucide-react';
-import KanjiFormModal from '../features/materials/components/KanjiFormModal';
+import React, { useState, useEffect, useCallback } from 'react';
+import { vocabApi, deckApi } from '../../api';
+import { Modal } from '../../components/Modal';
+import { BookmarkPlus, Search, Volume2, Folder, Sparkles, BookOpen, Layers, CheckCircle2 } from 'lucide-react';
+import { playAudio } from '../../utils/audioHelper';
 
-export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
-  const role = currentUser?.role;
-  const isStudent = role === 'Student';
-  const canManageContent = !readOnly && (role === 'Lecturer' || role === 'Manager');
+const JLPT_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
+export default function StudentVocabularyView({ currentUser, onNavigate }) {
+  const isStudent = currentUser?.role === 'Student';
   const [selectedLevel, setSelectedLevel] = useState('ALL');
-  const [selectedModuleId, setSelectedModuleId] = useState('');
-  const [modules, setModules] = useState([]);
-  const [kanjiList, setKanjiList] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [items, setItems] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState({ type: '', msg: '' });
 
-  const [isKanjiModalOpen, setIsKanjiModalOpen] = useState(false);
-  const [editingKanji, setEditingKanji] = useState(null);
-
+  // Save to Deck modal state
   const [isAddToDeckModalOpen, setIsAddToDeckModalOpen] = useState(false);
-  const [selectedKanjiForDeck, setSelectedKanjiForDeck] = useState(null);
-  const [myKanjiDecks, setMyKanjiDecks] = useState([]);
+  const [selectedItemForDeck, setSelectedItemForDeck] = useState(null);
+  const [myDecks, setMyDecks] = useState([]);
   const [targetDeckId, setTargetDeckId] = useState('');
-  const [memorizationNote, setMemorizationNote] = useState('');
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
+      const cats = await vocabApi.getCategories(selectedLevel === 'ALL' ? null : selectedLevel);
+      setCategories(cats || []);
+
       const params = {};
       if (selectedLevel !== 'ALL') params.jlptLevel = selectedLevel;
-      if (selectedModuleId) params.moduleId = selectedModuleId;
+      if (selectedCategoryId) params.categoryId = selectedCategoryId;
       if (searchQuery.trim()) params.search = searchQuery.trim();
-      const [mods, kanji] = await Promise.all([
-        kanjiApi.getModules(selectedLevel === 'ALL' ? null : selectedLevel),
-        kanjiApi.getKanjiDetails(params),
-      ]);
-      setModules(Array.isArray(mods) ? mods : []);
-      setKanjiList(Array.isArray(kanji) ? kanji : []);
+
+      const data = await vocabApi.getItems(params);
+      setItems(Array.isArray(data) ? data : []);
     } catch (err) {
-      setFeedback({ type: 'error', msg: 'Failed to load Kanji data: ' + err.message });
+      setFeedback({ type: 'error', msg: 'Lỗi tải dữ liệu từ vựng: ' + err.message });
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedLevel, selectedCategoryId, searchQuery]);
 
   useEffect(() => {
     fetchData();
-  }, [selectedLevel, selectedModuleId]);
+  }, [selectedLevel, selectedCategoryId]);
 
-  const openKanjiModal = (kanji = null) => {
-    setEditingKanji(kanji);
-    setIsKanjiModalOpen(true);
-  };
-
-  const handleSaveKanji = async (formData) => {
-    if (editingKanji) {
-      await kanjiApi.updateKanji(editingKanji.kanjiId, formData);
-      setFeedback({ type: 'success', msg: 'Cập nhật chữ Kanji thành công!' });
-    } else {
-      await kanjiApi.createKanji(formData);
-      setFeedback({ type: 'success', msg: 'Tạo chữ Kanji mới thành công!' });
-    }
-    fetchData();
-  };
-
-  const deleteKanji = async (id, char) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa chữ Kanji "${char || ''}" này không?`)) return;
+  const openAddToDeck = async (item) => {
+    setSelectedItemForDeck(item);
     try {
-      await kanjiApi.deleteKanji(id);
-      setFeedback({ type: 'success', msg: 'Đã xóa chữ Kanji thành công!' });
-      fetchData();
-    } catch (err) {
-      setFeedback({ type: 'error', msg: 'Xóa thất bại: ' + err.message });
-    }
-  };
-
-  const openAddToDeck = async (kanji) => {
-    try {
-      setSelectedKanjiForDeck(kanji);
-      setMemorizationNote('');
-      const decks = await deckApi.getMyKanjiDecks();
-      setMyKanjiDecks(decks);
+      const decks = await deckApi.getMyVocabDecks();
+      setMyDecks(decks || []);
       setTargetDeckId(decks[0]?.deckId ? String(decks[0].deckId) : '');
       setIsAddToDeckModalOpen(true);
     } catch (err) {
-      setFeedback({ type: 'error', msg: 'Không thể tải danh sách Kanji deck: ' + err.message });
+      setFeedback({ type: 'error', msg: 'Không thể tải danh sách Decks: ' + err.message });
     }
   };
 
   const saveToDeck = async () => {
     if (!targetDeckId) return;
     try {
-      await deckApi.addKanjiToDeck(targetDeckId, {
-        kanjiId: selectedKanjiForDeck.kanjiId,
-        memorizationNote: memorizationNote.trim() || null,
-      });
-      setFeedback({ type: 'success', msg: `Đã thêm chữ [${selectedKanjiForDeck.character}] vào bộ Flashcard của bạn!` });
+      await deckApi.addVocabItemToDeck(targetDeckId, selectedItemForDeck.itemId);
+      setFeedback({ type: 'success', msg: `Đã thêm từ [${selectedItemForDeck.word}] vào bộ Flashcard của bạn!` });
       setIsAddToDeckModalOpen(false);
     } catch (err) {
-      setFeedback({ type: 'error', msg: 'Thêm vào deck thất bại: ' + err.message });
+      setFeedback({ type: 'error', msg: 'Lưu vào deck thất bại: ' + err.message });
     }
   };
 
-  const getJlptColor = (level) => {
+  const getJlptStyle = (level) => {
     switch (level) {
       case 'N1': return { bg: '#fee2e2', text: '#991b1b', border: '#fca5a5' };
       case 'N2': return { bg: '#fef3c7', text: '#92400e', border: '#fcd34d' };
@@ -115,9 +80,9 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1240px', margin: '0 auto' }}>
       
-      {/* Top Banner / Controls */}
+      {/* Top Banner & Filter Card */}
       <div style={{
         background: '#fff',
         border: '1px solid #e2e8f0',
@@ -129,50 +94,49 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
         gap: '1rem'
       }}>
         
-        {/* Header & Add Button */}
+        {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.4rem' }}>🏮</span>
+              <span style={{ fontSize: '1.4rem' }}>📚</span>
               <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: '#0f172a' }}>
-                Kanji Dictionary & Card Details
+                Japanese Vocabulary Hub (語彙)
               </h3>
               <span style={{
-                background: '#f1f5f9',
-                color: '#475569',
+                background: '#ecfdf5',
+                color: '#059669',
                 padding: '2px 8px',
                 borderRadius: '999px',
                 fontSize: '0.78rem',
                 fontWeight: 700
               }}>
-                {kanjiList.length} Kanji
+                {items.length} Từ vựng
               </span>
             </div>
             <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontSize: '0.86rem' }}>
-              Tra cứu & quản lý chi tiết từng chữ Hán tự theo Module bài học và cấp độ JLPT
+              Học từ vựng tiếng Nhật theo cấp độ JLPT, phát âm mẫu và lưu vào bộ Flashcard cá nhân
             </p>
           </div>
 
-          {canManageContent && (
+          {isStudent && (
             <button
-              onClick={() => openKanjiModal()}
+              onClick={() => onNavigate && onNavigate('vocab-decks')}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                 color: '#fff',
-                padding: '0.65rem 1.25rem',
+                padding: '0.6rem 1.15rem',
                 borderRadius: '10px',
                 border: 'none',
                 fontWeight: 700,
-                fontSize: '0.88rem',
+                fontSize: '0.85rem',
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)',
-                transition: 'all 0.2s ease'
+                boxShadow: '0 4px 10px rgba(16, 185, 129, 0.2)'
               }}
             >
-              <Plus size={18} /> Thêm Chữ Kanji Mới
+              <BookmarkPlus size={16} /> Bộ Thẻ Của Tôi (My Decks)
             </button>
           )}
         </div>
@@ -182,20 +146,20 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
           <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748b', marginRight: '0.25rem' }}>
             Cấp độ:
           </span>
-          {['ALL', 'N5', 'N4', 'N3', 'N2', 'N1'].map((level) => {
+          {['ALL', ...JLPT_LEVELS].map((level) => {
             const isActive = selectedLevel === level;
             return (
               <button
                 key={level}
-                onClick={() => { setSelectedLevel(level); setSelectedModuleId(''); }}
+                onClick={() => { setSelectedLevel(level); setSelectedCategoryId(''); }}
                 style={{
                   padding: '0.35rem 0.85rem',
                   borderRadius: '8px',
                   fontSize: '0.82rem',
                   fontWeight: 700,
                   border: '1px solid',
-                  borderColor: isActive ? '#0284c7' : '#e2e8f0',
-                  background: isActive ? '#0284c7' : '#f8fafc',
+                  borderColor: isActive ? '#10b981' : '#e2e8f0',
+                  background: isActive ? '#10b981' : '#f8fafc',
                   color: isActive ? '#fff' : '#475569',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease'
@@ -207,14 +171,14 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
           })}
         </div>
 
-        {/* Filter by Module & Search Keyword */}
+        {/* Filter by Category & Search Keyword */}
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
           
-          {/* Module Selector */}
-          <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
+          {/* Category Selector */}
+          <div style={{ flex: 1, minWidth: '220px', position: 'relative' }}>
             <select
-              value={selectedModuleId}
-              onChange={(e) => setSelectedModuleId(e.target.value)}
+              value={selectedCategoryId}
+              onChange={(e) => setSelectedCategoryId(e.target.value)}
               style={{
                 width: '100%',
                 padding: '0.55rem 0.85rem 0.55rem 2.2rem',
@@ -228,10 +192,10 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
                 cursor: 'pointer'
               }}
             >
-              <option value="">-- Tất cả bài học / Modules ({modules.length}) --</option>
-              {modules.map((module) => (
-                <option key={module.moduleId} value={module.moduleId}>
-                  [{module.jlptLevel}] {module.title} ({module.kanjiCount} chữ)
+              <option value="">-- Tất cả danh mục bài học ({categories.length}) --</option>
+              {categories.map((c) => (
+                <option key={c.categoryId} value={c.categoryId}>
+                  [{c.jlptLevel}] {c.name} ({c.itemCount || (c.items ? c.items.length : 0)} từ)
                 </option>
               ))}
             </select>
@@ -242,7 +206,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
           <form onSubmit={(e) => { e.preventDefault(); fetchData(); }} style={{ flex: 1.5, minWidth: '280px', display: 'flex', gap: '0.5rem' }}>
             <div style={{ flex: 1, position: 'relative' }}>
               <input
-                placeholder="Tìm chữ Kanji, nghĩa tiếng Việt, Âm On (Onyomi), Âm Kun..."
+                placeholder="Tìm từ vựng, kanji, nghĩa tiếng Việt, romaji..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
@@ -308,12 +272,12 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
         </div>
       )}
 
-      {/* Kanji Cards Grid */}
+      {/* Vocabulary Cards Grid */}
       {loading ? (
         <div style={{ background: '#fff', padding: '3.5rem', textAlign: 'center', color: '#64748b', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-          ⏳ Đang tải dữ liệu chữ Hán tự Kanji...
+          ⏳ Đang tải dữ liệu từ vựng tiếng Nhật...
         </div>
-      ) : kanjiList.length === 0 ? (
+      ) : items.length === 0 ? (
         <div style={{
           background: '#fff',
           textAlign: 'center',
@@ -322,32 +286,13 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
           borderRadius: '16px',
           border: '1px solid #e2e8f0'
         }}>
-          <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🏮</div>
+          <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🌸</div>
           <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}>
-            Không tìm thấy chữ Kanji nào phù hợp
+            Không tìm thấy từ vựng nào phù hợp
           </div>
-          <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: '0.4rem 0 1rem' }}>
-            Hãy thử chọn cấp độ JLPT khác hoặc thêm mới chữ Kanji đầu tiên cho module này.
+          <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: '0.4rem 0' }}>
+            Hãy thử chọn cấp độ JLPT khác hoặc tìm kiếm từ khóa khác nhé!
           </p>
-          {canManageContent && (
-            <button
-              onClick={() => openKanjiModal()}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#0284c7',
-                color: '#fff',
-                padding: '0.6rem 1.2rem',
-                borderRadius: '8px',
-                border: 'none',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              <Plus size={16} /> Thêm Chữ Kanji Đầu Tiên
-            </button>
-          )}
         </div>
       ) : (
         <div style={{
@@ -355,11 +300,11 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
           gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
           gap: '1.25rem'
         }}>
-          {kanjiList.map((kanji) => {
-            const jlptStyle = getJlptColor(kanji.jlptLevel || 'N5');
+          {items.map((item) => {
+            const jlptStyle = getJlptStyle(item.jlptLevel || 'N5');
             return (
               <div
-                key={kanji.kanjiId}
+                key={item.itemId}
                 style={{
                   background: '#fff',
                   border: '1px solid #e2e8f0',
@@ -372,7 +317,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
                   position: 'relative'
                 }}
               >
-                {/* Card Top: Badges */}
+                {/* Top: Badges */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                   <span style={{
                     padding: '3px 9px',
@@ -383,7 +328,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
                     color: jlptStyle.text,
                     border: `1px solid ${jlptStyle.border}`
                   }}>
-                    {kanji.jlptLevel || 'N5'}
+                    {item.jlptLevel || 'N5'}
                   </span>
                   
                   <span style={{
@@ -398,27 +343,58 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap'
                   }}>
-                    📂 {kanji.moduleTitle || 'Module'}
+                    📂 {item.categoryName || 'Danh mục'}
                   </span>
                 </div>
 
-                {/* Character Big Box */}
+                {/* Main Word Display */}
                 <div style={{
                   background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
                   borderRadius: '14px',
-                  padding: '1rem',
+                  padding: '0.85rem 1rem',
                   textAlign: 'center',
                   marginBottom: '0.85rem',
                   border: '1px solid #e2e8f0'
                 }}>
-                  <div style={{
-                    fontSize: '3.8rem',
-                    fontWeight: 800,
-                    lineHeight: 1,
-                    fontFamily: '"Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", serif',
-                    color: '#0f172a'
-                  }}>
-                    {kanji.character}
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+                    <div style={{
+                      fontSize: item.kanji ? '1.8rem' : '2.1rem',
+                      fontWeight: 800,
+                      color: '#0f172a',
+                      fontFamily: '"Hiragino Kaku Gothic Pro", Meiryo, sans-serif'
+                    }}>
+                      {item.kanji || item.word}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => playAudio(null, item.kanji || item.word)}
+                      style={{
+                        background: '#e0e7ff',
+                        color: '#3730a3',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '32px',
+                        height: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer'
+                      }}
+                      title="Nghe phát âm"
+                    >
+                      <Volume2 size={16} />
+                    </button>
+                  </div>
+
+                  {item.kanji && (
+                    <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0d9488', marginTop: '2px' }}>
+                      【{item.word}】
+                    </div>
+                  )}
+
+                  <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '3px' }}>
+                    <em>{item.reading}</em>
                   </div>
                 </div>
 
@@ -426,37 +402,15 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
                 <div style={{
                   fontSize: '1.05rem',
                   fontWeight: 800,
-                  color: '#0284c7',
+                  color: '#10b981',
                   textAlign: 'center',
                   marginBottom: '0.85rem'
                 }}>
-                  {kanji.meaning}
+                  {item.meaning}
                 </div>
 
-                {/* Readings: On & Kun */}
-                <div style={{
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '10px',
-                  padding: '0.65rem 0.85rem',
-                  fontSize: '0.82rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.35rem',
-                  marginBottom: '0.85rem'
-                }}>
-                  <div>
-                    <span style={{ fontWeight: 700, color: '#64748b', marginRight: '0.35rem' }}>Âm On:</span>
-                    <strong style={{ color: '#0f172a' }}>{kanji.onyomi || '—'}</strong>
-                  </div>
-                  <div>
-                    <span style={{ fontWeight: 700, color: '#64748b', marginRight: '0.35rem' }}>Âm Kun:</span>
-                    <strong style={{ color: '#0f172a' }}>{kanji.kunyomi || '—'}</strong>
-                  </div>
-                </div>
-
-                {/* Compound Words */}
-                {kanji.compoundWords && (
+                {/* Example sentence */}
+                {item.exampleSentence && (
                   <div style={{
                     fontSize: '0.78rem',
                     color: '#475569',
@@ -468,28 +422,33 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
                     lineHeight: 1.4,
                     flex: 1
                   }}>
-                    <strong style={{ color: '#334155', display: 'block', marginBottom: '2px' }}>Từ ghép thông dụng:</strong>
-                    {kanji.compoundWords}
+                    <strong style={{ color: '#334155', display: 'block', marginBottom: '2px' }}>Ví dụ:</strong>
+                    <div style={{ fontWeight: 600, color: '#0f172a' }}>{item.exampleSentence}</div>
+                    {item.exampleTranslation && (
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '2px' }}>
+                        {item.exampleTranslation}
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {/* Action Buttons */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  borderTop: '1px solid #f1f5f9',
-                  paddingTop: '0.75rem',
-                  marginTop: 'auto'
-                }}>
-                  {isStudent && (
+                {/* Save to Deck Action Button */}
+                {isStudent && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    borderTop: '1px solid #f1f5f9',
+                    paddingTop: '0.75rem',
+                    marginTop: 'auto'
+                  }}>
                     <button
-                      onClick={() => openAddToDeck(kanji)}
+                      onClick={() => openAddToDeck(item)}
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '4px',
-                        padding: '0.4rem 0.75rem',
+                        gap: '5px',
+                        padding: '0.45rem 0.85rem',
                         background: '#e0e7ff',
                         color: '#3730a3',
                         border: '1px solid #c7d2fe',
@@ -501,51 +460,8 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
                     >
                       <BookmarkPlus size={14} /> Lưu vào Deck
                     </button>
-                  )}
-
-                  {canManageContent && (
-                    <div style={{ display: 'flex', gap: '0.4rem', marginLeft: 'auto' }}>
-                      <button
-                        onClick={() => openKanjiModal(kanji)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          padding: '0.4rem 0.75rem',
-                          background: '#fef3c7',
-                          color: '#b45309',
-                          border: '1px solid #fde68a',
-                          borderRadius: '8px',
-                          fontSize: '0.78rem',
-                          fontWeight: 700,
-                          cursor: 'pointer'
-                        }}
-                        title="Chỉnh sửa chữ Kanji"
-                      >
-                        <Edit2 size={13} /> Sửa
-                      </button>
-                      <button
-                        onClick={() => deleteKanji(kanji.kanjiId, kanji.character)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          padding: '0.4rem 0.75rem',
-                          background: '#fee2e2',
-                          color: '#b91c1c',
-                          border: '1px solid #fca5a5',
-                          borderRadius: '8px',
-                          fontSize: '0.78rem',
-                          fontWeight: 700,
-                          cursor: 'pointer'
-                        }}
-                        title="Xóa chữ Kanji"
-                      >
-                        <Trash2 size={13} /> Xóa
-                      </button>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
               </div>
             );
@@ -553,25 +469,15 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
         </div>
       )}
 
-      {/* Modern Modal Add / Edit Kanji */}
-      <KanjiFormModal
-        isOpen={isKanjiModalOpen}
-        kanji={editingKanji}
-        modules={modules}
-        defaultModuleId={selectedModuleId}
-        onClose={() => setIsKanjiModalOpen(false)}
-        onSave={handleSaveKanji}
-      />
-
       {/* Modal Add to Deck */}
       <Modal
         isOpen={isAddToDeckModalOpen}
         onClose={() => setIsAddToDeckModalOpen(false)}
-        title={`🔖 Lưu [${selectedKanjiForDeck?.character}] vào Bộ Flashcard`}
+        title={`🔖 Lưu [${selectedItemForDeck?.word}] vào Bộ Flashcard`}
       >
-        {myKanjiDecks.length === 0 ? (
+        {myDecks.length === 0 ? (
           <p style={{ color: '#64748b', marginBottom: '16px' }}>
-            Bạn chưa có bộ Flashcard Kanji nào. Hãy vào trang <strong>My Kanji Decks</strong> để tạo bộ thẻ trước nhé!
+            Bạn chưa có bộ Flashcard Từ vựng nào. Hãy vào mục <strong>Decks Từ Vựng</strong> để tạo bộ thẻ trước nhé!
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -583,24 +489,12 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
                 onChange={(e) => setTargetDeckId(e.target.value)}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
               >
-                {myKanjiDecks.map((deck) => (
+                {myDecks.map((deck) => (
                   <option key={deck.deckId} value={deck.deckId}>
-                    {deck.title} ({deck.totalItems} kanji)
+                    {deck.title} ({deck.totalItems} từ)
                   </option>
                 ))}
               </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 700 }}>Ghi chú gợi nhớ cá nhân</label>
-              <textarea
-                className="form-textarea"
-                maxLength={500}
-                placeholder="VD: Chữ Nhật trông giống mặt trời buổi sáng..."
-                rows={3}
-                value={memorizationNote}
-                onChange={(e) => setMemorizationNote(e.target.value)}
-                style={{ width: '100%', borderRadius: '8px', border: '1px solid #cbd5e1', padding: '0.6rem' }}
-              />
             </div>
           </div>
         )}
@@ -612,7 +506,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
           >
             Đóng
           </button>
-          {myKanjiDecks.length > 0 && (
+          {myDecks.length > 0 && (
             <button
               onClick={saveToDeck}
               style={{
@@ -622,7 +516,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
                 padding: '0.55rem 1.4rem',
                 borderRadius: '8px',
                 border: 'none',
-                background: '#4f46e5',
+                background: '#10b981',
                 color: '#fff',
                 fontWeight: 700,
                 cursor: 'pointer'
@@ -636,4 +530,4 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
 
     </div>
   );
-};
+}

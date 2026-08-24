@@ -12,7 +12,6 @@ export default function GrammarExercisePracticeView({ currentUser, onOpenAuth })
   const [userAnswers, setUserAnswers] = useState({});
 
   const fetchExercises = async () => {
-    if (!currentUser) return;
     setLoading(true);
     setError(null);
     try {
@@ -21,7 +20,9 @@ export default function GrammarExercisePracticeView({ currentUser, onOpenAuth })
       params.append('size', '50');
 
       const res = await apiRequest(`/grammar-exercises?${params.toString()}`, 'GET');
-      setExercises(res.data?.content || []);
+      const raw = res?.data;
+      const list = Array.isArray(raw) ? raw : (raw?.content || []);
+      setExercises(list);
     } catch (err) {
       setError(err.message || 'Failed to load grammar exercises');
     } finally {
@@ -30,9 +31,7 @@ export default function GrammarExercisePracticeView({ currentUser, onOpenAuth })
   };
 
   useEffect(() => {
-    if (currentUser) {
-      fetchExercises();
-    }
+    fetchExercises();
   }, [selectedLevel, currentUser]);
 
   const handleSelectOption = (exerciseId, optionKey) => {

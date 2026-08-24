@@ -47,9 +47,9 @@ export default function Navbar({
 
           <li>
             <a
-              className={`nav-link highlight-tab ${(currentView === 'free_courses' || currentView === 'grammar_reader' || currentView === 'kanji' || currentView === 'kanji-decks' || currentView === 'exercise_practice') ? 'active' : ''}`}
+              className={`nav-link highlight-tab ${(currentView === 'free_courses' || currentView === 'grammar_reader' || currentView === 'kanji' || currentView === 'vocab' || currentView === 'kanji-decks' || currentView === 'exercise_practice') ? 'active' : ''}`}
               onClick={() => onNavigate('free_courses')}
-              title="Free Japanese Learning Hub (Grammar, Kanji, Practice Quiz)"
+              title="Free Japanese Learning Hub (Grammar, Vocabulary, Kanji, Practice Quiz)"
             >
               🎁 Free Courses
             </a>
@@ -120,15 +120,41 @@ export default function Navbar({
           )}
           
           {(currentUser?.role === 'Lecturer' || currentUser?.role === 'Manager') && (
-            <li>
-              <a
-                className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}
-                onClick={() => onNavigate('materials')}
-                style={{ whiteSpace: 'nowrap' }}
-              >
-                Learning Materials
-              </a>
-            </li>
+            <>
+              <li>
+                <a
+                  className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}
+                  onClick={() => onNavigate('materials')}
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  Learning Materials
+                </a>
+              </li>
+
+              <li>
+                <a
+                  className="nav-link"
+                  onClick={() => onNavigate('error-reports')}
+                  title="Manage Student Error Reports"
+                  style={{
+                    whiteSpace: 'nowrap',
+                    color: '#e11d48',
+                    backgroundColor: currentView === 'error-reports' ? '#ffe4e6' : '#fff1f2',
+                    border: `1px solid ${currentView === 'error-reports' ? '#fb7185' : '#fecdd3'}`,
+                    fontWeight: '700',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '0.4rem 0.8rem',
+                    fontSize: '0.85rem'
+                  }}
+                >
+                  🚨 Error Reports
+                </a>
+              </li>
+            </>
           )}
           
           {currentUser?.role === 'Manager' && (
