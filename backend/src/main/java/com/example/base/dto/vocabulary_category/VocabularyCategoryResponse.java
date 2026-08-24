@@ -1,6 +1,7 @@
 package com.example.base.dto.vocabulary_category;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.example.base.entity.JlptLevel;
 

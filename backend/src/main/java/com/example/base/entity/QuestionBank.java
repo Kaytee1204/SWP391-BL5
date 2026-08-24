@@ -42,10 +42,8 @@ public class QuestionBank {
 
     @Column(name = "explanation", columnDefinition = "NVARCHAR(MAX)")
     private String explanation;
-
-    @Column(name = "duplicate_hash", nullable = false, length=64)
+    @Column(name = "duplicate_hash", nullable = false, length = 64)
     private String duplicateHash;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private Account createdBy;

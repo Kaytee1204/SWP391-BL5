@@ -11,6 +11,7 @@ import CultureArticleManagementView from './features/culture-articles/CultureArt
 import AuthorWorkspacePage from './features/culture-articles/AuthorWorkspacePage';
 import LearningMaterialsView from './features/materials/LearningMaterialsView';
 import ManagerDashboardPage from './features/dashboard/ManagerDashboardPage';
+import ManagerErrorReportView from './features/error_report/ManagerErrorReportView';
 
 import VocabularyCategoryPage from './features/vocabulary-category/VocabularyCategoryPage';
 import GrammarReaderPage from './features/grammar/GrammarReaderPage';
@@ -25,7 +26,6 @@ import { KanjiPage } from './pages/KanjiPage';
 import { PersonalDecksPage } from './pages/PersonalDecksPage';
 import { AccountsPage } from './pages/AccountsPage';
 import StudentExamWorkspace from './features/student-exams/StudentExamWorkspace';
-
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -139,6 +139,7 @@ export default function App() {
     'vocab-decks': <PersonalVocabDecksPage onNavigate={handleNavigate} />,
     kanji: <KanjiPage currentUser={currentUser} />,
     accounts: <AccountsPage />,
+    'error-reports': <ManagerErrorReportView currentUser={currentUser} /> // Đã trỏ đúng component quản lý báo cáo lỗi
   };
   const learningView = learningViews[currentView];
 

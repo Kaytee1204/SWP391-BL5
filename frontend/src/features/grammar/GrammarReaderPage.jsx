@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../../api/apiRequest';
 import { JLPT_LEVELS } from '../../assets/constants';
+import InlineErrorReport from '../../components/common/InlineErrorReport';
 
 export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
   const [patterns, setPatterns] = useState([]);
@@ -12,6 +13,9 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
   const [selectedLevel, setSelectedLevel] = useState('N5');
   const [expandedId, setExpandedId] = useState(null);
 
+  // State lưu danh sách ví dụ theo từng patternId (Ví dụ: { 1: [ex1, ex2], 4: [ex3] })
+  const [examplesMap, setExamplesMap] = useState({});
+
   const isGuest = !currentUser;
 
   const fetchPatterns = async () => {
@@ -21,17 +25,14 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
       const params = new URLSearchParams();
       if (keyword.trim()) params.append('keyword', keyword.trim());
       
-      // Nếu là Guest thì chỉ được lấy N5, nếu đã đăng nhập thì lấy theo level được chọn
       const levelToFetch = isGuest ? 'N5' : selectedLevel;
       if (levelToFetch) params.append('jlptLevel', levelToFetch);
       
-      // Guest chỉ lấy tối đa 3 bài đầu tiên N5, user đăng nhập lấy 50 bài
       params.append('size', isGuest ? '3' : '50');
 
       const res = await apiRequest(`/grammar-patterns?${params.toString()}`, 'GET');
       let dataList = res.data?.content || [];
       
-      // Đảm bảo ở phía Client: Khách chỉ xem tối đa 3 ngữ pháp đầu tiên
       if (isGuest) {
         dataList = dataList.slice(0, 3);
       }
@@ -65,8 +66,21 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
     setSelectedLevel(lvlValue);
   };
 
-  const toggleExpand = (id) => {
-    setExpandedId(prev => prev === id ? null : id);
+  const toggleExpand = async (id) => {
+    const nextState = expandedId === id ? null : id;
+    setExpandedId(nextState);
+
+    // Tự động gọi API lấy câu ví dụ khi người dùng bấm mở rộng và chưa có dữ liệu
+    if (nextState !== null && !examplesMap[id]) {
+      try {
+        const res = await apiRequest(`/grammar-patterns/${id}/examples`, 'GET');
+        if (res && res.data) {
+          setExamplesMap(prev => ({ ...prev, [id]: res.data }));
+        }
+      } catch (err) {
+        console.error("Không thể tải câu ví dụ cho pattern này", err);
+      }
+    }
   };
 
   return (
@@ -195,7 +209,7 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
         </form>
       </div>
 
-      {/* Pattern Cards (Stable non-jumping rendering) */}
+      {/* Pattern Cards */}
       {loading ? (
         <div style={{ padding: '3.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
           Loading Japanese grammar patterns...
@@ -249,22 +263,32 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
                     </h3>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => toggleExpand(p.patternId)}
-                    style={{
-                      background: isExpanded ? '#f5f3ff' : '#f8fafc',
-                      color: isExpanded ? '#7C3AED' : '#64748b',
-                      border: '1px solid #e2e8f0',
-                      padding: '0.35rem 0.85rem',
-                      borderRadius: '8px',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {isExpanded ? '▲ Hide' : '▼ Details'}
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {!isGuest && (
+                      <InlineErrorReport 
+                        targetType="GRAMMAR" 
+                        targetId={p.patternId} 
+                        title={p.title} 
+                      />
+                    )}
+                    
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(p.patternId)}
+                      style={{
+                        background: isExpanded ? '#f5f3ff' : '#f8fafc',
+                        color: isExpanded ? '#7C3AED' : '#64748b',
+                        border: '1px solid #e2e8f0',
+                        padding: '0.35rem 0.85rem',
+                        borderRadius: '8px',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {isExpanded ? '▲ Hide' : '▼ Details'}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Structure formula */}
@@ -286,7 +310,7 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
                   </code>
                 </div>
 
-                {/* Details Section (No jumping effect) */}
+                {/* Details Section */}
                 {isExpanded && (
                   <div style={{
                     marginTop: '0.85rem',
@@ -298,9 +322,30 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
                     whiteSpace: 'pre-line'
                   }}>
                     <div style={{ fontWeight: 800, color: 'var(--text-heading)', marginBottom: '0.35rem', fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      💡 Usage Notes & Examples:
+                      💡 Usage Notes:
                     </div>
                     {p.usageNote || 'No detailed explanation provided for this pattern yet.'}
+
+                    {/* HIỂN THỊ DANH SÁCH CÂU VÍ DỤ TỪ API */}
+                    <div style={{ marginTop: '1rem' }}>
+                      <div style={{ fontWeight: 800, color: 'var(--text-heading)', marginBottom: '0.5rem', fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        🗣️ Example Sentences:
+                      </div>
+                      
+                      {examplesMap[p.patternId] && examplesMap[p.patternId].length > 0 ? (
+                        examplesMap[p.patternId].map((ex, index) => (
+                          <div key={ex.exampleId || index} style={{ background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '0.5rem', border: '1px solid #e2e8f0' }}>
+                            <div style={{ fontWeight: 700, color: '#1e293b' }}>{index + 1}. {ex.sentenceJp}</div>
+                            <div style={{ color: '#475569', fontSize: '0.88rem', marginTop: '0.2rem' }}>{ex.translation}</div>
+                            {ex.audioUrl && (
+                              <audio controls src={ex.audioUrl} style={{ height: '30px', marginTop: '0.4rem', maxWidth: '100%' }} />
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{ color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic' }}>Chưa có câu ví dụ nào cho mẫu này.</div>
+                      )}
+                    </div>
 
                     <div style={{ marginTop: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', color: '#94a3b8' }}>
                       <span>Author: <strong>{p.createdByName}</strong></span>

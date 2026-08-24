@@ -34,15 +34,18 @@ export default function Navbar({
               Home
             </a>
           </li>
+          
           <li>
             <a
               className={`nav-link highlight-tab ${currentView === 'culture_reader' ? 'active' : ''}`}
               onClick={() => onNavigate('culture_reader')}
               title="Khám phá tạp chí văn hóa & tiếng lóng"
+              style={{ whiteSpace: 'nowrap' }}
             >
               Culture Article
             </a>
           </li>
+
           <li>
             <a
               className={`nav-link highlight-tab ${currentView === 'courses' ? 'active' : ''}`}
@@ -78,27 +81,60 @@ export default function Navbar({
               onClick={() => onNavigate('student_exams')} title="Làm đề và xem lịch sử điểm">Mock Exams</a></li>
             </>
           )}
+          
           {currentUser && (currentUser.role === 'Student' || currentUser.role === 'Lecturer' || currentUser.role === 'Manager') && (
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'exercise_practice' ? 'active' : ''}`}
                 onClick={() => onNavigate('exercise_practice')}
                 title="Practice Japanese Grammar Multiple-Choice Quizzes"
+                style={{ whiteSpace: 'nowrap' }}
               >
                  Practice Quiz
               </a>
             </li>
           )}
+
+          {/* Báo lỗi button */}
+          {currentUser?.role === 'Student' && (
+            <li>
+              <a
+                className="nav-link"
+                onClick={() => onNavigate('error-reports')}
+                title="Theo dõi lịch sử báo lỗi"
+                style={{
+                  whiteSpace: 'nowrap',
+                  color: '#e11d48',
+                  backgroundColor: currentView === 'error-reports' ? '#ffe4e6' : '#fff1f2',
+                  border: `1px solid ${currentView === 'error-reports' ? '#fb7185' : '#fecdd3'}`,
+                  fontWeight: '600',
+                  borderRadius: '20px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '0.4rem 0.8rem',
+                  fontSize: '0.85rem'
+                }}
+              >
+                ⚠️ Báo lỗi
+              </a>
+            </li>
+          )}
+
+          {/* Phân hệ Role */}
           {currentUser?.role === 'Author' && (
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'culture_articles' ? 'active' : ''}`}
                 onClick={() => onNavigate('culture_articles')}
+                style={{ whiteSpace: 'nowrap' }}
               >
                 Author Workspace
               </a>
             </li>
           )}
+          
           {currentUser?.role === 'Lecturer' && (
             // Các màn hình quản trị Vocab/Kanji nằm bên trong Learning Materials.
             // Chỉ Lecturer thấy lối vào này; backend tiếp tục bảo vệ API thay đổi dữ liệu.
@@ -106,16 +142,19 @@ export default function Navbar({
               <a
                 className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}
                 onClick={() => onNavigate('materials')}
+                style={{ whiteSpace: 'nowrap' }}
               >
                 Learning Materials
               </a>
             </li>
           )}
+          
           {currentUser?.role === 'Manager' && (
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'dashboard' ? 'active' : ''}`}
                 onClick={() => onNavigate('dashboard')}
+                style={{ whiteSpace: 'nowrap' }}
               >
                 Manager Portal
               </a>

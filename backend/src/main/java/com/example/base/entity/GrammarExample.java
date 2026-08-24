@@ -1,6 +1,8 @@
 package com.example.base.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -23,12 +25,15 @@ public class GrammarExample {
     @JoinColumn(name = "pattern_id", nullable = false)
     private GrammarPattern pattern;
 
+    @NotBlank(message = "Japanese sentence cannot be blank")
     @Column(name = "sentence_jp", nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String sentenceJp;
 
+    @NotBlank(message = "Translation cannot be blank")
     @Column(name = "translation", nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String translation;
 
+    @Size(max = 500, message = "Audio URL cannot exceed 500 characters")
     @Column(name = "audio_url", length = 500)
     private String audioUrl;
 

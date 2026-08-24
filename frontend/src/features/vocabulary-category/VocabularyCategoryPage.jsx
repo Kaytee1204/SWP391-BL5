@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryTable from '../../components/CategoryTable';
 import CategoryFormModal from '../../components/CategoryFormModal';
+import CategoryItemsModal from '../../components/vocabulary_category/CategoryItemsModal';
 import Navbar from '../../components/common/Navbar';
 
 // Component cha giữ dữ liệu; table chỉ hiển thị và modal chỉ thu thập input.
@@ -9,6 +10,9 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
     const [categories, setCategories] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
+    
+    // State for viewing nested vocabulary items
+    const [selectedCategoryForItems, setSelectedCategoryForItems] = useState(null);
 
     const fetchCategories = async () => {
         // API fetch cũ trả nguyên ApiResponse, nên kiểm tra code rồi lấy response.data.
@@ -18,7 +22,7 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
                 setCategories(response.data || []);
             }
         } catch (error) {
-            console.error("Lỗi khi tải danh sách:", error);
+            console.error("Error loading categories list:", error);
         }
     };
 
@@ -38,14 +42,14 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) {
+        if (window.confirm("Are you sure you want to delete this category?")) {
             try {
                 const response = await vocabularyCategoryApi.delete(id);
                 if (response.code === 200) {
                     fetchCategories(); 
                 }
             } catch (error) {
-                console.error("Lỗi khi xóa:", error);
+                console.error("Error deleting category:", error);
             }
         }
     };
@@ -62,7 +66,7 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
 
             const success = response && (response.code === 200 || response.code === 201);
             if (!success) {
-                alert(response?.message || 'Không thể lưu danh mục.');
+                alert(response?.message || 'Failed to save category.');
                 return;
             }
 
@@ -70,8 +74,8 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
             // Tải lại để nhận ID, timestamp và giá trị backend đã chuẩn hóa.
             await fetchCategories();
         } catch (error) {
-            console.error("Lỗi khi lưu dữ liệu:", error);
-            alert(error?.message || 'Lỗi khi lưu danh mục.');
+            console.error("Error saving data:", error);
+            alert(error?.message || 'Error saving category.');
         }
     };
 
@@ -88,8 +92,8 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                     <div>
-                        <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.75rem', fontWeight: '800' }}>Quản lý Danh mục Từ vựng</h2>
-                        <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Thêm, sửa, xóa các cấp độ từ vựng JLPT</p>
+                        <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.75rem', fontWeight: '800' }}>Vocabulary Categories Management</h2>
+                        <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Add, update, and manage JLPT vocabulary levels</p>
                     </div>
                     <button 
                         onClick={handleAddNew}
@@ -107,14 +111,16 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
                         onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                         onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                     >
-                        + Thêm mới
+                        + Add New
                     </button>
                 </div>
 
+                {/* Pass onViewItems prop into CategoryTable */}
                 <CategoryTable 
                     categories={categories} 
                     onEdit={handleEdit} 
-                    onDelete={handleDelete} 
+                    onDelete={handleDelete}
+                    onViewItems={(category) => setSelectedCategoryForItems(category)}
                 />
 
                 <CategoryFormModal 
@@ -122,6 +128,13 @@ export default function VocabularyCategoryPage({ currentUser, onNavigate, onLogo
                     onClose={() => setIsModalOpen(false)} 
                     onSubmit={handleFormSubmit}
                     initialData={editingCategory}
+                />
+
+                {/* CategoryItemsModal at the bottom of the page */}
+                <CategoryItemsModal 
+                    category={selectedCategoryForItems}
+                    onClose={() => setSelectedCategoryForItems(null)}
+                    currentUser={currentUser}
                 />
             </div>
         </div>

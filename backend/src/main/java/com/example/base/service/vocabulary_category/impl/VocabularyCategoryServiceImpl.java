@@ -58,7 +58,6 @@ public class VocabularyCategoryServiceImpl implements VocabularyCategoryService 
         category.setCreatedBy(creator);
         return toResponse(repository.save(category));
     }
-
     @Override
     @Transactional
     public VocabularyCategoryResponse updateCategory(Long id, VocabularyCategoryUpdateRequest request) {
@@ -69,7 +68,6 @@ public class VocabularyCategoryServiceImpl implements VocabularyCategoryService 
         category.setDescription(request.getDescription());
         return toResponse(repository.save(category));
     }
-
     @Override
     @Transactional
     public void deleteCategory(Long id) {

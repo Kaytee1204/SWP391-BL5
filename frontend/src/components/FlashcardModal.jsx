@@ -20,7 +20,7 @@ export const FlashcardModal = ({ isOpen, onClose, title, items = [], type = 'voc
     return (
       <Modal isOpen={isOpen} onClose={onClose} title={title}>
         <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-          Deck này chưa có thẻ học nào. Hãy thêm từ vựng/Kanji vào deck để bắt đầu học!
+          This deck has no study cards yet. Please add vocabulary or Kanji to the deck to start learning!
         </div>
       </Modal>
     );
@@ -30,13 +30,11 @@ export const FlashcardModal = ({ isOpen, onClose, title, items = [], type = 'voc
 
   const handleNext = () => {
     setIsFlipped(false);
-    // Dùng modulo để đi tới cuối deck thì quay lại thẻ đầu tiên.
     setCurrentIndex((prev) => (prev + 1) % items.length);
   };
 
   const handlePrev = () => {
     setIsFlipped(false);
-    // Cộng items.length trước khi modulo để index không bị âm khi lùi từ thẻ đầu.
     setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
   };
 
@@ -58,20 +56,20 @@ export const FlashcardModal = ({ isOpen, onClose, title, items = [], type = 'voc
       footer={
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
           <button className="btn btn-secondary" onClick={handlePrev}>
-            <ArrowLeft size={16} /> Trước
+            <ArrowLeft size={16} /> Previous
           </button>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Nhấp vào thẻ để lật mặt sau
+            Click on the card to flip to the back side
           </span>
           <button className="btn btn-primary" onClick={handleNext}>
-            Tiếp <ArrowRight size={16} />
+            Next <ArrowRight size={16} />
           </button>
         </div>
       }
     >
       <div className="flashcard-container" onClick={() => setIsFlipped(!isFlipped)}>
         <div className={`flashcard-inner ${isFlipped ? 'is-flipped' : ''}`}>
-          {/* Mặt trước: hiển thị từ/Kanji cần nhớ. */}
+          {/* Front side */}
           <div className="flashcard-front">
             {type === 'vocab' ? (
               <>
@@ -98,11 +96,11 @@ export const FlashcardModal = ({ isOpen, onClose, title, items = [], type = 'voc
               </>
             )}
             <div style={{ marginTop: 'auto', fontSize: '0.75rem', color: 'var(--text-subtle)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <RotateCw size={12} /> Nhấn để xem nghĩa
+              <RotateCw size={12} /> Click to view meaning
             </div>
           </div>
 
-          {/* Mặt sau: hiển thị nghĩa, ví dụ và ghi chú nhớ nếu có. */}
+          {/* Back side */}
           <div className="flashcard-back">
             {type === 'vocab' ? (
               <>
@@ -126,7 +124,7 @@ export const FlashcardModal = ({ isOpen, onClose, title, items = [], type = 'voc
                 </div>
                 {currentItem.memorizationNote && (
                   <div style={{ background: '#fef3c7', color: '#92400e', padding: '8px 12px', borderRadius: '6px', fontSize: '0.82rem', marginTop: '10px', width: '100%' }}>
-                    <strong>Mẹo nhớ:</strong> {currentItem.memorizationNote}
+                    <strong>Mnemonic:</strong> {currentItem.memorizationNote}
                   </div>
                 )}
                 {currentItem.compoundWords && (

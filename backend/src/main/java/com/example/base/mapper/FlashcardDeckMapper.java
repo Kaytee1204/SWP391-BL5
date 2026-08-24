@@ -1,10 +1,14 @@
 package com.example.base.mapper;
-    
+
 import com.example.base.entity.FlashcardDeck;
 import com.example.base.dto.flashcard_deck.FlashcardDeckCreateRequest;
 import com.example.base.dto.flashcard_deck.FlashcardDeckResponse;
 import com.example.base.dto.flashcard_deck.FlashcardDeckUpdateRequest;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class FlashcardDeckMapper {
@@ -40,6 +44,17 @@ public class FlashcardDeckMapper {
                 .title(entity.getTitle())
                 .description(entity.getDescription())
                 .createdBy(entity.getCreatedBy())
+                .items(entity.getItems() != null ? entity.getItems().stream()
+                        .map(item -> {
+                            Map<String, Object> map = new HashMap<>();
+                            if (item.getId() != null) {
+                                map.put("deckId", item.getId().getDeckId());
+                                map.put("itemType", item.getId().getItemType());
+                                map.put("itemId", item.getId().getItemId());
+                            }
+                            return map;
+                        })
+                        .collect(Collectors.toList()) : null)
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
