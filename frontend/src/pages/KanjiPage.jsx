@@ -56,14 +56,21 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   };
 
   const handleSaveKanji = async (formData) => {
-    if (editingKanji) {
-      await kanjiApi.updateKanji(editingKanji.kanjiId, formData);
-      setFeedback({ type: 'success', msg: 'Cập nhật chữ Kanji thành công!' });
-    } else {
-      await kanjiApi.createKanji(formData);
-      setFeedback({ type: 'success', msg: 'Tạo chữ Kanji mới thành công!' });
+    try {
+      if (editingKanji) {
+        await kanjiApi.updateKanji(editingKanji.kanjiId, formData);
+        setFeedback({ type: 'success', msg: 'Cập nhật chữ Kanji thành công!' });
+      } else {
+        await kanjiApi.createKanji(formData);
+        setFeedback({ type: 'success', msg: 'Tạo chữ Kanji mới thành công!' });
+      }
+      fetchData();
+    } catch (err) {
+      if (err.status === 409) {
+        setFeedback({ type: 'conflict', msg: 'This content was updated by another lecturer. Please refresh the page before editing it again.' });
+      }
+      throw err;
     }
-    fetchData();
   };
 
   const deleteKanji = async (id, char) => {
@@ -300,11 +307,14 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
           borderRadius: '10px',
           fontSize: '0.86rem',
           fontWeight: 600,
-          background: feedback.type === 'error' ? '#fee2e2' : '#dcfce7',
-          color: feedback.type === 'error' ? '#b91c1c' : '#15803d',
-          border: `1px solid ${feedback.type === 'error' ? '#fca5a5' : '#86efac'}`
+          background: feedback.type === 'success' ? '#dcfce7' : '#fee2e2',
+          color: feedback.type === 'success' ? '#15803d' : '#b91c1c',
+          border: `1px solid ${feedback.type === 'success' ? '#86efac' : '#fca5a5'}`
         }}>
           {feedback.msg}
+          {feedback.type === 'conflict' && (
+            <button type="button" onClick={fetchData} style={{ marginLeft: '12px' }}>Refresh</button>
+          )}
         </div>
       )}
 
@@ -472,6 +482,11 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
                     {kanji.compoundWords}
                   </div>
                 )}
+
+                <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.75rem', lineHeight: 1.5 }}>
+                  <div><strong>Added By:</strong> {kanji.createdBy || '—'}</div>
+                  <div><strong>Last Updated:</strong> {kanji.updatedBy || '—'}{kanji.updatedAt ? ` · ${new Date(kanji.updatedAt).toLocaleString('vi-VN')}` : ''}</div>
+                </div>
 
                 {/* Action Buttons */}
                 <div style={{

@@ -43,11 +43,16 @@ export default function KanjiModuleFormModal({
       await onSave({
         title: title.trim(),
         jlptLevel,
-        description: description.trim() || null
+        description: description.trim() || null,
+        version: module?.version ?? null
       });
       onClose();
     } catch (err) {
+      if (err.status === 409) {
+        setError('This content was updated by another lecturer. Please refresh the page before editing it again.');
+      } else {
       setError(err.message || 'Lỗi khi lưu module Kanji.');
+      }
     } finally {
       setLoading(false);
     }

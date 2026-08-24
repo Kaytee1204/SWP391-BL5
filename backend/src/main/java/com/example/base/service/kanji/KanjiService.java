@@ -14,7 +14,7 @@ public interface KanjiService {
     // Tao kanji module moi va gan nguoi tao theo creatorId.
     KanjiModuleDto createModule(KanjiModuleRequest request, Long creatorId);
     // Cap nhat thong tin kanji module theo id.
-    KanjiModuleDto updateModule(Long moduleId, KanjiModuleRequest request);
+    KanjiModuleDto updateModule(Long moduleId, KanjiModuleRequest request, Long lecturerId);
     // Xóa module chỉ khi không có Kanji con đang được personal deck tham chiếu.
     void deleteModule(Long moduleId);
     // Lấy Kanji theo module/JLPT/keyword; implementation quyết định độ ưu tiên của các filter.
@@ -22,9 +22,9 @@ public interface KanjiService {
     // Lay chi tiet mot chu kanji theo id.
     KanjiDetailDto getKanji(Long kanjiId);
     // Tao moi mot kanji detail trong module.
-    KanjiDetailDto createKanji(KanjiDetailRequest request);
+    KanjiDetailDto createKanji(KanjiDetailRequest request, Long lecturerId);
     // Cap nhat thong tin mot kanji detail theo id.
-    KanjiDetailDto updateKanji(Long kanjiId, KanjiDetailRequest request);
+    KanjiDetailDto updateKanji(Long kanjiId, KanjiDetailRequest request, Long lecturerId);
     // Xoa kanji detail neu chua duoc luu trong personal deck.
     void deleteKanji(Long kanjiId);
 }

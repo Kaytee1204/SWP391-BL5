@@ -71,11 +71,14 @@ export default function VocabularyItemFormModal({
         reading: reading.trim(),
         meaning: meaning.trim(),
         exampleSentence: exampleSentence.trim() || null,
-        exampleTranslation: exampleTranslation.trim() || null
+        exampleTranslation: exampleTranslation.trim() || null,
+        version: item?.version ?? null
       });
       onClose();
     } catch (err) {
-      setError(err.message || 'Lỗi khi lưu từ vựng.');
+      setError(err.status === 409
+        ? 'This content was updated by another lecturer. Please refresh the page before editing it again.'
+        : (err.message || 'Lỗi khi lưu từ vựng.'));
     } finally {
       setLoading(false);
     }

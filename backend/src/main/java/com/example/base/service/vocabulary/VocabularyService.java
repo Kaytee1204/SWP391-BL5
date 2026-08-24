@@ -13,7 +13,7 @@ import java.util.List;
 public interface VocabularyService {
     List<VocabItemDto> getItems(Long categoryId, JlptLevel jlptLevel, String search);
     VocabItemDto getItem(Long itemId);
-    VocabItemDto createItem(VocabItemRequest request);
-    VocabItemDto updateItem(Long itemId, VocabItemRequest request);
+    VocabItemDto createItem(VocabItemRequest request, Long lecturerId);
+    VocabItemDto updateItem(Long itemId, VocabItemRequest request, Long lecturerId);
     void deleteItem(Long itemId);
 }

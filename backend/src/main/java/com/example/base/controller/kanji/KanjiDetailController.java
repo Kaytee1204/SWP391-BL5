@@ -3,10 +3,12 @@ package com.example.base.controller.kanji;
 import com.example.base.dto.kanji.KanjiDtos.*;
 import com.example.base.dto.common.ApiResponse;
 import com.example.base.entity.JlptLevel;
+import com.example.base.security.UserPrincipal;
 import com.example.base.service.kanji.KanjiService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,19 +35,22 @@ public class KanjiDetailController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
-    public ApiResponse<KanjiDetailDto> create(@Valid @RequestBody KanjiDetailRequest request) {
-        return ApiResponse.success("Kanji created successfully", kanjiService.createKanji(request));
+    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    public ApiResponse<KanjiDetailDto> create(@Valid @RequestBody KanjiDetailRequest request,
+                                               @AuthenticationPrincipal UserPrincipal principal) {
+        // Principal duoc JwtAuthenticationFilter nap tu token, khong lay Lecturer tu request.
+        return ApiResponse.success("Kanji created successfully", kanjiService.createKanji(request, principal.getAccountId()));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
-    public ApiResponse<KanjiDetailDto> update(@PathVariable Long id, @Valid @RequestBody KanjiDetailRequest request) {
-        return ApiResponse.success("Kanji updated successfully", kanjiService.updateKanji(id, request));
+    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    public ApiResponse<KanjiDetailDto> update(@PathVariable Long id, @Valid @RequestBody KanjiDetailRequest request,
+                                               @AuthenticationPrincipal UserPrincipal principal) {
+        return ApiResponse.success("Kanji updated successfully", kanjiService.updateKanji(id, request, principal.getAccountId()));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         kanjiService.deleteKanji(id);
         return ApiResponse.success("Kanji deleted successfully", null);

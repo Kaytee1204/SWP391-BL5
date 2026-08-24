@@ -48,10 +48,11 @@ export default function App() {
   const [authModalMode, setAuthModalMode] = useState(null); // 'login' | 'register' | null
   const [showProfileModal, setShowProfileModal] = useState(false);
 
-  // Khôi phục session & Profile mới nhất từ backend khi tải app
+  // Luôn đồng bộ profile/role với backend khi tải app. Giao diện không được
+  // dùng user_info cũ để hiện quyền CRUD trong khi backend đang thấy một role khác.
   useEffect(() => {
     const token = localStorage.getItem('jwt_token');
-    if (token && !currentUser) {
+    if (token) {
       apiRequest('/auth/me')
         .then(res => {
           if (res?.data) {
@@ -59,13 +60,17 @@ export default function App() {
             localStorage.setItem('user_info', JSON.stringify(res.data));
           }
         })
-        .catch(() => {
-          localStorage.removeItem('jwt_token');
-          localStorage.removeItem('user_info');
-          setCurrentUser(null);
+        .catch((error) => {
+          // Chỉ xóa phiên khi token thực sự không còn hợp lệ; lỗi mạng tạm thời
+          // không nên tự động đăng xuất người dùng.
+          if (error.status === 401 || error.status === 403) {
+            localStorage.removeItem('jwt_token');
+            localStorage.removeItem('user_info');
+            setCurrentUser(null);
+          }
         });
     }
-  }, [currentUser]);
+  }, []);
 
   // Kiểm tra nếu được redirect từ SePay về (?view=payment_return hoặc có orderCode)
   useEffect(() => {

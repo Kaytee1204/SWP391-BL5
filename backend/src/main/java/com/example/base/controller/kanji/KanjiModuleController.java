@@ -33,20 +33,24 @@ public class KanjiModuleController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
     public ApiResponse<KanjiModuleDto> create(@Valid @RequestBody KanjiModuleRequest request,
                                                @AuthenticationPrincipal UserPrincipal principal) {
         return ApiResponse.success("Kanji module created successfully", kanjiService.createModule(request, principal.getAccountId()));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
-    public ApiResponse<KanjiModuleDto> update(@PathVariable Long id, @Valid @RequestBody KanjiModuleRequest request) {
-        return ApiResponse.success("Kanji module updated successfully", kanjiService.updateModule(id, request));
+    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    public ApiResponse<KanjiModuleDto> update(@PathVariable Long id,
+                                               @Valid @RequestBody KanjiModuleRequest request,
+                                               @AuthenticationPrincipal UserPrincipal principal) {
+        // The updater comes from JWT/security context so the client cannot impersonate another Lecturer.
+        return ApiResponse.success("Kanji module updated successfully",
+                kanjiService.updateModule(id, request, principal.getAccountId()));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         kanjiService.deleteModule(id);
         return ApiResponse.success("Kanji module deleted successfully", null);

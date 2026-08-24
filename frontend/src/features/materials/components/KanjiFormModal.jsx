@@ -63,11 +63,14 @@ export default function KanjiFormModal({
         meaning: meaning.trim(),
         onyomi: onyomi.trim() || null,
         kunyomi: kunyomi.trim() || null,
-        compoundWords: compoundWords.trim() || null
+        compoundWords: compoundWords.trim() || null,
+        version: kanji?.version ?? null
       });
       onClose();
     } catch (err) {
-      setError(err.message || 'Lỗi khi lưu chữ Kanji.');
+      setError(err.status === 409
+        ? 'This content was updated by another lecturer. Please refresh the page before editing it again.'
+        : (err.message || 'Lỗi khi lưu chữ Kanji.'));
     } finally {
       setLoading(false);
     }

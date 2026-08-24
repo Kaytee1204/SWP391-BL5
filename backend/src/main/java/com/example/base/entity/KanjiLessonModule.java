@@ -41,11 +41,22 @@ public class KanjiLessonModule {
     // Chỉ lưu khóa ngoại người tạo. LAZY giúp tránh tải toàn bộ Account khi chỉ cần danh sách module.
     private Account createdBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by", nullable = false)
+    // updatedBy changes whenever a Lecturer edits this module; createdBy stays unchanged.
+    private Account updatedBy;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    // @Version detects two Lecturers editing the same module. Hibernate rejects the stale save
+    // so the later Lecturer cannot overwrite changes that were already committed.
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 
     @Builder.Default
     @OneToMany(mappedBy = "module", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

@@ -24,8 +24,11 @@ public final class VocabDtos {
         private String meaning;
         private String exampleSentence;
         private String exampleTranslation;
+        private String createdBy;
+        private String updatedBy;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private Long version;
     }
 
     /** Du lieu frontend gui len khi tao hoac cap nhat tu vung. */
@@ -42,5 +45,7 @@ public final class VocabDtos {
         private String meaning;
         private String exampleSentence;
         private String exampleTranslation;
+        // Frontend gui lai version da doc khi edit; create khong can field nay.
+        private Long version;
     }
 }

@@ -5,10 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-/**
- * Biểu diễn một mục từ vựng thuộc một category. Trường word là cách viết bắt buộc;
- * kanji là tùy chọn, còn jlptLevel được suy ra từ category thay vì lưu lặp ở bảng này.
- */
+/** Mot muc tu vung thuoc mot category; JLPT duoc suy ra tu category cha. */
 @Entity
 @Table(name = "VocabularyItem")
 @Getter
@@ -17,7 +14,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class VocabularyItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id")
@@ -25,7 +21,6 @@ public class VocabularyItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
-    // Mỗi từ bắt buộc thuộc một category để có chủ đề và cấp độ JLPT xác định.
     private VocabularyCategory category;
 
     @Column(name = "word", nullable = false, length = 100)
@@ -46,15 +41,31 @@ public class VocabularyItem {
     @Column(name = "example_translation", columnDefinition = "NVARCHAR(MAX)")
     private String exampleTranslation;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", nullable = false, updatable = false)
+    // createdBy khong thay doi sau khi record duoc tao, ke ca khi Lecturer khac chinh sua.
+    private Account createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by", nullable = false)
+    // updatedBy thay doi moi khi co Lecturer chinh sua record.
+    private Account updatedBy;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // @Version giup phat hien 2 Lecturer cung sua mot record. Neu version trong database
+    // da thay doi, Hibernate reject update de Lecturer sau khong ghi de du lieu cua Lecturer truoc.
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
+
     @PrePersist
     protected void onCreate() {
-        // Timestamp được tạo tại server ngay trước INSERT để dữ liệu luôn nhất quán.
+        // Timestamp do backend tao; frontend khong the gia mao ngay tao/cap nhat.
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
@@ -62,7 +73,7 @@ public class VocabularyItem {
 
     @PreUpdate
     protected void onUpdate() {
-        // Không thay createdAt khi sửa nội dung từ vựng.
+        // Chi updatedAt thay doi khi edit; createdAt luon giu moc tao ban dau.
         this.updatedAt = LocalDateTime.now();
     }
 }

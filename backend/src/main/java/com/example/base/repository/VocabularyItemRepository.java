@@ -3,21 +3,33 @@ package com.example.base.repository;
 import com.example.base.entity.JlptLevel;
 import com.example.base.entity.VocabularyItem;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Truy cập mục từ vựng và các truy vấn lọc/tìm kiếm. JLPT được đọc qua category cha;
  * keyword được xử lý ở database để không tải toàn bộ kho từ về backend.
  */
 public interface VocabularyItemRepository extends JpaRepository<VocabularyItem, Long> {
+    @Override
+    @EntityGraph(attributePaths = {"category", "createdBy", "updatedBy"})
+    List<VocabularyItem> findAll();
+
+    @Override
+    @EntityGraph(attributePaths = {"category", "createdBy", "updatedBy"})
+    Optional<VocabularyItem> findById(Long id);
+
+    @EntityGraph(attributePaths = {"category", "createdBy", "updatedBy"})
     List<VocabularyItem> findByCategory_CategoryIdOrderByItemIdAsc(Long categoryId);
 
     long countByCategory_CategoryId(Long categoryId);
 
     @Query("select v from VocabularyItem v where v.category.jlptLevel = :jlptLevel order by v.itemId")
+    @EntityGraph(attributePaths = {"category", "createdBy", "updatedBy"})
     List<VocabularyItem> findByJlptLevel(@Param("jlptLevel") JlptLevel jlptLevel);
 
     // coalesce xử lý trường kanji null; lower + LIKE tạo tìm kiếm không phân biệt hoa thường.
@@ -27,5 +39,6 @@ public interface VocabularyItemRepository extends JpaRepository<VocabularyItem, 
             "lower(v.meaning) like lower(concat('%', :keyword, '%')) or " +
             "lower(coalesce(v.kanji, '')) like lower(concat('%', :keyword, '%')) " +
             "order by v.itemId")
+    @EntityGraph(attributePaths = {"category", "createdBy", "updatedBy"})
     List<VocabularyItem> search(@Param("keyword") String keyword);
 }

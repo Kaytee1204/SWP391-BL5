@@ -47,6 +47,7 @@ export default function KanjiModuleManagementView({ currentUser }) {
   };
 
   const handleSaveModule = async (formData) => {
+    try {
     if (editingModule) {
       await kanjiApi.updateModule(editingModule.moduleId, formData);
       setFeedback({ type: 'success', message: 'Cập nhật module Kanji thành công!' });
@@ -55,6 +56,12 @@ export default function KanjiModuleManagementView({ currentUser }) {
       setFeedback({ type: 'success', message: 'Tạo module Kanji mới thành công!' });
     }
     await loadModules();
+    } catch (error) {
+      if (error.status === 409) {
+        setFeedback({ type: 'conflict', message: 'This content was updated by another lecturer. Please refresh the page before editing it again.' });
+      }
+      throw error;
+    }
   };
 
   const deleteModule = async (module) => {
@@ -215,11 +222,14 @@ export default function KanjiModuleManagementView({ currentUser }) {
           borderRadius: '10px',
           fontSize: '0.86rem',
           fontWeight: 600,
-          background: feedback.type === 'error' ? '#fee2e2' : '#dcfce7',
-          color: feedback.type === 'error' ? '#b91c1c' : '#15803d',
-          border: `1px solid ${feedback.type === 'error' ? '#fca5a5' : '#86efac'}`
+          background: feedback.type === 'success' ? '#dcfce7' : '#fee2e2',
+          color: feedback.type === 'success' ? '#15803d' : '#b91c1c',
+          border: `1px solid ${feedback.type === 'success' ? '#86efac' : '#fca5a5'}`
         }}>
           {feedback.message}
+          {feedback.type === 'conflict' && (
+            <button type="button" onClick={loadModules} style={{ marginLeft: '12px' }}>Refresh</button>
+          )}
         </div>
       )}
 
@@ -247,7 +257,7 @@ export default function KanjiModuleManagementView({ currentUser }) {
         </div>
       ) : (
         <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
+          <table style={{ width: '100%', minWidth: '1120px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
             <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
               <tr style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 <th style={{ padding: '14px 18px', width: '80px' }}>ID</th>
@@ -298,6 +308,13 @@ export default function KanjiModuleManagementView({ currentUser }) {
                           {module.description}
                         </div>
                       )}
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '7px', lineHeight: 1.5 }}>
+                        <div><strong>Added By:</strong> {module.createdByName || '—'}</div>
+                        <div>
+                          <strong>Last Updated:</strong> {module.updatedByName || module.createdByName || '—'}
+                          {module.updatedAt ? ` · ${new Date(module.updatedAt).toLocaleString('vi-VN')}` : ''}
+                        </div>
+                      </div>
                     </td>
 
                     <td style={{ padding: '16px 18px', textAlign: 'center' }}>

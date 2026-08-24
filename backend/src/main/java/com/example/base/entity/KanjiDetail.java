@@ -12,12 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-/**
- * Một chữ Kanji cụ thể trong kho học liệu. Cấp độ JLPT không lưu trực tiếp ở đây mà
- * được lấy qua module cha, nhờ vậy khi đổi cấp độ module thì toàn bộ Kanji con đồng bộ theo.
- */
+/** Mot chu Kanji cu the trong kho hoc lieu. JLPT duoc lay qua module cha. */
 public class KanjiDetail {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "kanji_id")
@@ -25,7 +21,6 @@ public class KanjiDetail {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "module_id", nullable = false)
-    // Đây là phía giữ module_id, nên mỗi Kanji bắt buộc thuộc đúng một module bài học.
     private KanjiLessonModule module;
 
     @Column(name = "character", nullable = false, length = 10)
@@ -43,15 +38,31 @@ public class KanjiDetail {
     @Column(name = "compound_words", columnDefinition = "NVARCHAR(MAX)")
     private String compoundWords;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", nullable = false, updatable = false)
+    // createdBy khong thay doi sau khi record duoc tao, ke ca khi Lecturer khac chinh sua.
+    private Account createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by", nullable = false)
+    // updatedBy thay doi moi khi co Lecturer chinh sua record.
+    private Account updatedBy;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // @Version giup phat hien 2 Lecturer cung sua mot record. Neu version trong database
+    // da thay doi, Hibernate reject update de Lecturer sau khong ghi de du lieu cua Lecturer truoc.
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
+
     @PrePersist
     protected void onCreate() {
-        // Tự gắn thời gian trước khi INSERT, tránh phụ thuộc frontend phải gửi timestamp.
+        // Timestamp do backend tao; frontend khong the gia mao ngay tao/cap nhat.
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
@@ -59,7 +70,7 @@ public class KanjiDetail {
 
     @PreUpdate
     protected void onUpdate() {
-        // Chỉ cập nhật mốc sửa cuối; ngày tạo ban đầu không được thay đổi.
+        // Chi updatedAt thay doi khi edit; createdAt luon giu moc tao ban dau.
         this.updatedAt = LocalDateTime.now();
     }
 }

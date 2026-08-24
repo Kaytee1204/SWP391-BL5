@@ -19,7 +19,7 @@ export const VocabularyPage = ({ currentUser }) => {
   const role = currentUser?.role;
   const isStudent = role === 'Student';
   const canManageCategories = Boolean(currentUser);
-  const canManageVocabulary = Boolean(currentUser);
+  const canManageVocabulary = role === 'Lecturer' || role === 'Manager';
   const [selectedLevel, setSelectedLevel] = useState('ALL');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [categories, setCategories] = useState([]);
@@ -84,7 +84,12 @@ export const VocabularyPage = ({ currentUser }) => {
       setIsCategoryModalOpen(false);
       fetchData();
     } catch (err) {
-      setFeedback({ type: 'error', msg: err.message });
+      setFeedback({
+        type: err.status === 409 ? 'conflict' : 'error',
+        msg: err.status === 409
+          ? 'This content was updated by another lecturer. Please refresh the page before editing it again.'
+          : err.message
+      });
     }
   };
 
@@ -168,7 +173,7 @@ export const VocabularyPage = ({ currentUser }) => {
         </div>
       </div>
 
-      {feedback.msg && <div style={{ padding: '10px 14px', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '16px', backgroundColor: feedback.type === 'error' ? '#fee2e2' : '#d1fae5', color: feedback.type === 'error' ? '#dc2626' : '#065f46' }}>{feedback.msg}</div>}
+      {feedback.msg && <div style={{ padding: '10px 14px', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '16px', backgroundColor: feedback.type === 'success' ? '#d1fae5' : '#fee2e2', color: feedback.type === 'success' ? '#065f46' : '#dc2626' }}>{feedback.msg}{feedback.type === 'conflict' && <button type="button" onClick={fetchData} style={{ marginLeft: '12px' }}>Refresh</button>}</div>}
 
       <div className="card" style={{ marginBottom: '24px', padding: '16px 20px' }}>
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -207,6 +212,10 @@ export const VocabularyPage = ({ currentUser }) => {
               </div>
               <div style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: '12px' }}>{item.meaning}</div>
               {item.exampleSentence && <div style={{ background: 'var(--bg-surface-alt)', padding: '10px 12px', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '16px', flex: 1 }}><div className="jp-font">{item.exampleSentence}</div><div style={{ color: 'var(--text-muted)', marginTop: '4px' }}>{item.exampleTranslation}</div></div>}
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
+                <div><strong>Added By:</strong> {item.createdBy || '—'}</div>
+                <div><strong>Last Updated:</strong> {item.updatedBy || '—'}{item.updatedAt ? ` · ${new Date(item.updatedAt).toLocaleString('vi-VN')}` : ''}</div>
+              </div>
               {/* Nhóm thao tác thay đổi theo vai trò; vocabulary không còn chức năng phát âm. */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-light)', paddingTop: '12px', marginTop: 'auto' }}>
                 <div style={{ display: 'flex', gap: '6px' }}>
