@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   BookOpenCheck,
   CalendarDays,
+  Eye,
+  EyeOff,
   FileStack,
   Pencil,
   Plus,
@@ -39,6 +41,7 @@ export default function QuestionSetManagementView({ currentUser }) {
   const [showCreate, setShowCreate] = useState(false);
   const [editingSet, setEditingSet] = useState(null);
   const [buildingSetId, setBuildingSetId] = useState(null);
+  const [changingPublicationId, setChangingPublicationId] = useState(null);
   const currentUserId = currentUser?.accountId || currentUser?.id;
   const isManager = currentUser?.role?.toLowerCase() === 'manager';
 
@@ -107,6 +110,27 @@ export default function QuestionSetManagementView({ currentUser }) {
     }
   };
 
+  const handlePublicationChange = async (questionSet) => {
+    const currentStatus = questionSet.publicationStatus || 'DRAFT';
+    const nextStatus = currentStatus === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED';
+    const actionText = nextStatus === 'PUBLISHED'
+      ? 'xuất bản bộ đề này cho học sinh làm bài'
+      : 'ngừng xuất bản bộ đề này';
+
+    const confirmed = window.confirm(`Bạn có chắc muốn ${actionText}?`);
+    if (!confirmed) return;
+
+    setChangingPublicationId(questionSet.questionSetId);
+    try {
+      await questionSetApi.changePublicationStatus(questionSet.questionSetId, nextStatus);
+      await loadSets();
+    } catch (err) {
+      window.alert(err.message || 'Không thể cập nhật trạng thái xuất bản.');
+    } finally {
+      setChangingPublicationId(null);
+    }
+  };
+
   return (
     <div className="qs-page">
       <section className="qs-hero">
@@ -115,7 +139,7 @@ export default function QuestionSetManagementView({ currentUser }) {
             {currentUser?.role === 'Manager' ? 'Manager workspace' : 'Lecturer workspace'}
           </span>
           <h2>Question Set Management</h2>
-          <p>Kho đề dùng chung: mọi giảng viên có thể xem, chỉnh sửa và cùng xây dựng bộ đề hoàn chỉnh.</p>
+          <p>Xây dựng đề của bạn và xuất bản khi đã sẵn sàng cho học sinh làm bài.</p>
           <div className="qs-hero-stats">
             <span><FileStack size={16} /> {pageInfo.totalElements} bộ câu hỏi</span>
             <span><BookOpenCheck size={16} /> Tái sử dụng từ Question Bank</span>
@@ -186,6 +210,8 @@ export default function QuestionSetManagementView({ currentUser }) {
             const isOwner = Boolean(currentUserId)
               && String(questionSet.createdById) === String(currentUserId);
             const canDelete = isManager || isOwner;
+            const canPublish = isManager || isOwner;
+            const publicationStatus = questionSet.publicationStatus || 'DRAFT';
 
             return (
               <article className="qs-set-card" key={questionSet.questionSetId}>
@@ -195,7 +221,10 @@ export default function QuestionSetManagementView({ currentUser }) {
                     <span style={{ color: skill.color, background: skill.background }}>{skill.icon} {skill.label}</span>
                     <span className={`qs-level-badge is-${questionSet.jlptLevel?.toLowerCase()}`}>{questionSet.jlptLevel}</span>
                     <span className={`qs-ownership-badge ${isOwner ? 'is-owned' : 'is-shared'}`}>
-                      {isOwner ? 'Đề của tôi' : 'Đề được chia sẻ'}
+                      {isOwner ? 'Đề của tôi' : `Của ${questionSet.createdByName || 'Lecturer'}`}
+                    </span>
+                    <span className={`qs-publication-badge ${publicationStatus === 'PUBLISHED' ? 'is-published' : 'is-draft'}`}>
+                      {publicationStatus === 'PUBLISHED' ? 'Đã xuất bản' : 'Bản nháp'}
                     </span>
                   </div>
                   <span className="qs-set-id">#{questionSet.questionSetId}</span>
@@ -225,6 +254,22 @@ export default function QuestionSetManagementView({ currentUser }) {
                   <button type="button" className="qs-build-button" onClick={() => setBuildingSetId(questionSet.questionSetId)}>
                     <BookOpenCheck size={17} /> Xây dựng bộ đề
                   </button>
+                  {canPublish && (
+                    <button
+                      type="button"
+                      className={`qs-publication-button ${publicationStatus === 'PUBLISHED' ? 'is-published' : 'is-draft'}`}
+                      onClick={() => handlePublicationChange(questionSet)}
+                      disabled={changingPublicationId === questionSet.questionSetId}
+                      title={publicationStatus === 'PUBLISHED'
+                        ? 'Ngừng xuất bản bộ đề'
+                        : 'Xuất bản bộ đề cho học sinh'}
+                      aria-label={publicationStatus === 'PUBLISHED'
+                        ? 'Ngừng xuất bản bộ đề'
+                        : 'Xuất bản bộ đề cho học sinh'}
+                    >
+                      {publicationStatus === 'PUBLISHED' ? <EyeOff size={17} /> : <Eye size={17} />}
+                    </button>
+                  )}
                   <button type="button" onClick={() => setEditingSet(questionSet)} title="Chỉnh sửa thông tin đề chung">
                     <Pencil size={17} />
                   </button>
