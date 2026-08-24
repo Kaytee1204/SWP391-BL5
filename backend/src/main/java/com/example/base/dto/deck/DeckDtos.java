@@ -10,10 +10,15 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Các object đi qua biên API của personal deck. Request chỉ chứa dữ liệu client được phép gửi;
+ * DTO response được service ghép từ deck, owner và danh sách item để không trả thẳng JPA entity.
+ */
 public final class DeckDtos {
     private DeckDtos() {}
 
     @Data @NoArgsConstructor @AllArgsConstructor
+    /** Dùng chung cho tạo và sửa deck; studentId luôn lấy từ JWT chứ không nhận từ request. */
     public static class CreateDeckRequest {
         @NotBlank(message = "Title is required")
         @Size(max = 150, message = "Title must not exceed 150 characters")
@@ -23,6 +28,7 @@ public final class DeckDtos {
     }
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    /** Bản tóm tắt/chi tiết deck từ vựng; items có thể rỗng ở màn danh sách để giảm dữ liệu tải về. */
     public static class PersonalVocabDeckDto {
         private Long deckId;
         private Long studentId;
@@ -36,12 +42,14 @@ public final class DeckDtos {
     }
 
     @Data @NoArgsConstructor @AllArgsConstructor
+    /** Client chỉ cần gửi ID từ gốc; service sẽ kiểm tra từ tồn tại trước khi tạo khóa ghép. */
     public static class AddVocabToDeckRequest {
         @NotNull(message = "Vocabulary item ID is required")
         private Long vocabularyItemId;
     }
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    /** Deck Kanji trả kèm item DTO vì mỗi item còn có ghi chú ghi nhớ riêng. */
     public static class PersonalKanjiDeckDto {
         private Long deckId;
         private Long studentId;
@@ -55,6 +63,7 @@ public final class DeckDtos {
     }
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    /** Dữ liệu được làm phẳng từ PersonalKanjiDeckItem -> KanjiDetail -> KanjiLessonModule. */
     public static class PersonalKanjiDeckItemDto {
         private Long kanjiId;
         private Long moduleId;
@@ -64,13 +73,13 @@ public final class DeckDtos {
         private String kunyomi;
         private String meaning;
         private String compoundWords;
-        private String strokeOrderUrl;
         private JlptLevel jlptLevel;
         private String memorizationNote;
         private LocalDateTime addedAt;
     }
 
     @Data @NoArgsConstructor @AllArgsConstructor
+    /** Thêm Kanji và ghi chú trong một request để chỉ cần một lần lưu xuống database. */
     public static class AddKanjiToDeckRequest {
         @NotNull(message = "Kanji ID is required")
         private Long kanjiId;

@@ -14,7 +14,6 @@ import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
 import CategoryItemsModal from '../../components/vocabulary_category/CategoryItemsModal';
 import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
-import ManagerErrorReportView from '../error_report/ManagerErrorReportView'; 
 import CourseManagementView from '../courses/CourseManagementView';
 
 export default function ManagerDashboardPage({
@@ -153,8 +152,18 @@ export default function ManagerDashboardPage({
             <div className="nav-item-left"><span>👥</span><span>Accounts</span></div>
             <span>›</span>
           </div>
-          <div className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => setActiveTab('courses')}>
+          <div
+            className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`}
+            onClick={() => setActiveTab('courses')}
+          >
             <div className="nav-item-left"><span>📚</span><span>Courses & Pricing</span></div>
+            <span>›</span>
+          </div>
+          <div
+            className={`nav-item ${activeTab === 'materials' ? 'active' : ''}`}
+            onClick={() => setActiveTab('materials')}
+          >
+            <div className="nav-item-left"><span>📝</span><span>Learning Materials</span></div>
             <span>›</span>
           </div>
           <div className={`nav-item ${activeTab === 'materials' ? 'active' : ''}`} onClick={() => setActiveTab('materials')}>
@@ -208,6 +217,10 @@ export default function ManagerDashboardPage({
         </div>
 
         {activeTab === 'accounts' && <AccountManagementView currentUser={currentUser} onAccountUpdated={() => {}} />}
+
+        {activeTab === 'courses' && (
+          <CourseManagementView currentUser={currentUser} />
+        )}
 
         {activeTab === 'courses' && (
           <CourseManagementView currentUser={currentUser} />

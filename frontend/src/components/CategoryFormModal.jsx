@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
 const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
+    // Một form được tái sử dụng cho cả hai chế độ. initialData có giá trị nghĩa là sửa;
+    // không có initialData nghĩa là tạo mới với các giá trị mặc định bên dưới.
     const [formData, setFormData] = useState({
         jlptLevel: 'N5',
         name: '',
@@ -9,6 +11,8 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     });
 
     useEffect(() => {
+        // Mỗi lần modal mở hoặc bản ghi cần sửa thay đổi, đồng bộ dữ liệu từ component cha
+        // vào state của form. Việc reset này tránh giữ lại dữ liệu của lần mở modal trước.
         if (initialData) {
             setFormData({
                 jlptLevel: initialData.jlptLevel || 'N5',
@@ -22,12 +26,16 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     }, [initialData, isOpen]);
 
     const handleChange = (e) => {
+        // name của input trùng với khóa trong formData, nên một hàm có thể cập nhật mọi
+        // trường mà vẫn giữ nguyên các trường còn lại bằng toán tử spread.
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        // Modal chỉ thu thập dữ liệu. Component cha chọn API create/update, xử lý lỗi
+        // và tải lại danh sách sau khi backend lưu thành công.
         onSubmit(formData);
     };
 

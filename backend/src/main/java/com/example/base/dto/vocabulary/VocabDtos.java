@@ -7,31 +7,11 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/** Tap hop DTO cho response va request cua muc tu vung. */
 public final class VocabDtos {
     private VocabDtos() {}
 
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor
-    public static class VocabCategoryDto {
-        private Long categoryId;
-        private JlptLevel jlptLevel;
-        private String name;
-        private String description;
-        private Long createdById;
-        private String createdByName;
-        private Integer itemCount;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
-    }
-
-    @Data @NoArgsConstructor @AllArgsConstructor
-    public static class VocabCategoryRequest {
-        @NotNull(message = "JLPT level is required")
-        private JlptLevel jlptLevel;
-        @NotBlank(message = "Category name is required")
-        private String name;
-        private String description;
-    }
-
+    /** Du lieu mot muc tu vung duoc tra ve qua API. */
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class VocabItemDto {
         private Long itemId;
@@ -42,14 +22,13 @@ public final class VocabDtos {
         private String kanji;
         private String reading;
         private String meaning;
-        private String audioUrl;
         private String exampleSentence;
         private String exampleTranslation;
-        private Boolean isPreview;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
     }
 
+    /** Du lieu frontend gui len khi tao hoac cap nhat tu vung. */
     @Data @NoArgsConstructor @AllArgsConstructor
     public static class VocabItemRequest {
         @NotNull(message = "Category ID is required")
@@ -61,9 +40,7 @@ public final class VocabDtos {
         private String reading;
         @NotBlank(message = "Meaning is required")
         private String meaning;
-        private String audioUrl;
         private String exampleSentence;
         private String exampleTranslation;
-        private Boolean isPreview;
     }
 }

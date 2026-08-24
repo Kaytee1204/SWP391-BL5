@@ -1,6 +1,9 @@
 import React from 'react';
 
-const CategoryTable = ({ categories, onEdit, onDelete, onViewItems }) => {
+const CategoryTable = ({ categories, onEdit, onDelete }) => {
+    // Ánh xạ cấp JLPT sang màu badge giúp người học nhận biết nhanh từng nhóm.
+    // Giá trị dự phòng bên dưới vẫn hiển thị được nếu backend trả level chưa khai báo.
+    // Hàm tạo màu sắc riêng cho từng level JLPT
     const getJlptBadgeStyle = (level) => {
         const styles = {
             'N5': { bg: '#dcfce7', color: '#166534' },
@@ -44,20 +47,28 @@ const CategoryTable = ({ categories, onEdit, onDelete, onViewItems }) => {
                     </thead>
                     <tbody>
                         {categories.length > 0 ? (
-                            categories.map((item) => {
-                                const itemCount = item.items ? item.items.length : 0;
-
-                                return (
-                                    <tr key={item.categoryId} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }}>
-                                        <td style={{ padding: '16px 20px', color: '#334155', fontWeight: '500' }}>#{item.categoryId}</td>
-                                        <td style={{ padding: '16px 20px' }}>
-                                            <span style={getJlptBadgeStyle(item.jlptLevel)}>{item.jlptLevel}</span>
-                                        </td>
-                                        <td style={{ padding: '16px 20px', color: '#0f172a', fontWeight: '600' }}>{item.name}</td>
-                                        <td style={{ padding: '16px 20px', color: '#64748b' }}>{item.description || <span style={{fontStyle: 'italic', color: '#cbd5e1'}}>Không có</span>}</td>
-                                        
-                                        {/* Cột nút bấm xem từ vựng con */}
-                                        <td style={{ padding: '16px 20px' }}>
+                            // categoryId vừa là key ổn định để React đối chiếu từng dòng,
+                            // vừa được gửi về component cha khi người dùng sửa hoặc xóa.
+                            categories.map((item) => (
+                                <tr key={item.categoryId} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                                    <td style={{ padding: '16px 20px', color: '#334155', fontWeight: '500' }}>#{item.categoryId}</td>
+                                    <td style={{ padding: '16px 20px' }}>
+                                        <span style={getJlptBadgeStyle(item.jlptLevel)}>{item.jlptLevel}</span>
+                                    </td>
+                                    <td style={{ padding: '16px 20px', color: '#0f172a', fontWeight: '600' }}>{item.name}</td>
+                                    <td style={{ padding: '16px 20px', color: '#64748b' }}>{item.description || <span style={{fontStyle: 'italic', color: '#cbd5e1'}}>Không có</span>}</td>
+                                    <td style={{ padding: '16px 20px', color: '#64748b' }}>{new Date(item.createdAt).toLocaleDateString('vi-VN')}</td>
+                                    <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                                            {/* Nút Sửa bo góc */}
+                                            <button 
+                                                onClick={() => onEdit(item)} 
+                                                style={{ padding: '6px 12px', backgroundColor: '#fef3c7', color: '#d97706', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem', transition: 'all 0.2s' }}
+                                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fde68a'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fef3c7'}
+                                            >
+                                                Sửa
+                                            </button>
+                                            {/* Nút Xóa bo góc */}
                                             <button 
                                                 onClick={() => onViewItems && onViewItems(item)}
                                                 style={{

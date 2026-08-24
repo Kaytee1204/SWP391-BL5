@@ -10,6 +10,8 @@ export default function Navbar({
   onLogout,
   extraAction,
 }) {
+  // currentView và onNavigate tạo thành cơ chế điều hướng dùng chung của ứng dụng:
+  // Navbar không tự quản lý trang hiện tại mà chỉ phát tên view về App.jsx.
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -18,11 +20,12 @@ export default function Navbar({
           <div className="brand-icon">⛩️</div>
           <span className="brand-title">
             JLMS
+
           </span>
         </div>
 
         {/* Nav Links */}
-        <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+        <ul className="nav-links">
           <li>
             <a
               className={`nav-link ${currentView === 'home' || currentView === 'landing' ? 'active' : ''}`}
@@ -48,42 +51,35 @@ export default function Navbar({
               className={`nav-link highlight-tab ${currentView === 'courses' ? 'active' : ''}`}
               onClick={() => onNavigate('courses')}
               title="Khám phá và đăng ký các khóa học tiếng Nhật JLPT"
-              style={{ whiteSpace: 'nowrap' }}
             >
               Courses
             </a>
           </li>
-
           <li>
             <a
-              className={`nav-link highlight-tab ${
-                currentView === 'free_courses' ||
-                currentView === 'grammar_reader' ||
-                currentView === 'kanji' ||
-                currentView === 'kanji-decks' ||
-                currentView === 'exercise_practice'
-                  ? 'active'
-                  : ''
-              }`}
+              className={`nav-link highlight-tab ${(currentView === 'free_courses' || currentView === 'grammar_reader' || currentView === 'kanji' || currentView === 'kanji-decks' || currentView === 'exercise_practice') ? 'active' : ''}`}
               onClick={() => onNavigate('free_courses')}
               title="Khóa học & Tài nguyên học tiếng Nhật miễn phí (Grammar, Kanji, Quiz)"
-              style={{ whiteSpace: 'nowrap' }}
             >
               🎁 Free Courses
             </a>
           </li>
-          
+
+          {/* Phân hệ Role */}
           {currentUser?.role === 'Student' && (
+            <>
             <li>
               <a
-                className={`nav-link highlight-tab ${currentView === 'kanji-decks' ? 'active' : ''}`}
-                onClick={() => onNavigate('kanji-decks')}
-                title="Manage your personal Kanji decks"
-                style={{ whiteSpace: 'nowrap' }}
+                className={`nav-link highlight-tab ${currentView === 'decks' ? 'active' : ''}`}
+                onClick={() => onNavigate('decks')}
+                title="Manage your personal decks"
               >
-                Kanji Decks
+                Decks
               </a>
             </li>
+            <li><a className={`nav-link highlight-tab ${currentView === 'student_exams' ? 'active' : ''}`}
+              onClick={() => onNavigate('student_exams')} title="Làm đề và xem lịch sử điểm">Mock Exams</a></li>
+            </>
           )}
           
           {currentUser && (currentUser.role === 'Student' || currentUser.role === 'Lecturer' || currentUser.role === 'Manager') && (
@@ -140,6 +136,8 @@ export default function Navbar({
           )}
           
           {currentUser?.role === 'Lecturer' && (
+            // Các màn hình quản trị Vocab/Kanji nằm bên trong Learning Materials.
+            // Chỉ Lecturer thấy lối vào này; backend tiếp tục bảo vệ API thay đổi dữ liệu.
             <li>
               <a
                 className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}

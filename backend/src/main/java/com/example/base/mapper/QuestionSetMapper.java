@@ -25,6 +25,7 @@ public class QuestionSetMapper {
                 .description(trimNullable(request.getDescription()))
                 .skillType(request.getSkillType())
                 .jlptLevel(request.getJlptLevel())
+                .durationMinutes(request.getDurationMinutes() == null ? 60 : request.getDurationMinutes())
                 .createBy(creator)
                 .build();
     }
@@ -35,6 +36,7 @@ public class QuestionSetMapper {
         entity.setDescription(trimNullable(request.getDescription()));
         entity.setSkillType(request.getSkillType());
         entity.setJlptLevel(request.getJlptLevel());
+        entity.setDurationMinutes(request.getDurationMinutes() == null ? 60 : request.getDurationMinutes());
 
     }
 
@@ -54,6 +56,7 @@ public class QuestionSetMapper {
                 .description(entity.getDescription())
                 .skillType(entity.getSkillType())
                 .jlptLevel(entity.getJlptLevel())
+                .durationMinutes(entity.getDurationMinutes())
                 .createdById(creator == null ? null :creator.getAccountId())
                 .createdByName(creator==null ? null : creator.getFullName())
                 .questionCount(questions.size())
@@ -77,6 +80,7 @@ public class QuestionSetMapper {
                 .description(entity.getDescription())
                 .skillType(entity.getSkillType())
                 .jlptLevel(entity.getJlptLevel())
+                .durationMinutes(entity.getDurationMinutes())
                 .createdById(
                         creator == null
                                 ? null

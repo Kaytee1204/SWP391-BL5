@@ -1,7 +1,7 @@
-// URL gốc của backend
+// API cũ của màn category độc lập dùng fetch trực tiếp, vì vậy cần tự ghép URL, header và parse response.
 const BASE_URL = 'http://localhost:8080/api/v1/vocabulary-categories';
 
-// Lấy JWT đúng với hệ thống đang lưu trong app
+// Lấy JWT từ localStorage và đưa vào Authorization để backend xác định user/role.
 const getAuthHeaders = () => {
     const token = localStorage.getItem('jwt_token') || localStorage.getItem('token');
     return {
@@ -10,13 +10,14 @@ const getAuthHeaders = () => {
     };
 };
 
-// Hàm hỗ trợ đọc response an toàn, tránh lỗi SyntaxError khi server trả về dữ liệu rỗng hoặc không phải JSON
+// Đọc body thành text trước: DELETE có thể trả body rỗng, gọi response.json() trực tiếp sẽ phát sinh SyntaxError.
 const handleResponse = async (response) => {
     const text = await response.text();
     if (!text || text.trim() === "") {
         return { code: response.status, message: "Success (No Content)" };
     }
     try {
+        // Khi có JSON hợp lệ, giữ nguyên toàn bộ ApiResponse vì component này còn kiểm tra code/message.
         return JSON.parse(text);
     } catch (error) {
         console.error("Phản hồi từ server không phải định dạng JSON hợp lệ:", text);

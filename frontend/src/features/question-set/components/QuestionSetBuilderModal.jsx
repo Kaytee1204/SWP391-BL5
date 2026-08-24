@@ -23,11 +23,13 @@ const AVAILABLE_PAGE_SIZE = 8;
 const questionTypeLabel = (type) => QUESTION_TYPE_LABELS[type] || type || 'Không xác định';
 
 function QuestionPreview({ question, action, selected = false }) {
+  const questionSkill = SKILL_META[question.skillType];
   return (
     <article className={`qs-question-card${selected ? ' is-selected' : ''}`}>
       <div className="qs-question-card-main">
         <div className="qs-question-card-topline">
           <span>#{question.questionId}</span>
+          <span>{questionSkill?.icon} {questionSkill?.label || question.skillType}</span>
           <span>{questionTypeLabel(question.questionType)}</span>
         </div>
         <p>{question.questionText}</p>
@@ -84,12 +86,12 @@ export default function QuestionSetBuilderModal({ questionSetId, onClose, onSave
     setError('');
 
     const params = new URLSearchParams({
-      skillType: questionSet.skillType,
       jlptLevel: questionSet.jlptLevel,
       page: String(availablePage),
       size: String(AVAILABLE_PAGE_SIZE),
       sort: 'questionId,desc'
     });
+    if (questionSet.skillType !== 'mixed') params.set('skillType', questionSet.skillType);
     if (keyword) params.set('keyword', keyword);
 
     try {
@@ -217,7 +219,7 @@ export default function QuestionSetBuilderModal({ questionSetId, onClose, onSave
                   <span className="qs-pane-step">1</span>
                   <div>
                     <h4>Ngân hàng phù hợp</h4>
-                    <p>{availablePageInfo.totalElements} câu cùng skill và level</p>
+                    <p>{availablePageInfo.totalElements} câu {questionSet.skillType === 'mixed' ? 'thuộc mọi kỹ năng cùng level' : 'cùng skill và level'}</p>
                   </div>
                 </div>
                 <button
@@ -309,7 +311,7 @@ export default function QuestionSetBuilderModal({ questionSetId, onClose, onSave
                   <div className="qs-selected-row" key={question.questionId}>
                     <span className="qs-order-number">{index + 1}</span>
                     <div className="qs-selected-question">
-                      <span>#{question.questionId} · {questionTypeLabel(question.questionType)}</span>
+                      <span>#{question.questionId} · {SKILL_META[question.skillType]?.icon} {SKILL_META[question.skillType]?.label || question.skillType} · {questionTypeLabel(question.questionType)}</span>
                       <p>{question.questionText}</p>
                     </div>
                     <div className="qs-row-actions">
@@ -345,10 +347,9 @@ export default function QuestionSetBuilderModal({ questionSetId, onClose, onSave
 
       {showInlineCreate && questionSet && (
         <QuestionFormModal
-          fixedClassification={{
-            skillType: questionSet.skillType,
-            jlptLevel: questionSet.jlptLevel
-          }}
+          fixedClassification={questionSet.skillType === 'mixed'
+            ? { jlptLevel: questionSet.jlptLevel }
+            : { skillType: questionSet.skillType, jlptLevel: questionSet.jlptLevel }}
           contextLabel={`Tạo câu hỏi trong “${questionSet.title}”`}
           onCreateRequest={(payload) => questionSetApi.createQuestionInsideSet(questionSetId, payload)}
           onSaved={handleInlineQuestionCreated}

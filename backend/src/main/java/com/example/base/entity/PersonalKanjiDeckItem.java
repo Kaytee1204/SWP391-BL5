@@ -12,9 +12,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+/**
+ * Bảng liên kết giữa personal Kanji deck và Kanji gốc. Ngoài quan hệ nhiều-nhiều,
+ * bản ghi này còn giữ ghi chú ghi nhớ riêng của học viên và thời điểm thêm vào deck.
+ */
 public class PersonalKanjiDeckItem {
 
     @EmbeddedId
+    // Khóa chính gồm (deckId, kanjiId), vì một Kanji chỉ được xuất hiện một lần trong cùng deck.
     private PersonalKanjiDeckItemId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,6 +40,7 @@ public class PersonalKanjiDeckItem {
 
     @PrePersist
     protected void onCreate() {
+        // Khi them kanji vao deck, tu dong gan addedAt bang thoi diem item duoc persist.
         addedAt = LocalDateTime.now();
     }
 }

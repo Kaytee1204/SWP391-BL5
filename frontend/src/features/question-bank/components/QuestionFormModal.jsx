@@ -291,7 +291,7 @@ export default function QuestionFormModal({
                 className="form-select"
                 value={form.skillType}
                 onChange={e => setForm({ ...form, skillType: e.target.value })}
-                disabled={Boolean(fixedClassification)}
+                disabled={Boolean(fixedClassification?.skillType)}
               >
                 {SKILL_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
               </select>
@@ -305,7 +305,7 @@ export default function QuestionFormModal({
                 className="form-select"
                 value={form.jlptLevel}
                 onChange={e => setForm({ ...form, jlptLevel: e.target.value })}
-                disabled={Boolean(fixedClassification)}
+                disabled={Boolean(fixedClassification?.jlptLevel)}
               >
                 {JLPT_LEVELS.map(level => <option key={level.value} value={level.value}>{level.label}</option>)}
               </select>

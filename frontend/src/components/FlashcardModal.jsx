@@ -3,10 +3,13 @@ import { Modal } from './Modal';
 import { ArrowLeft, ArrowRight, RotateCw, Volume2 } from 'lucide-react';
 
 export const FlashcardModal = ({ isOpen, onClose, title, items = [], type = 'vocab' }) => {
+  // Modal dùng chung cho hai loại deck; type quyết định dữ liệu hiển thị ở hai mặt thẻ.
+  // currentIndex chọn thẻ hiện tại, còn isFlipped xác định đang xem câu hỏi hay đáp án.
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
   useEffect(() => {
+    // Mỗi lần mở hoặc đổi items, quay về thẻ đầu/mặt trước để không giữ trạng thái phiên cũ.
     if (isOpen) {
       setCurrentIndex(0);
       setIsFlipped(false);
@@ -35,7 +38,9 @@ export const FlashcardModal = ({ isOpen, onClose, title, items = [], type = 'voc
     setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
   };
 
-  const playSpeech = (text) => {
+  // Chỉ Kanji còn dùng giọng đọc của trình duyệt; vocabulary không còn âm thanh.
+  const playKanjiSpeech = (text) => {
+    // Web Speech là API trình duyệt; không gọi backend và chỉ chạy khi browser hỗ trợ.
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
@@ -76,16 +81,6 @@ export const FlashcardModal = ({ isOpen, onClose, title, items = [], type = 'voc
                     {currentItem.reading}
                   </div>
                 )}
-                <button
-                  className="btn btn-secondary btn-sm"
-                  style={{ marginTop: '12px' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    playSpeech(currentItem.word);
-                  }}
-                >
-                  <Volume2 size={16} /> Listen Pronunciation
-                </button>
               </>
             ) : (
               <>
@@ -95,8 +90,8 @@ export const FlashcardModal = ({ isOpen, onClose, title, items = [], type = 'voc
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                   Onyomi: {currentItem.onyomi || '—'}
                 </div>
-                <button className="btn btn-secondary btn-sm" style={{ marginTop: '12px' }} onClick={(e) => { e.stopPropagation(); playSpeech(currentItem.character); }}>
-                  <Volume2 size={16} /> Listen Kanji Audio
+                <button className="btn btn-secondary btn-sm" style={{ marginTop: '12px' }} onClick={(e) => { e.stopPropagation(); playKanjiSpeech(currentItem.character); }}>
+                  <Volume2 size={16} /> Nghe âm Kanji
                 </button>
               </>
             )}

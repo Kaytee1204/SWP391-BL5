@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
 export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialData }) {
+    // Input là controlled state; initialData có giá trị khi sửa và null khi tạo.
     const [name, setName] = useState('');
     const [jlptLevel, setJlptLevel] = useState('N5');
     const [description, setDescription] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
+        // Reset/sync mỗi lần mở để dữ liệu category trước không còn sót lại.
         if (initialData) {
             setName(initialData.name || '');
             setJlptLevel(initialData.jlptLevel || 'N5');
@@ -25,12 +27,14 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
         e.preventDefault();
         setErrorMessage('');
 
+        // Validate sớm để phản hồi nhanh; backend vẫn validate lại vì không thể tin hoàn toàn client.
         if (!name.trim()) {
             setErrorMessage('Please enter the vocabulary category name!');
             return;
         }
 
         try {
+            // Modal chỉ gom dữ liệu; component cha quyết định gọi create hay update.
             await onSubmit({
                 name: name.trim(),
                 jlptLevel,

@@ -184,6 +184,12 @@ public class QuestionBankServiceImpl implements QuestionBankService {
     }
 
     private void validateQuestion(QuestionUpsertRequest request){
+        if (request.getSkillType() == QuestionSkillType.mixed) {
+            throw new AppException(
+                    ErrorCode.BAD_REQUEST,
+                    "Mỗi câu hỏi phải thuộc một kỹ năng cụ thể"
+            );
+        }
         List<String> answers = normalize(request.getCorrectAnswers());
 
         if(answers.isEmpty()){

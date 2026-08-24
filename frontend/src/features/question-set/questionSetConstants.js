@@ -1,5 +1,6 @@
 export const QUESTION_SET_SKILLS = [
   { value: '', label: 'Tất cả kỹ năng' },
+  { value: 'mixed', label: 'Full JLPT (Tất cả kỹ năng)', icon: '🎯' },
   { value: 'vocabulary', label: 'Vocabulary', icon: '📖' },
   { value: 'grammar', label: 'Grammar', icon: '✍️' },
   { value: 'listening', label: 'Listening', icon: '🎧' },
@@ -9,6 +10,7 @@ export const QUESTION_SET_SKILLS = [
 export const QUESTION_SET_LEVELS = ['', 'N5', 'N4', 'N3', 'N2', 'N1'];
 
 export const SKILL_META = {
+  mixed: { label: 'Full JLPT', icon: '🎯', color: '#be123c', background: '#fff1f2' },
   vocabulary: { label: 'Vocabulary', icon: '📖', color: '#0369a1', background: '#e0f2fe' },
   grammar: { label: 'Grammar', icon: '✍️', color: '#7e22ce', background: '#f3e8ff' },
   listening: { label: 'Listening', icon: '🎧', color: '#047857', background: '#d1fae5' },

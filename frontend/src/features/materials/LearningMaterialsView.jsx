@@ -6,9 +6,10 @@ import GrammarExerciseManagementView from '../grammar/GrammarExerciseManagementV
 import QuestionBankWorkspace from '../question-bank/QuestionBankWorkspace';
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
-import CategoryItemsModal from '../../components/vocabulary_category/CategoryItemsModal';
+import KanjiModuleManagementView from './KanjiModuleManagementView';
 import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
-import ManagerErrorReportView from '../error_report/ManagerErrorReportView';
+import ReadingPassageManagementView from '../reading-passages/ReadingPassageManagementView';
+import ListeningExerciseManagementView from '../listening-exercises/ListeningExerciseManagementView';
 import CourseManagementView from '../courses/CourseManagementView';
 
 export default function LearningMaterialsView({
@@ -28,6 +29,8 @@ export default function LearningMaterialsView({
   const [selectedCategoryForItems, setSelectedCategoryForItems] = useState(null);
 
   const fetchCategories = useCallback(async () => {
+    // useCallback giữ cùng một tham chiếu hàm giữa các lần render, để useEffect phía dưới
+    // không gọi API lặp vô hạn chỉ vì component vừa cập nhật state categories.
     try {
       const response = await vocabularyCategoryApi.getAll();
       if (response && (response.code === 200 || response.code === 201)) {
@@ -39,6 +42,8 @@ export default function LearningMaterialsView({
   }, []);
 
   useEffect(() => {
+    // Chỉ tải danh mục khi người dùng thật sự mở tab tương ứng. Các tab Grammar/Kanji
+    // có luồng dữ liệu riêng nên không cần chờ request Vocabulary Category này.
     if (materialTab === 'vocabulary_categories') {
       fetchCategories();
     }
@@ -74,6 +79,8 @@ export default function LearningMaterialsView({
     }
 
     try {
+        // Chuẩn hóa chuỗi trước khi gửi để backend không lưu tên chỉ chứa khoảng trắng.
+        // Cùng một payload cơ sở được dùng cho create và update để tránh lệch dữ liệu.
         const payload = {
             name: formData.name.trim(),
             jlptLevel: formData.jlptLevel,
@@ -81,6 +88,8 @@ export default function LearningMaterialsView({
         };
 
         let response;
+        // Có editingCategory thì update theo ID, nếu không thì tạo mới. Backend vẫn lấy
+        // danh tính/quyền từ JWT; createdById được giữ để tương thích hợp đồng API cũ.
         if (editingCategory) {
             response = await vocabularyCategoryApi.update(editingCategory.categoryId, payload);
         } else {
@@ -99,6 +108,8 @@ export default function LearningMaterialsView({
         }
 
         setIsModalOpen(false);
+        // Tải lại từ API thay vì tự chèn form vào bảng để nhận đúng ID, ngày tạo và
+        // mọi giá trị mà backend có thể đã chuẩn hóa trong lúc lưu.
         await fetchCategories();
     } catch (error) {
         console.error("Error saving data:", error);
@@ -217,6 +228,23 @@ export default function LearningMaterialsView({
           </button>
 
           <button
+            onClick={() => setMaterialTab('reading_passages')}
+            style={{
+              padding: '0.55rem 1.25rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: materialTab === 'reading_passages' ? '#0f766e' : 'transparent',
+              color: materialTab === 'reading_passages' ? '#fff' : 'var(--text-body)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            📚 Reading Passages
+          </button>
+
+          <button
             onClick={() => setMaterialTab('flashcard_decks')}
             style={{
               padding: '0.55rem 1.25rem',
@@ -247,24 +275,20 @@ export default function LearningMaterialsView({
               transition: 'all 0.2s ease'
             }}
           >
-            📚 Courses
+            📚 Courses (Khóa học & Giá)
           </button>
 
           <button
-            onClick={() => setMaterialTab('error_reports')}
+            onClick={() => setMaterialTab('listening_exercises')}
             style={{
-              padding: '0.55rem 1.25rem',
-              borderRadius: '10px',
-              border: materialTab === 'error_reports' ? 'none' : '1px solid #fecdd3',
-              fontSize: '0.9rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              background: materialTab === 'error_reports' ? '#e11d48' : 'transparent',
-              color: materialTab === 'error_reports' ? '#fff' : '#e11d48',
+              padding: '0.55rem 1.25rem', borderRadius: '10px', border: 'none',
+              fontSize: '0.9rem', fontWeight: 800, cursor: 'pointer',
+              background: materialTab === 'listening_exercises' ? '#2563eb' : 'transparent',
+              color: materialTab === 'listening_exercises' ? '#fff' : 'var(--text-body)',
               transition: 'all 0.2s ease'
             }}
           >
-            ⚠️ Error Reports
+            🎧 Listening Exercises
           </button>
         </div>
 
@@ -283,6 +307,10 @@ export default function LearningMaterialsView({
 
         {materialTab === 'question_bank' && (
           <QuestionBankWorkspace currentUser={currentUser} />
+        )}
+
+        {materialTab === 'reading_passages' && (
+          <ReadingPassageManagementView currentUser={currentUser} />
         )}
 
         {materialTab === 'vocabulary_categories' && (
@@ -373,8 +401,13 @@ export default function LearningMaterialsView({
           </div>
         )}
 
-        {materialTab === 'flashcard_decks' && <FlashcardDeckManagementPage currentUser={currentUser} />}
-        {materialTab === 'error_reports' && <ManagerErrorReportView />}
+        {materialTab === 'flashcard_decks' && (
+          <FlashcardDeckManagementPage currentUser={currentUser} />
+        )}
+
+        {materialTab === 'listening_exercises' && (
+          <ListeningExerciseManagementView currentUser={currentUser} />
+        )}
       </main>
     </div>
   );

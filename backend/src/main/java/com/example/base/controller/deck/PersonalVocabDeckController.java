@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST API của personal vocabulary deck. Controller không nhận studentId từ JSON/URL;
+ * accountId luôn lấy từ JWT qua UserPrincipal rồi truyền xuống service để kiểm tra ownership.
+ */
 @RestController
 @RequestMapping("/personal/vocab-decks")
 @RequiredArgsConstructor
@@ -21,11 +25,13 @@ public class PersonalVocabDeckController {
 
     @GetMapping
     public ApiResponse<List<PersonalVocabDeckDto>> getAll(@AuthenticationPrincipal UserPrincipal principal) {
+        // principal là user đã được JwtAuthenticationFilter xác thực trước khi vào controller.
         return ApiResponse.success(deckService.getVocabDecks(principal.getAccountId()));
     }
 
     @GetMapping("/{id}")
     public ApiResponse<PersonalVocabDeckDto> getOne(@PathVariable Long id, @AuthenticationPrincipal UserPrincipal principal) {
+        // Service dùng đồng thời id và accountId, vì chỉ kiểm tra deck ID là chưa đủ an toàn.
         return ApiResponse.success(deckService.getVocabDeck(id, principal.getAccountId()));
     }
 
@@ -50,6 +56,7 @@ public class PersonalVocabDeckController {
     @PostMapping("/{id}/items")
     public ApiResponse<Void> addItem(@PathVariable Long id, @Valid @RequestBody AddVocabToDeckRequest request,
                                      @AuthenticationPrincipal UserPrincipal principal) {
+        // @Valid kiểm tra vocabularyItemId trước; service tiếp tục kiểm tra deck owner và item tồn tại.
         deckService.addVocabItem(id, request, principal.getAccountId());
         return ApiResponse.success("Vocabulary item added to deck successfully", null);
     }

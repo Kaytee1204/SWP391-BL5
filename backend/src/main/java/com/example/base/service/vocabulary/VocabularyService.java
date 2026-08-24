@@ -1,16 +1,16 @@
 package com.example.base.service.vocabulary;
 
-import com.example.base.dto.vocabulary.VocabDtos.*;
+import com.example.base.dto.vocabulary.VocabDtos.VocabItemDto;
+import com.example.base.dto.vocabulary.VocabDtos.VocabItemRequest;
 import com.example.base.entity.JlptLevel;
 
 import java.util.List;
 
+/**
+ * Định nghĩa thao tác đọc/tìm kiếm và CRUD mục từ vựng. Controller chỉ phụ thuộc interface này,
+ * nên không cần biết dữ liệu được lọc hay ánh xạ DTO như thế nào.
+ */
 public interface VocabularyService {
-    List<VocabCategoryDto> getCategories(JlptLevel jlptLevel);
-    VocabCategoryDto getCategory(Long categoryId);
-    VocabCategoryDto createCategory(VocabCategoryRequest request, Long creatorId);
-    VocabCategoryDto updateCategory(Long categoryId, VocabCategoryRequest request);
-    void deleteCategory(Long categoryId);
     List<VocabItemDto> getItems(Long categoryId, JlptLevel jlptLevel, String search);
     VocabItemDto getItem(Long itemId);
     VocabItemDto createItem(VocabItemRequest request);
