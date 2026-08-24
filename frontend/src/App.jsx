@@ -22,7 +22,8 @@ import Navbar from './components/common/Navbar';
 import CourseCatalogPage from './features/courses/CourseCatalogPage';
 import PaymentReturnView from './features/courses/components/PaymentReturnView';
 import FreeCoursesPage from './features/free-courses/FreeCoursesPage';
-import { VocabularyPage } from './pages/VocabularyPage';
+import StudentVocabularyView from './features/vocabulary/StudentVocabularyView';
+import VocabularyManagementView from './features/materials/VocabularyManagementView';
 import { KanjiPage } from './pages/KanjiPage';
 import { PersonalDecksPage } from './pages/PersonalDecksPage';
 import { PersonalVocabDecksPage } from './pages/PersonalVocabDecksPage';
@@ -138,7 +139,11 @@ export default function App() {
   };
 
   const learningViews = {
-    vocab: currentUser ? <VocabularyPage currentUser={currentUser} /> : null,
+    vocab: currentUser?.role === 'Student'
+      ? <StudentVocabularyView currentUser={currentUser} onNavigate={handleNavigate} />
+      : (currentUser?.role === 'Lecturer' || currentUser?.role === 'Manager')
+        ? <VocabularyManagementView currentUser={currentUser} />
+        : <StudentVocabularyView currentUser={currentUser} onNavigate={handleNavigate} />,
     'vocab-decks': <PersonalVocabDecksPage onNavigate={handleNavigate} />,
     decks: <PersonalDecksPage onNavigate={handleNavigate} />,
     accounts: <AccountsPage />,
@@ -195,7 +200,7 @@ export default function App() {
       )}
 
       {/* 2.5. Trang Khóa Học & Tài Liệu Miễn Phí Tổng Hợp (Free Courses Hub) */}
-      {(currentView === 'free_courses' || currentView === 'grammar_reader' || currentView === 'kanji' || currentView === 'kanji-decks' || currentView === 'exercise_practice') && (
+      {(currentView === 'free_courses' || currentView === 'grammar_reader' || currentView === 'vocab' || currentView === 'kanji' || currentView === 'kanji-decks' || currentView === 'exercise_practice') && (
         <FreeCoursesPage
           currentUser={currentUser}
           onNavigate={handleNavigate}
@@ -203,6 +208,7 @@ export default function App() {
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
           initialTab={
+            currentView === 'vocab' ? 'vocabulary' :
             currentView === 'kanji' ? 'kanji' :
             currentView === 'kanji-decks' ? 'kanji-decks' :
             currentView === 'exercise_practice' ? 'quiz' : 'grammar'

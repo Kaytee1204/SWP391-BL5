@@ -10,9 +10,8 @@ export default function CategoryItemsModal({ category, onClose, currentUser }) {
     const [formData, setFormData] = useState({ wordJp: '', meaning: '' });
     const [formError, setFormError] = useState('');
 
-    // Kiểm tra quyền (Manager, Lecturer, Admin)
-    const userRole = currentUser?.role ? currentUser.role.trim().toLowerCase() : '';
-    const isManagerOrLecturer = userRole === 'manager' || userRole === 'lecturer' || userRole === 'admin';
+    // Kiểm tra quyền (Manager, Lecturer, Student, Admin)
+    const isManagerOrLecturer = Boolean(currentUser);
 
     const resetForm = () => {
         setEditingIndex(null);

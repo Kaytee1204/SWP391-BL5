@@ -26,15 +26,14 @@ public class GrammarExampleMapper {
             patternId = entity.getPattern().getPatternId();
         }
 
-
-        return GrammarExampleResponse.builder()
-                .exampleId(entity.getExampleId())
-                .patternId(patternId)
-                .sentenceJp(entity.getSentenceJp())
-                .translation(entity.getTranslation())
-                .audioUrl(entity.getAudioUrl())
-                .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
-                .build();
+        GrammarExampleResponse response = new GrammarExampleResponse();
+        response.setExampleId(entity.getExampleId());
+        response.setPatternId(patternId);
+        response.setSentenceJp(entity.getSentenceJp());
+        response.setTranslation(entity.getTranslation());
+        response.setAudioUrl(entity.getAudioUrl());
+        response.setCreatedAt(entity.getCreatedAt());
+        response.setUpdatedAt(entity.getUpdatedAt());
+        return response;
     }
 }

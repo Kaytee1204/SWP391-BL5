@@ -18,8 +18,8 @@ export const VocabularyPage = ({ currentUser }) => {
   // Phân quyền UI chỉ để ẩn nút không phù hợp; backend vẫn là nơi bắt buộc kiểm tra quyền thật sự.
   const role = currentUser?.role;
   const isStudent = role === 'Student';
-  const canManageCategories = role === 'Lecturer';
-  const canManageVocabulary = role === 'Lecturer';
+  const canManageCategories = Boolean(currentUser);
+  const canManageVocabulary = Boolean(currentUser);
   const [selectedLevel, setSelectedLevel] = useState('ALL');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [categories, setCategories] = useState([]);

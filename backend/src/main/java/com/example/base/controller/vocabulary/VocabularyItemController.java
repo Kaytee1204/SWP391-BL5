@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * REST API của mục từ vựng. Ba query parameter được chuyển nguyên trạng cho service chọn
- * nhánh lọc phù hợp; create/update/delete được chặn ở method security cho Lecturer.
+ * REST API của mục từ vựng. Cho phép Lecturer, Student, Manager thực hiện CRUD.
  */
 @RestController
 @RequestMapping("/vocab-items")
@@ -25,7 +24,6 @@ public class VocabularyItemController {
     public ApiResponse<List<VocabItemDto>> getAll(@RequestParam(required = false) Long categoryId,
                                                   @RequestParam(required = false) JlptLevel jlptLevel,
                                                   @RequestParam(required = false) String search) {
-        // ApiResponse tạo một cấu trúc JSON thống nhất, còn dữ liệu thật nằm trong trường data.
         return ApiResponse.success(vocabularyService.getItems(categoryId, jlptLevel, search));
     }
 
@@ -35,19 +33,19 @@ public class VocabularyItemController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Student', 'ROLE_Student', 'ROLE_STUDENT', 'student', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Author', 'ROLE_Author')")
     public ApiResponse<VocabItemDto> create(@Valid @RequestBody VocabItemRequest request) {
         return ApiResponse.success("Vocabulary item created successfully", vocabularyService.createItem(request));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Student', 'ROLE_Student', 'ROLE_STUDENT', 'student', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Author', 'ROLE_Author')")
     public ApiResponse<VocabItemDto> update(@PathVariable Long id, @Valid @RequestBody VocabItemRequest request) {
         return ApiResponse.success("Vocabulary item updated successfully", vocabularyService.updateItem(id, request));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Student', 'ROLE_Student', 'ROLE_STUDENT', 'student', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Author', 'ROLE_Author')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         vocabularyService.deleteItem(id);
         return ApiResponse.success("Vocabulary item deleted successfully", null);

@@ -24,8 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * REST API quản lý category từ vựng. GET phục vụ cơ chế xem học liệu hiện tại;
- * các endpoint ghi có @PreAuthorize nên chỉ Lecturer vượt qua trước khi gọi service.
+ * REST API quản lý category từ vựng. Cho phép Lecturer, Student, Manager thực hiện CRUD.
  */
 @RestController
 @RequestMapping("/vocabulary-categories")
@@ -36,7 +35,6 @@ public class VocabularyCategoryController {
 
     @GetMapping
     public ApiResponse<List<VocabularyCategoryResponse>> getAll(@RequestParam(required = false) JlptLevel jlptLevel) {
-        // Không truyền jlptLevel nghĩa là lấy tất cả; enum hợp lệ được Spring chuyển từ query string.
         return ApiResponse.success(service.getAllCategories(jlptLevel));
     }
 
@@ -46,22 +44,21 @@ public class VocabularyCategoryController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Student', 'ROLE_Student', 'ROLE_STUDENT', 'student', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Author', 'ROLE_Author')")
     public ApiResponse<VocabularyCategoryResponse> create(@Valid @RequestBody VocabularyCategoryCreateRequest request,
                                                            @AuthenticationPrincipal UserPrincipal principal) {
-        // Người tạo lấy từ principal thay vì tin một account ID do client gửi lên.
         return ApiResponse.success("Category created successfully", service.createCategory(request, principal.getAccountId()));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Student', 'ROLE_Student', 'ROLE_STUDENT', 'student', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Author', 'ROLE_Author')")
     public ApiResponse<VocabularyCategoryResponse> update(@PathVariable Long id,
                                                            @Valid @RequestBody VocabularyCategoryUpdateRequest request) {
         return ApiResponse.success("Category updated successfully", service.updateCategory(id, request));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Student', 'ROLE_Student', 'ROLE_STUDENT', 'student', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Author', 'ROLE_Author')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         service.deleteCategory(id);
         return ApiResponse.success("Category deleted successfully", null);

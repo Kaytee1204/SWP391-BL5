@@ -21,8 +21,7 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
   const [errors, setErrors] = useState({});
 
   // Permissions
-  const canEdit = currentUser?.role === 'Manager' || 
-                 (currentUser?.role === 'Lecturer' && pattern.createdById === currentUser?.accountId);
+  const canEdit = currentUser?.role === 'Manager' || currentUser?.role === 'Lecturer';
 
   useEffect(() => {
     fetchExamples();

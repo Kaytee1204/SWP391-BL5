@@ -98,6 +98,7 @@ public class SecurityConfig {
                                 "/payments/verify-return",
                                 "/culture-articles", "/culture-articles/**",
                                 "/grammar-patterns", "/grammar-patterns/**",
+                                "/grammar-exercises", "/grammar-exercises/**",
                                 "/kanji-modules", "/kanji-modules/**",
                                 "/kanji-details", "/kanji-details/**",
                                 "/vocabulary-categories", "/vocabulary-categories/**",

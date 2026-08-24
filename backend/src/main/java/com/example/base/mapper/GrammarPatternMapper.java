@@ -56,19 +56,19 @@ public class GrammarPatternMapper {
 
         Account lecturer = pattern.getCreatedBy();
 
-        return GrammarPatternResponse.builder()
-                .patternId(pattern.getPatternId())
-                .jlptLevel(pattern.getJlptLevel())
-                .title(pattern.getTitle())
-                .structure(pattern.getStructure())
-                .usageNote(pattern.getUsageNote())
-                .createdById(lecturer != null ? lecturer.getAccountId() : null)
-                .createdByAccountId(lecturer != null ? lecturer.getAccountId() : null)
-                .createdByName(lecturer != null ? lecturer.getFullName() : "Unknown Lecturer")
-                .createdByEmail(lecturer != null ? lecturer.getEmail() : null)
-                .createdByAvatarUrl(lecturer != null ? lecturer.getAvatarUrl() : null)
-                .createdAt(pattern.getCreatedAt())
-                .updatedAt(pattern.getUpdatedAt())
-                .build();
+        GrammarPatternResponse response = new GrammarPatternResponse();
+        response.setPatternId(pattern.getPatternId());
+        response.setJlptLevel(pattern.getJlptLevel());
+        response.setTitle(pattern.getTitle());
+        response.setStructure(pattern.getStructure());
+        response.setUsageNote(pattern.getUsageNote());
+        response.setCreatedById(lecturer != null ? lecturer.getAccountId() : null);
+        response.setCreatedByAccountId(lecturer != null ? lecturer.getAccountId() : null);
+        response.setCreatedByName(lecturer != null ? lecturer.getFullName() : "Unknown Lecturer");
+        response.setCreatedByEmail(lecturer != null ? lecturer.getEmail() : null);
+        response.setCreatedByAvatarUrl(lecturer != null ? lecturer.getAvatarUrl() : null);
+        response.setCreatedAt(pattern.getCreatedAt());
+        response.setUpdatedAt(pattern.getUpdatedAt());
+        return response;
     }
 }
