@@ -3,6 +3,7 @@ package com.example.base.service.questionSet;
 import com.example.base.dto.common.PageResponse;
 import com.example.base.dto.questionbank.request.QuestionUpsertRequest;
 import com.example.base.dto.questionset.request.QuestionSetItemsReplaceRequest;
+import com.example.base.dto.questionset.request.QuestionSetPublicationRequest;
 import com.example.base.dto.questionset.request.QuestionSetUpsertRequest;
 import com.example.base.dto.questionset.response.QuestionSetResponse;
 import com.example.base.entity.JlptLevel;
@@ -41,6 +42,12 @@ public interface QuestionSetService {
 
     void delete(
             Long setId,
+            UserPrincipal currentUser
+    );
+
+    QuestionSetResponse changePublicationStatus(
+            Long setId,
+            QuestionSetPublicationRequest request,
             UserPrincipal currentUser
     );
 

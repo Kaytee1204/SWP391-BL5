@@ -9,7 +9,7 @@ spring:
 
   # Microsoft SQL Server Database Configuration
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=SWP391;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true
+    url: jdbc:sqlserver://localhost:1433;databaseName=swp391_bl5;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     username: sa
     password: 123

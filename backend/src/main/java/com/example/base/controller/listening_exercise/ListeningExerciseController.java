@@ -42,7 +42,7 @@ public class ListeningExerciseController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) JlptLevel jlptLevel,
             @AuthenticationPrincipal UserPrincipal currentUser,
-            @PageableDefault(size = 10, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(size = 10, sort = "listeningExerciseId", direction = Sort.Direction.ASC) Pageable pageable
     ) {
         return ResponseEntity.ok(ApiResponse.success(
                 service.searchMine(keyword, jlptLevel, currentUser, pageable)

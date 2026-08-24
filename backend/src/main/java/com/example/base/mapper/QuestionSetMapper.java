@@ -1,13 +1,12 @@
 package com.example.base.mapper;
 
-import com.example.base.dto.questionbank.request.QuestionUpsertRequest;
 import com.example.base.dto.questionset.request.QuestionSetUpsertRequest;
 import com.example.base.dto.questionset.response.QuestionSetItemResponse;
 import com.example.base.dto.questionset.response.QuestionSetResponse;
 import com.example.base.entity.Account;
 import com.example.base.entity.QuestionSet;
 import com.example.base.entity.QuestionSetItem;
-import jakarta.validation.constraints.Size;
+import com.example.base.entity.QuestionSetPublicationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +25,7 @@ public class QuestionSetMapper {
                 .skillType(request.getSkillType())
                 .jlptLevel(request.getJlptLevel())
                 .durationMinutes(request.getDurationMinutes() == null ? 60 : request.getDurationMinutes())
+                .publicationStatus(QuestionSetPublicationStatus.DRAFT)
                 .createBy(creator)
                 .build();
     }
@@ -57,6 +57,7 @@ public class QuestionSetMapper {
                 .skillType(entity.getSkillType())
                 .jlptLevel(entity.getJlptLevel())
                 .durationMinutes(entity.getDurationMinutes())
+                .publicationStatus(entity.getPublicationStatus())
                 .createdById(creator == null ? null :creator.getAccountId())
                 .createdByName(creator==null ? null : creator.getFullName())
                 .questionCount(questions.size())
@@ -81,6 +82,7 @@ public class QuestionSetMapper {
                 .skillType(entity.getSkillType())
                 .jlptLevel(entity.getJlptLevel())
                 .durationMinutes(entity.getDurationMinutes())
+                .publicationStatus(entity.getPublicationStatus())
                 .createdById(
                         creator == null
                                 ? null

@@ -4,6 +4,7 @@ import com.example.base.dto.common.PageResponse;
 import com.example.base.dto.questionbank.request.QuestionUpsertRequest;
 import com.example.base.dto.questionbank.response.QuestionResponse;
 import com.example.base.dto.questionset.request.QuestionSetItemsReplaceRequest;
+import com.example.base.dto.questionset.request.QuestionSetPublicationRequest;
 import com.example.base.dto.questionset.request.QuestionSetUpsertRequest;
 import com.example.base.dto.questionset.response.QuestionSetResponse;
 import com.example.base.entity.*;
@@ -23,7 +24,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import jakarta.persistence.criteria.Predicate;
-import java.util.stream.Collector;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -127,7 +127,7 @@ public class QuestionSetServiceImpl implements QuestionSetService {
     @Override
     @Transactional
     public QuestionSetResponse update(Long setId, QuestionSetUpsertRequest  request, UserPrincipal currentUser) {
-        QuestionSet set = findSharedSet(setId, currentUser);
+        QuestionSet set = findOwnedSet(setId, currentUser);
 
         long questionCount = questionSetItemRepository.countByQuestionSetQuestionSetId(setId);
 
@@ -213,6 +213,26 @@ public class QuestionSetServiceImpl implements QuestionSetService {
     }
 
     @Override
+    @Transactional
+    public QuestionSetResponse changePublicationStatus(
+            Long setId,
+            QuestionSetPublicationRequest request,
+            UserPrincipal currentUser
+    ) {
+        // findOwnedSet chỉ cho chủ đề hoặc Manager thao tác
+        QuestionSet set = findOwnedSet(setId, currentUser);
+
+        set.setPublicationStatus(request.getPublicationStatus());
+        QuestionSet saved = questionSetRepository.save(set);
+
+        List<QuestionSetItem> items =
+                questionSetItemRepository
+                        .findByQuestionSetQuestionSetIdOrderByQuestionOrderAsc(setId);
+
+        return mapper.toResponse(saved, items);
+    }
+
+    @Override
     public void delete(Long setId, UserPrincipal currentUser) {
         QuestionSet set = findOwnedSet(setId,currentUser);
         questionSetRepository.delete(set);
@@ -276,27 +296,34 @@ public class QuestionSetServiceImpl implements QuestionSetService {
                     "Bạn cần đăng nhập để xem bộ câu hỏi"
             );
         }
+        QuestionSet set = questionSetRepository
+                .findById(setId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "QuestionSet",
+                        "questionSetId",
+                        setId
+                ));
+        boolean owner = set.getCreateBy()
+                .getAccountId()
+                .equals(currentUser.getAccountId());
+
+        boolean sharedWithLecturer =
+                isLecturer(currentUser)
+                        && set.getPublicationStatus() == QuestionSetPublicationStatus.PUBLISHED;
 
         boolean canAccess =
                 isManager(currentUser)
-                        || isLecturer(currentUser);
+                        || owner
+                        || sharedWithLecturer;
 
         if (!canAccess) {
             throw new AppException(
                     ErrorCode.FORBIDDEN,
-                    "Bạn không có quyền truy cập bộ câu hỏi"
+                    "Bộ câu hỏi này đang ở trạng thái riêng tư"
             );
         }
 
-        return questionSetRepository
-                .findById(setId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "QuestionSet",
-                                "questionSetId",
-                                setId
-                        )
-                );
+      return set;
     }
 
     private boolean isLecturer(
