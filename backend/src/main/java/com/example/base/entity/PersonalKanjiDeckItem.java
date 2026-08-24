@@ -40,7 +40,7 @@ public class PersonalKanjiDeckItem {
 
     @PrePersist
     protected void onCreate() {
-        // Khi them kanji vao deck, tu dong gan addedAt bang thoi diem item duoc persist.
+        // Mốc addedAt dùng để màn chi tiết sắp Kanji mới thêm lên trước.
         addedAt = LocalDateTime.now();
     }
 }

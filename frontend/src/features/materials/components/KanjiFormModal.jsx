@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
+/**
+ * Form màn 41-42 cho dữ liệu Kanji chi tiết.
+ * moduleId tạo quan hệ với module cha (và gián tiếp xác định JLPT); các âm đọc/từ ghép là tùy chọn.
+ * Component không gọi API trực tiếp mà trả payload cho KanjiPage qua onSave để tách UI khỏi nghiệp vụ.
+ */
 export default function KanjiFormModal({
   isOpen,
   kanji,
@@ -18,6 +23,7 @@ export default function KanjiFormModal({
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Chế độ sửa nạp bản ghi hiện tại; chế độ tạo ưu tiên module đang lọc rồi tới module đầu tiên.
     if (kanji) {
       setModuleId(String(kanji.moduleId || ''));
       setCharacter(kanji.character || '');
@@ -39,6 +45,7 @@ export default function KanjiFormModal({
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
+    // Kiểm tra trường bắt buộc trước khi tạo payload; backend vẫn validate lại vì client có thể bị bỏ qua.
     e.preventDefault();
     if (!moduleId) {
       setError('Vui lòng chọn Module bài học cho chữ Kanji này.');

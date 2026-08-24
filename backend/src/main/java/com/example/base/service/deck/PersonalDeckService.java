@@ -19,18 +19,18 @@ public interface PersonalDeckService {
     void removeVocabItem(Long deckId, Long itemId, Long studentId);
     // Lấy tất cả personal Kanji deck của student.
     List<PersonalKanjiDeckDto> getKanjiDecks(Long studentId);
-    // Lay chi tiet mot personal kanji deck kem danh sach item.
+    // Lấy chi tiết một personal Kanji deck kèm danh sách item.
     PersonalKanjiDeckDto getKanjiDeck(Long deckId, Long studentId);
-    // Tao personal kanji deck moi cho student.
+    // Tạo personal Kanji deck mới cho Student.
     PersonalKanjiDeckDto createKanjiDeck(CreateDeckRequest request, Long studentId);
-    // Cap nhat title/description cua personal kanji deck.
+    // Cập nhật title/description, không thay đổi danh sách Kanji bên trong.
     PersonalKanjiDeckDto updateKanjiDeck(Long deckId, CreateDeckRequest request, Long studentId);
-    // Xoa personal kanji deck va cac item ben trong.
+    // Xóa personal Kanji deck và các bản ghi liên kết bên trong.
     void deleteKanjiDeck(Long deckId, Long studentId);
     // Thêm Kanji hoặc cập nhật note nếu cặp deck-Kanji đã tồn tại.
     void addKanji(Long deckId, AddKanjiToDeckRequest request, Long studentId);
-    // Cap nhat memorization note cua kanji trong deck.
+    // Cập nhật memorization note trên quan hệ deck-Kanji.
     void updateKanjiNote(Long deckId, Long kanjiId, UpdateKanjiNoteRequest request, Long studentId);
-    // Xoa kanji item khoi personal kanji deck.
+    // Xóa Kanji item khỏi deck cá nhân, không xóa Kanji nguồn.
     void removeKanji(Long deckId, Long kanjiId, Long studentId);
 }

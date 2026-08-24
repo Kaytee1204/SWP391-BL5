@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * REST API cho từng chữ Kanji. CRUD dành cho Giảng viên (Lecturer) và Quản lý (Manager).
+ * Điểm vào HTTP của màn 40-43 - quản lý chi tiết từng chữ Kanji.
+ * GET hỗ trợ lọc theo module/JLPT/từ khóa. POST/PUT/DELETE yêu cầu Lecturer/Manager;
+ * service chịu trách nhiệm kiểm tra module cha, version và tham chiếu từ personal deck.
  */
 @RestController
 @RequestMapping("/kanji-details")
@@ -26,6 +28,7 @@ public class KanjiDetailController {
     public ApiResponse<List<KanjiDetailDto>> getAll(@RequestParam(required = false) Long moduleId,
                                                     @RequestParam(required = false) JlptLevel jlptLevel,
                                                     @RequestParam(required = false) String search) {
+        // DTO làm phẳng moduleTitle/JLPT để frontend không phải gọi thêm API cho từng Kanji.
         return ApiResponse.success(kanjiService.getKanji(moduleId, jlptLevel, search));
     }
 
@@ -38,7 +41,7 @@ public class KanjiDetailController {
     @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
     public ApiResponse<KanjiDetailDto> create(@Valid @RequestBody KanjiDetailRequest request,
                                                @AuthenticationPrincipal UserPrincipal principal) {
-        // Principal duoc JwtAuthenticationFilter nap tu token, khong lay Lecturer tu request.
+        // Principal do JwtAuthenticationFilter nạp từ token, không lấy Lecturer từ request.
         return ApiResponse.success("Kanji created successfully", kanjiService.createKanji(request, principal.getAccountId()));
     }
 
@@ -46,12 +49,14 @@ public class KanjiDetailController {
     @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
     public ApiResponse<KanjiDetailDto> update(@PathVariable Long id, @Valid @RequestBody KanjiDetailRequest request,
                                                @AuthenticationPrincipal UserPrincipal principal) {
+        // version trong request giúp phát hiện form đã cũ trước khi ghi đè dữ liệu mới.
         return ApiResponse.success("Kanji updated successfully", kanjiService.updateKanji(id, request, principal.getAccountId()));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
+        // Không xóa trực tiếp repository tại đây vì service còn phải bảo vệ deck cá nhân.
         kanjiService.deleteKanji(id);
         return ApiResponse.success("Kanji deleted successfully", null);
     }

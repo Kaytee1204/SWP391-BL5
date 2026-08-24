@@ -43,7 +43,7 @@ public class KanjiLessonModule {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by", nullable = false)
-    // updatedBy changes whenever a Lecturer edits this module; createdBy stays unchanged.
+    // updatedBy đổi khi Lecturer sửa module; createdBy vẫn ghi nhận người tạo ban đầu.
     private Account updatedBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -52,8 +52,7 @@ public class KanjiLessonModule {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // @Version detects two Lecturers editing the same module. Hibernate rejects the stale save
-    // so the later Lecturer cannot overwrite changes that were already committed.
+    // @Version phát hiện hai Lecturer cùng sửa và từ chối bản lưu dùng version đã cũ.
     @Version
     @Column(name = "version", nullable = false)
     private Long version;

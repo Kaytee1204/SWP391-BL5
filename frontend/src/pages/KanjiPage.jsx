@@ -4,6 +4,12 @@ import { Modal } from '../components/Modal';
 import { BookmarkPlus, Edit2, Folder, Plus, Search, Trash2 } from 'lucide-react';
 import KanjiFormModal from '../features/materials/components/KanjiFormModal';
 
+/**
+ * Màn 40-43 - Danh sách/chi tiết Kanji dùng chung cho hai vai trò.
+ * Lecturer/Manager có thể CRUD học liệu; Student chỉ xem và lưu Kanji vào deck cá nhân.
+ * Module, JLPT và keyword trở thành query params cho backend. Form update gửi kèm version
+ * để tránh một giảng viên lưu dữ liệu cũ đè lên thay đổi mới của giảng viên khác.
+ */
 export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   const role = currentUser?.role;
   const isStudent = role === 'Student';
@@ -27,6 +33,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   const [memorizationNote, setMemorizationNote] = useState('');
 
   const fetchData = async () => {
+    // Hai request độc lập nên chạy song song để lấy danh sách module và Kanji nhanh hơn.
     setLoading(true);
     try {
       const params = {};
@@ -57,6 +64,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
 
   const handleSaveKanji = async (formData) => {
     try {
+      // editingKanji tồn tại thì cập nhật đúng ID; ngược lại tạo Kanji mới.
       if (editingKanji) {
         await kanjiApi.updateKanji(editingKanji.kanjiId, formData);
         setFeedback({ type: 'success', msg: 'Cập nhật chữ Kanji thành công!' });
@@ -74,6 +82,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   };
 
   const deleteKanji = async (id, char) => {
+    // Backend chặn xóa nếu Kanji vẫn nằm trong bất kỳ personal Kanji deck nào.
     if (!window.confirm(`Bạn có chắc muốn xóa chữ Kanji "${char || ''}" này không?`)) return;
     try {
       await kanjiApi.deleteKanji(id);
@@ -85,6 +94,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   };
 
   const openAddToDeck = async (kanji) => {
+    // Chỉ khi Student bấm lưu mới tải deck cá nhân, tránh request thừa lúc chỉ xem từ điển.
     try {
       setSelectedKanjiForDeck(kanji);
       setMemorizationNote('');
@@ -100,6 +110,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   const saveToDeck = async () => {
     if (!targetDeckId) return;
     try {
+      // Endpoint có tính upsert: đã có Kanji trong deck thì backend cập nhật note thay vì tạo trùng.
       await deckApi.addKanjiToDeck(targetDeckId, {
         kanjiId: selectedKanjiForDeck.kanjiId,
         memorizationNote: memorizationNote.trim() || null,

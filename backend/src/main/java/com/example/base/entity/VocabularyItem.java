@@ -5,7 +5,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-/** Mot muc tu vung thuoc mot category; JLPT duoc suy ra tu category cha. */
+/**
+ * Bản ghi nguồn của màn 32-35. Mỗi từ thuộc một category và suy ra JLPT từ category cha;
+ * personal deck chỉ tham chiếu itemId nên việc sửa nội dung nguồn được phản ánh khi học viên xem lại.
+ */
 @Entity
 @Table(name = "VocabularyItem")
 @Getter
@@ -43,12 +46,12 @@ public class VocabularyItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false, updatable = false)
-    // createdBy khong thay doi sau khi record duoc tao, ke ca khi Lecturer khac chinh sua.
+    // createdBy không đổi sau khi tạo, kể cả khi Lecturer khác chỉnh sửa.
     private Account createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by", nullable = false)
-    // updatedBy thay doi moi khi co Lecturer chinh sua record.
+    // updatedBy đổi mỗi khi có Lecturer chỉnh sửa bản ghi.
     private Account updatedBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -57,15 +60,15 @@ public class VocabularyItem {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // @Version giup phat hien 2 Lecturer cung sua mot record. Neu version trong database
-    // da thay doi, Hibernate reject update de Lecturer sau khong ghi de du lieu cua Lecturer truoc.
+    // @Version phát hiện hai Lecturer cùng sửa. Hibernate từ chối request dùng version cũ,
+    // nhờ đó người lưu sau không âm thầm ghi đè thay đổi đã commit của người lưu trước.
     @Version
     @Column(name = "version", nullable = false)
     private Long version;
 
     @PrePersist
     protected void onCreate() {
-        // Timestamp do backend tao; frontend khong the gia mao ngay tao/cap nhat.
+        // Timestamp do backend tạo; frontend không thể giả mạo ngày tạo/cập nhật.
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
@@ -73,7 +76,7 @@ public class VocabularyItem {
 
     @PreUpdate
     protected void onUpdate() {
-        // Chi updatedAt thay doi khi edit; createdAt luon giu moc tao ban dau.
+        // Chỉ updatedAt thay đổi khi edit; createdAt luôn giữ mốc tạo ban đầu.
         this.updatedAt = LocalDateTime.now();
     }
 }

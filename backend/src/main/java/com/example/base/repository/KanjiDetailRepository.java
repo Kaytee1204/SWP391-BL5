@@ -23,14 +23,14 @@ public interface KanjiDetailRepository extends JpaRepository<KanjiDetail, Long> 
     @EntityGraph(attributePaths = {"module", "createdBy", "updatedBy"})
     List<KanjiDetail> findByOrderByKanjiIdAsc();
 
-    // Lay cac kanji detail thuoc mot module, sap xep tang dan theo kanjiId.
+    // Lấy các Kanji thuộc một module, sắp xếp ổn định theo kanjiId.
     @EntityGraph(attributePaths = {"module", "createdBy", "updatedBy"})
     List<KanjiDetail> findByModule_ModuleIdOrderByKanjiIdAsc(Long moduleId);
 
-    // Dem so kanji detail trong module, dung de hien thi kanjiCount o module DTO.
+    // Đếm Kanji con để hiển thị kanjiCount ở module DTO mà không nạp collection LAZY.
     long countByModule_ModuleId(Long moduleId);
 
-    // Lay cac kanji detail theo JLPT level cua module cha.
+    // JLPT nằm ở module cha nên truy vấn đi qua quan hệ k.module.jlptLevel.
     @Query("select k from KanjiDetail k where k.module.jlptLevel = :jlptLevel order by k.kanjiId")
     @EntityGraph(attributePaths = {"module", "createdBy", "updatedBy"})
     List<KanjiDetail> findByJlptLevel(@Param("jlptLevel") JlptLevel jlptLevel);

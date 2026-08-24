@@ -53,7 +53,7 @@ public class VocabularyServiceImpl implements VocabularyService {
     @Override
     @Transactional
     public VocabItemDto createItem(VocabItemRequest request, Long lecturerId) {
-        // lecturerId den tu UserPrincipal cua JWT, khong den tu form nen client khong the chon nguoi tao.
+        // lecturerId đến từ JWT, không đến từ form nên client không thể chọn người tạo.
         Account lecturer = requireAccount(lecturerId);
         // requireCategory biến categoryId từ JSON thành entity thật và chặn khóa ngoại không hợp lệ.
         VocabularyItem item = VocabularyItem.builder()
@@ -83,7 +83,7 @@ public class VocabularyServiceImpl implements VocabularyService {
         item.setMeaning(request.getMeaning().trim());
         item.setExampleSentence(request.getExampleSentence());
         item.setExampleTranslation(request.getExampleTranslation());
-        // Edit dua tren role o controller, khong dua tren createdBy; createdBy vi the luon duoc giu nguyen.
+        // Quyền sửa dựa trên role ở controller; createdBy giữ nguyên và updatedBy nhận người hiện tại.
         item.setUpdatedBy(requireAccount(lecturerId));
         return toItemDto(itemRepository.saveAndFlush(item));
     }
@@ -111,7 +111,7 @@ public class VocabularyServiceImpl implements VocabularyService {
     }
 
     private void requireCurrentVersion(Long requestedVersion, Long currentVersion, Long id) {
-        // Client gui version da mo; @Version tiep tuc bao ve neu DB doi sau check nhung truoc luc flush.
+        // So sánh sớm cho lỗi rõ ràng; @Version vẫn bảo vệ nếu DB đổi sau check nhưng trước flush.
         if (requestedVersion == null || !Objects.equals(requestedVersion, currentVersion)) {
             throw new ObjectOptimisticLockingFailureException(VocabularyItem.class, id);
         }

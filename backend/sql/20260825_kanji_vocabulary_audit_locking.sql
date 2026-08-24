@@ -1,24 +1,27 @@
 /*
-    Migration: Kanji/Vocabulary audit columns and optimistic locking
+    Migration: cột audit và optimistic locking cho màn quản lý Kanji/Vocabulary
     Database : Microsoft SQL Server
 
-    Cach dung:
-      - Chon dung database cua ung dung, sau do chay TOAN BO file nay mot lan.
-      - Script khong su dung GO, nen co the chay bang SSMS, Azure Data Studio,
-        sqlcmd, hoac mot migration tool nhu mot script duy nhat.
-      - Script co the chay lai. Neu lan chay truoc bi dung giua chung, script se
-        bo qua cac thanh phan da ton tai va tiep tuc phan con thieu.
+    Ý nghĩa trong luồng màn 32-43:
+      - created_by/updated_by ghi lại Lecturer tạo và sửa học liệu.
+      - version được entity @Version dùng để chặn hai người ghi đè nhau.
+      - Script bù dữ liệu cũ trước rồi mới chuyển cột sang NOT NULL và tạo khóa ngoại.
 
-    Du lieu cu:
-      - KanjiDetail lay created_by tu KanjiLessonModule.
-      - VocabularyItem lay created_by tu VocabularyCategory.
-      - updated_by mac dinh bang created_by; version mac dinh bang 0.
+    Cách dùng:
+      - Chọn đúng database của ứng dụng, sau đó chạy TOÀN BỘ file này một lần.
+      - Script không dùng GO nên có thể chạy như một script duy nhất.
+      - Có thể chạy lại; thành phần đã tồn tại sẽ được bỏ qua.
+
+    Dữ liệu cũ:
+      - KanjiDetail lấy created_by từ KanjiLessonModule cha.
+      - VocabularyItem lấy created_by từ VocabularyCategory cha.
+      - updated_by mặc định bằng created_by; version mặc định bằng 0.
 */
 
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
-/* Kiem tra schema dau vao truoc khi thay doi du lieu. */
+/* Fail-fast nếu schema đầu vào không đúng, tránh migration chạy dở và để database khó khôi phục. */
 IF OBJECT_ID(N'dbo.KanjiDetail', N'U') IS NULL
     THROW 51000, 'Missing required table dbo.KanjiDetail.', 1;
 
@@ -47,8 +50,8 @@ BEGIN TRY
     BEGIN TRANSACTION;
 
     /*
-        Dung dynamic SQL cho cac lenh tham chieu cot moi. SQL Server thuong bien
-        dich ca batch truoc khi ALTER TABLE chay; cach nay tranh loi Msg 207
+        Dùng dynamic SQL cho các lệnh tham chiếu cột mới. SQL Server thường biên
+        dịch cả batch trước khi ALTER TABLE chạy; cách này tránh lỗi Msg 207
         "Invalid column name" khi chay file lan dau.
     */
 

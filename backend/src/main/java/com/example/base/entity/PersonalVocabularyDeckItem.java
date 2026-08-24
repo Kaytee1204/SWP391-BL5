@@ -5,7 +5,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-/** Lien ket mot muc tu vung voi deck ca nhan va luu thoi diem them. */
+/**
+ * Bảng nối giữa deck cá nhân và VocabularyItem dùng chung.
+ * Xóa item khỏi deck chỉ xóa bản ghi nối này, tuyệt đối không xóa mục từ nguồn của Lecturer.
+ */
 @Entity
 @Table(name = "PersonalVocabularyDeckItem")
 @Getter
@@ -16,10 +19,12 @@ import java.time.LocalDateTime;
 public class PersonalVocabularyDeckItem {
 
     @EmbeddedId
+    // Khóa ghép (deckId, vocabularyItemId) ngăn một từ xuất hiện hai lần trong cùng deck.
     private PersonalVocabularyDeckItemId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("deckId")
+    // @MapsId nói rằng khóa ngoại deck_id cũng là một phần của khóa chính nhúng.
     @JoinColumn(name = "deck_id", nullable = false)
     private PersonalVocabularyDeck deck;
 
@@ -33,6 +38,7 @@ public class PersonalVocabularyDeckItem {
 
     @PrePersist
     protected void onCreate() {
+        // addedAt phục vụ thứ tự "mới thêm trước" trên màn chi tiết deck.
         addedAt = LocalDateTime.now();
     }
 }

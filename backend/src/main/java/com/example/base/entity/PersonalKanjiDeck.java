@@ -42,7 +42,7 @@ public class PersonalKanjiDeck {
 
     @PrePersist
     protected void onCreate() {
-        // Khi tao personal kanji deck moi, tu dong set createdAt va updatedAt cho record.
+        // Khi tạo deck mới, backend tự gắn cả createdAt và updatedAt.
         LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
@@ -50,7 +50,7 @@ public class PersonalKanjiDeck {
 
     @PreUpdate
     protected void onUpdate() {
-        // Khi cap nhat deck, chi set lai updatedAt de ghi nhan thoi diem sua gan nhat.
+        // Khi cập nhật metadata deck, chỉ thay updatedAt và giữ nguyên createdAt.
         updatedAt = LocalDateTime.now();
     }
 }

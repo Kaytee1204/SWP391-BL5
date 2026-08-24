@@ -35,7 +35,7 @@ public class KanjiServiceImpl implements KanjiService {
 
     @Override
     public KanjiModuleDto getModule(Long moduleId) {
-        // Lay mot module theo id; requireModule kiem tra ton tai truoc khi map entity sang DTO.
+        // requireModule kiểm tra tồn tại trước khi map entity sang DTO.
         return toModuleDto(requireModule(moduleId));
     }
 
@@ -58,13 +58,13 @@ public class KanjiServiceImpl implements KanjiService {
     @Override
     @Transactional
     public KanjiModuleDto updateModule(Long moduleId, KanjiModuleRequest request, Long lecturerId) {
-        // Cap nhat module kanji; load module theo id, ghi lai level/title/description tu request, save, roi map DTO.
+        // Nạp module cũ, kiểm tra version rồi chỉ ghi lại các field mà form cho phép sửa.
         KanjiLessonModule module = requireModule(moduleId);
         requireCurrentVersion(request.getVersion(), module.getVersion(), KanjiLessonModule.class, moduleId);
         module.setJlptLevel(request.getJlptLevel());
         module.setTitle(request.getTitle().trim());
         module.setDescription(trimToNull(request.getDescription()));
-        // Authorization is role-based, not creator-based; createdBy therefore remains unchanged.
+        // Quyền sửa dựa trên role, không dựa trên người tạo; vì vậy createdBy luôn được giữ nguyên.
         module.setUpdatedBy(requireAccount(lecturerId));
         return toModuleDto(moduleRepository.saveAndFlush(module));
     }
@@ -108,14 +108,14 @@ public class KanjiServiceImpl implements KanjiService {
 
     @Override
     public KanjiDetailDto getKanji(Long kanjiId) {
-        // Lay mot kanji detail theo id; requireKanji dam bao entity ton tai truoc khi map DTO.
+        // requireKanji bảo đảm entity tồn tại trước khi map DTO.
         return toKanjiDto(requireKanji(kanjiId));
     }
 
     @Override
     @Transactional
     public KanjiDetailDto createKanji(KanjiDetailRequest request, Long lecturerId) {
-        // lecturerId den tu UserPrincipal cua JWT, khong den tu form nen client khong the chon nguoi tao.
+        // lecturerId đến từ JWT, không đến từ form nên client không thể chọn người tạo.
         Account lecturer = requireAccount(lecturerId);
         // moduleId từ request được đổi thành entity bằng requireModule trước khi gắn quan hệ.
         KanjiDetail kanji = KanjiDetail.builder()
@@ -134,7 +134,7 @@ public class KanjiServiceImpl implements KanjiService {
     @Override
     @Transactional
     public KanjiDetailDto updateKanji(Long kanjiId, KanjiDetailRequest request, Long lecturerId) {
-        // Cap nhat kanji detail; load kanji cu, gan module moi hop le va trim cac field.
+        // Nạp Kanji cũ, kiểm tra version, gắn module hợp lệ rồi chuẩn hóa các chuỗi.
         KanjiDetail kanji = requireKanji(kanjiId);
         requireCurrentVersion(request.getVersion(), kanji.getVersion(), kanjiId);
         kanji.setModule(requireModule(request.getModuleId()));
@@ -143,7 +143,7 @@ public class KanjiServiceImpl implements KanjiService {
         kanji.setKunyomi(trimToNull(request.getKunyomi()));
         kanji.setMeaning(request.getMeaning().trim());
         kanji.setCompoundWords(trimToNull(request.getCompoundWords()));
-        // Edit dua tren role o controller, khong dua tren createdBy; createdBy vi the luon duoc giu nguyen.
+        // Quyền sửa dựa trên role ở controller; createdBy giữ nguyên và updatedBy nhận người hiện tại.
         kanji.setUpdatedBy(requireAccount(lecturerId));
         return toKanjiDto(kanjiRepository.saveAndFlush(kanji));
     }
@@ -160,13 +160,13 @@ public class KanjiServiceImpl implements KanjiService {
     }
 
     private KanjiLessonModule requireModule(Long id) {
-        // Tim module theo id; neu khong co thi nem ResourceNotFoundException de controller tra loi loi phu hop.
+        // Gom quy tắc 404 để create/update/read có cùng hành vi khi module không tồn tại.
         return moduleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kanji module", "id", id));
     }
 
     private KanjiDetail requireKanji(Long id) {
-        // Tim kanji theo id; neu khong co thi nem ResourceNotFoundException de dung luong nghiep vu hien tai.
+        // Gom quy tắc 404 để các luồng đọc/sửa/xóa dùng cùng một cách tìm Kanji.
         return kanjiRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kanji", "id", id));
     }
@@ -177,7 +177,7 @@ public class KanjiServiceImpl implements KanjiService {
     }
 
     private void requireCurrentVersion(Long requestedVersion, Long currentVersion, Long id) {
-        // Client gui version da mo; @Version tiep tuc bao ve neu DB doi sau check nhung truoc luc flush.
+        // So sánh sớm cho lỗi rõ ràng; @Version vẫn bảo vệ nếu DB đổi sau check nhưng trước flush.
         requireCurrentVersion(requestedVersion, currentVersion, KanjiDetail.class, id);
     }
 

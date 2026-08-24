@@ -5,6 +5,14 @@ import KanjiModuleFormModal from './components/KanjiModuleFormModal';
 
 const JLPT_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
+/**
+ * Màn 36-39 - Quản lý module bài Kanji theo JLPT.
+ *
+ * Bộ lọc JLPT được gửi xuống backend; tìm theo title được lọc trên tập module đã nhận.
+ * Modal dùng chung cho create/update và gửi lại version khi update để chống ghi đè đồng thời.
+ * Xóa module có thể kéo theo Kanji con, nhưng backend sẽ từ chối nếu một Kanji đang được
+ * deck cá nhân tham chiếu nhằm bảo toàn dữ liệu học của Student.
+ */
 export default function KanjiModuleManagementView({ currentUser }) {
   const canManage = currentUser?.role === 'Lecturer' || currentUser?.role === 'Manager';
   const [selectedLevel, setSelectedLevel] = useState('ALL');
@@ -16,6 +24,7 @@ export default function KanjiModuleManagementView({ currentUser }) {
   const [editingModule, setEditingModule] = useState(null);
 
   const loadModules = async () => {
+    // ALL được đổi thành null: axios bỏ param và backend hiểu là lấy tất cả cấp độ.
     setLoading(true);
     try {
       const data = await kanjiApi.getModules(selectedLevel === 'ALL' ? null : selectedLevel);
@@ -32,6 +41,7 @@ export default function KanjiModuleManagementView({ currentUser }) {
   }, [selectedLevel]);
 
   const filteredModules = useMemo(() => {
+    // Chỉ lọc title ở client vì danh sách đã được giới hạn theo JLPT từ server.
     if (!keyword.trim()) return modules;
     const q = keyword.toLowerCase().trim();
     return modules.filter(m => m.title?.toLowerCase().includes(q));
@@ -48,14 +58,15 @@ export default function KanjiModuleManagementView({ currentUser }) {
 
   const handleSaveModule = async (formData) => {
     try {
-    if (editingModule) {
-      await kanjiApi.updateModule(editingModule.moduleId, formData);
-      setFeedback({ type: 'success', message: 'Cập nhật module Kanji thành công!' });
-    } else {
-      await kanjiApi.createModule(formData);
-      setFeedback({ type: 'success', message: 'Tạo module Kanji mới thành công!' });
-    }
-    await loadModules();
+      // editingModule quyết định PUT bản ghi hiện có hay POST bản ghi mới.
+      if (editingModule) {
+        await kanjiApi.updateModule(editingModule.moduleId, formData);
+        setFeedback({ type: 'success', message: 'Cập nhật module Kanji thành công!' });
+      } else {
+        await kanjiApi.createModule(formData);
+        setFeedback({ type: 'success', message: 'Tạo module Kanji mới thành công!' });
+      }
+      await loadModules();
     } catch (error) {
       if (error.status === 409) {
         setFeedback({ type: 'conflict', message: 'This content was updated by another lecturer. Please refresh the page before editing it again.' });
@@ -65,6 +76,7 @@ export default function KanjiModuleManagementView({ currentUser }) {
   };
 
   const deleteModule = async (module) => {
+    // Backend mới là nguồn quyết định cuối cùng vì nó phải kiểm tra tham chiếu từ personal deck.
     if (!window.confirm(`Bạn có chắc muốn xóa module "${module.title}"? Các chữ Kanji thuộc module này cũng sẽ bị xóa!`)) return;
 
     try {

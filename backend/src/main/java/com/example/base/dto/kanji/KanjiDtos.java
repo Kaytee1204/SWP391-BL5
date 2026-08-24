@@ -41,7 +41,7 @@ public final class KanjiDtos {
         private String title;
         @Size(max = 500, message = "Module description must not exceed 500 characters")
         private String description;
-        // Frontend sends back the version it read; create requests do not need it.
+        // Frontend gửi lại version đã đọc khi sửa; request tạo mới không cần version.
         private Long version;
     }
 
@@ -80,7 +80,7 @@ public final class KanjiDtos {
         @Size(max = 300, message = "Meaning must not exceed 300 characters")
         private String meaning;
         private String compoundWords;
-        // Frontend gui lai version da doc khi edit; create khong can field nay.
+        // Frontend gửi lại version đã đọc khi sửa; request tạo mới không cần version.
         private Long version;
     }
 }

@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { JLPT_LEVELS } from '../../../assets/constants';
 
+/**
+ * Form tạo/sửa module Kanji. Props module có giá trị là chế độ sửa; null là chế độ tạo.
+ * version chỉ có ý nghĩa khi sửa và được backend so với @Version hiện tại trước khi lưu.
+ */
 export default function KanjiModuleFormModal({
   isOpen,
   module,
@@ -15,6 +19,7 @@ export default function KanjiModuleFormModal({
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Đồng bộ local state mỗi lần chọn module khác hoặc mở lại modal.
     if (module) {
       setTitle(module.title || '');
       setJlptLevel(module.jlptLevel || 'N5');
@@ -30,6 +35,7 @@ export default function KanjiModuleFormModal({
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
+    // Modal chuẩn hóa chuỗi; service backend tiếp tục validate và xác định người cập nhật từ JWT.
     e.preventDefault();
     if (!title.trim()) {
       setError('Vui lòng nhập tiêu đề module bài học Kanji.');
