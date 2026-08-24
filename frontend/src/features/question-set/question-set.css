@@ -227,6 +227,7 @@
 
 .qs-set-badges {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.4rem;
 }
 
@@ -243,6 +244,16 @@
 .qs-level-badge.is-n3 { color: #b45309; background: #fef3c7; }
 .qs-level-badge.is-n2 { color: #7e22ce; background: #f3e8ff; }
 .qs-level-badge.is-n1 { color: #be123c; background: #ffe4e6; }
+
+.qs-set-badges .qs-ownership-badge.is-owned {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.qs-set-badges .qs-ownership-badge.is-shared {
+  color: #4338ca;
+  background: #eef2ff;
+}
 
 .qs-set-id {
   color: #94a3b8;

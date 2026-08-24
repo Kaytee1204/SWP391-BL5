@@ -1,0 +1,28 @@
+.se-resource {
+  margin: 16px 0 20px;
+  padding: 18px;
+  border: 1px solid #dbe4f0;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.se-resource h3 {
+  margin: 0 0 12px;
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.se-reading-content {
+  color: #334155;
+  font-size: 1rem;
+  line-height: 1.9;
+}
+
+.se-reading-content p {
+  margin: 0 0 12px;
+}
+
+.se-listening-resource audio {
+  display: block;
+  width: 100%;
+}

@@ -39,6 +39,8 @@ export default function QuestionSetManagementView({ currentUser }) {
   const [showCreate, setShowCreate] = useState(false);
   const [editingSet, setEditingSet] = useState(null);
   const [buildingSetId, setBuildingSetId] = useState(null);
+  const currentUserId = currentUser?.accountId || currentUser?.id;
+  const isManager = currentUser?.role?.toLowerCase() === 'manager';
 
   const loadSets = useCallback(async () => {
     setLoading(true);
@@ -48,7 +50,7 @@ export default function QuestionSetManagementView({ currentUser }) {
         ...appliedFilters,
         page,
         size: PAGE_SIZE,
-        sort: 'updatedAt,desc'
+        sort: 'questionSetId,asc'
       });
       const data = response.data || {};
       setSets(data.content || []);
@@ -113,7 +115,7 @@ export default function QuestionSetManagementView({ currentUser }) {
             {currentUser?.role === 'Manager' ? 'Manager workspace' : 'Lecturer workspace'}
           </span>
           <h2>Question Set Management</h2>
-          <p>Gộp các câu hỏi theo kỹ năng và JLPT level, sau đó sắp xếp thành một bộ đề hoàn chỉnh.</p>
+          <p>Kho đề dùng chung: mọi giảng viên có thể xem, chỉnh sửa và cùng xây dựng bộ đề hoàn chỉnh.</p>
           <div className="qs-hero-stats">
             <span><FileStack size={16} /> {pageInfo.totalElements} bộ câu hỏi</span>
             <span><BookOpenCheck size={16} /> Tái sử dụng từ Question Bank</span>
@@ -181,6 +183,9 @@ export default function QuestionSetManagementView({ currentUser }) {
               color: '#475569',
               background: '#f1f5f9'
             };
+            const isOwner = Boolean(currentUserId)
+              && String(questionSet.createdById) === String(currentUserId);
+            const canDelete = isManager || isOwner;
 
             return (
               <article className="qs-set-card" key={questionSet.questionSetId}>
@@ -189,6 +194,9 @@ export default function QuestionSetManagementView({ currentUser }) {
                   <div className="qs-set-badges">
                     <span style={{ color: skill.color, background: skill.background }}>{skill.icon} {skill.label}</span>
                     <span className={`qs-level-badge is-${questionSet.jlptLevel?.toLowerCase()}`}>{questionSet.jlptLevel}</span>
+                    <span className={`qs-ownership-badge ${isOwner ? 'is-owned' : 'is-shared'}`}>
+                      {isOwner ? 'Đề của tôi' : 'Đề được chia sẻ'}
+                    </span>
                   </div>
                   <span className="qs-set-id">#{questionSet.questionSetId}</span>
                 </div>
@@ -217,12 +225,14 @@ export default function QuestionSetManagementView({ currentUser }) {
                   <button type="button" className="qs-build-button" onClick={() => setBuildingSetId(questionSet.questionSetId)}>
                     <BookOpenCheck size={17} /> Xây dựng bộ đề
                   </button>
-                  <button type="button" onClick={() => setEditingSet(questionSet)} title="Chỉnh sửa thông tin">
+                  <button type="button" onClick={() => setEditingSet(questionSet)} title="Chỉnh sửa thông tin đề chung">
                     <Pencil size={17} />
                   </button>
-                  <button type="button" className="is-danger" onClick={() => handleDelete(questionSet)} title="Xóa bộ câu hỏi">
-                    <Trash2 size={17} />
-                  </button>
+                  {canDelete && (
+                    <button type="button" className="is-danger" onClick={() => handleDelete(questionSet)} title="Xóa bộ câu hỏi">
+                      <Trash2 size={17} />
+                    </button>
+                  )}
                 </div>
               </article>
             );

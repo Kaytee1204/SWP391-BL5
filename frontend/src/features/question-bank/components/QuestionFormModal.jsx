@@ -1,6 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { apiRequest } from '../../../api/apiRequest';
+import { readingPassageApi } from '../../../api/readingPassageApi';
+import {
+  listeningExerciseApi,
+  resolveListeningAudioUrl
+} from '../../../api/listeningExerciseApi';
 import { JLPT_LEVELS } from '../../../assets/constants';
+import './questionResource.css';
 
 const SKILL_OPTIONS = [
   { value: 'vocabulary', label: '📖 Vocabulary (Từ vựng)' },
@@ -24,7 +30,9 @@ const emptyQuestion = {
   questionText: '',
   choices: ['', '', '', ''],
   correctAnswers: [],
-  explanation: ''
+  explanation: '',
+  readingPassageId: null,
+  listeningExerciseId: null
 };
 
 export default function QuestionFormModal({
@@ -44,7 +52,9 @@ export default function QuestionFormModal({
       ? (question.choices?.length ? [...question.choices] : ['', '', '', ''])
       : ['', ''],
     correctAnswers: question.correctAnswers?.length ? [...question.correctAnswers] : [],
-    explanation: question.explanation || ''
+    explanation: question.explanation || '',
+    readingPassageId: question.readingPassageId || null,
+    listeningExerciseId: question.listeningExerciseId || null
   } : {
     ...emptyQuestion,
     skillType: fixedClassification?.skillType || emptyQuestion.skillType,
@@ -57,6 +67,10 @@ export default function QuestionFormModal({
   );
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [readingPassages, setReadingPassages] = useState([]);
+  const [listeningExercises, setListeningExercises] = useState([]);
+  const [loadingResource, setLoadingResource] = useState(false);
+  const [resourceError, setResourceError] = useState('');
   const isSingleChoice =
       form.questionType === 'multiple_choice';
 
@@ -65,6 +79,73 @@ export default function QuestionFormModal({
 
   const isChoiceQuestion =
       isSingleChoice || isMultipleSelect;
+
+  const selectedPassage = useMemo(
+    () => readingPassages.find(
+      passage => passage.passageId === form.readingPassageId
+    ),
+    [form.readingPassageId, readingPassages]
+  );
+
+  const selectedListening = useMemo(
+    () => listeningExercises.find(
+      exercise => exercise.listeningExerciseId === form.listeningExerciseId
+    ),
+    [form.listeningExerciseId, listeningExercises]
+  );
+
+  useEffect(() => {
+    let active = true;
+
+    const loadResource = async () => {
+      if (form.skillType !== 'reading' && form.skillType !== 'listening') {
+        setReadingPassages([]);
+        setListeningExercises([]);
+        setResourceError('');
+        return;
+      }
+
+      setLoadingResource(true);
+      setResourceError('');
+
+      try {
+        if (form.skillType === 'reading') {
+          const response = await readingPassageApi.getAll({
+            jlptLevel: form.jlptLevel,
+            page: 0,
+            size: 100,
+            sort: 'passageId,desc'
+          });
+
+          if (active) {
+            setReadingPassages(response.data?.content || []);
+            setListeningExercises([]);
+          }
+        } else {
+          const response = await listeningExerciseApi.search({
+            jlptLevel: form.jlptLevel,
+            page: 0,
+            size: 100,
+            sort: 'listeningExerciseId,desc'
+          });
+
+          if (active) {
+            setListeningExercises(response.data?.content || []);
+            setReadingPassages([]);
+          }
+        }
+      } catch (err) {
+        if (active) {
+          setResourceError(err.message || 'Không thể tải tài nguyên phù hợp.');
+        }
+      } finally {
+        if (active) setLoadingResource(false);
+      }
+    };
+
+    loadResource();
+    return () => { active = false; };
+  }, [form.skillType, form.jlptLevel]);
 
   const updateChoice = (index, value) => {
     const previousValue = form.choices[index];
@@ -206,6 +287,14 @@ export default function QuestionFormModal({
       setError('Tất cả đáp án đúng phải nằm trong danh sách lựa chọn.');
       return;
     }
+    if (form.skillType === 'reading' && !form.readingPassageId) {
+      setError('Vui lòng chọn bài đọc cho câu hỏi Reading.');
+      return;
+    }
+    if (form.skillType === 'listening' && !form.listeningExerciseId) {
+      setError('Vui lòng chọn bài nghe cho câu hỏi Listening.');
+      return;
+    }
 
     const payload = {
       skillType: form.skillType,
@@ -214,7 +303,9 @@ export default function QuestionFormModal({
       questionText: form.questionText.trim(),
       choices: isChoiceQuestion ? choices : [],
       correctAnswers: [...new Set(correctAnswers)],
-      explanation: form.explanation.trim()
+      explanation: form.explanation.trim(),
+      readingPassageId: form.skillType === 'reading' ? form.readingPassageId : null,
+      listeningExerciseId: form.skillType === 'listening' ? form.listeningExerciseId : null
     };
 
     setSaving(true);
@@ -290,7 +381,12 @@ export default function QuestionFormModal({
               <select
                 className="form-select"
                 value={form.skillType}
-                onChange={e => setForm({ ...form, skillType: e.target.value })}
+                onChange={e => setForm(current => ({
+                  ...current,
+                  skillType: e.target.value,
+                  readingPassageId: null,
+                  listeningExerciseId: null
+                }))}
                 disabled={Boolean(fixedClassification?.skillType)}
               >
                 {SKILL_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
@@ -304,7 +400,12 @@ export default function QuestionFormModal({
               <select
                 className="form-select"
                 value={form.jlptLevel}
-                onChange={e => setForm({ ...form, jlptLevel: e.target.value })}
+                onChange={e => setForm(current => ({
+                  ...current,
+                  jlptLevel: e.target.value,
+                  readingPassageId: null,
+                  listeningExerciseId: null
+                }))}
                 disabled={Boolean(fixedClassification?.jlptLevel)}
               >
                 {JLPT_LEVELS.map(level => <option key={level.value} value={level.value}>{level.label}</option>)}
@@ -329,6 +430,93 @@ export default function QuestionFormModal({
             <div style={{ marginTop: '-0.55rem', padding: '0.6rem 0.75rem', color: '#4338ca', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: '9px', fontSize: '0.78rem', fontWeight: 650 }}>
               Skill và JLPT level được lấy tự động từ bộ câu hỏi hiện tại.
             </div>
+          )}
+
+          {form.skillType === 'reading' && (
+            <div className="qb-resource-picker">
+              <label className="qb-resource-label">Bài đọc *</label>
+              <select
+                className="form-select"
+                value={form.readingPassageId || ''}
+                disabled={loadingResource}
+                onChange={event => setForm(current => ({
+                  ...current,
+                  readingPassageId: event.target.value ? Number(event.target.value) : null,
+                  listeningExerciseId: null
+                }))}
+              >
+                <option value="">
+                  {loadingResource ? 'Đang tải bài đọc...' : 'Chọn bài đọc phù hợp'}
+                </option>
+                {readingPassages.map(passage => (
+                  <option key={passage.passageId} value={passage.passageId}>
+                    #{passage.passageId} · {passage.title}
+                  </option>
+                ))}
+              </select>
+
+              {!loadingResource && readingPassages.length === 0 && !resourceError && (
+                <small className="qb-resource-hint">
+                  Chưa có bài đọc {form.jlptLevel}. Hãy tạo bài đọc trong Reading Passage Management trước.
+                </small>
+              )}
+
+              {selectedPassage && (
+                <article className="qb-resource-preview">
+                  <strong>{selectedPassage.title}</strong>
+                  <div
+                    className="qb-reading-preview"
+                    dangerouslySetInnerHTML={{ __html: selectedPassage.contentHtml }}
+                  />
+                </article>
+              )}
+            </div>
+          )}
+
+          {form.skillType === 'listening' && (
+            <div className="qb-resource-picker">
+              <label className="qb-resource-label">Bài nghe *</label>
+              <select
+                className="form-select"
+                value={form.listeningExerciseId || ''}
+                disabled={loadingResource}
+                onChange={event => setForm(current => ({
+                  ...current,
+                  readingPassageId: null,
+                  listeningExerciseId: event.target.value ? Number(event.target.value) : null
+                }))}
+              >
+                <option value="">
+                  {loadingResource ? 'Đang tải bài nghe...' : 'Chọn bài nghe phù hợp'}
+                </option>
+                {listeningExercises.map(exercise => (
+                  <option key={exercise.listeningExerciseId} value={exercise.listeningExerciseId}>
+                    #{exercise.listeningExerciseId} · {exercise.title}
+                  </option>
+                ))}
+              </select>
+
+              {!loadingResource && listeningExercises.length === 0 && !resourceError && (
+                <small className="qb-resource-hint">
+                  Chưa có bài nghe {form.jlptLevel}. Hãy tạo bài nghe trong Listening Management trước.
+                </small>
+              )}
+
+              {selectedListening && (
+                <section className="qb-resource-preview">
+                  <strong>{selectedListening.title}</strong>
+                  <audio
+                    controls
+                    preload="metadata"
+                    src={resolveListeningAudioUrl(selectedListening.audioUrl)}
+                  />
+                </section>
+              )}
+            </div>
+          )}
+
+          {resourceError && (
+            <div className="qb-resource-error">⚠️ {resourceError}</div>
           )}
 
           {/* Question Text */}

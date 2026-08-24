@@ -14,6 +14,7 @@ BEGIN
         audio_original_name NVARCHAR(255) NOT NULL,
         script_text NVARCHAR(MAX) NOT NULL,
         translation NVARCHAR(MAX) NULL,
+        is_preview BIT NOT NULL CONSTRAINT DF_ListeningExercise_IsPreview DEFAULT 0,
         created_by BIGINT NOT NULL,
         created_at DATETIME2 NOT NULL CONSTRAINT DF_ListeningExercise_CreatedAt DEFAULT GETDATE(),
         updated_at DATETIME2 NOT NULL CONSTRAINT DF_ListeningExercise_UpdatedAt DEFAULT GETDATE(),
