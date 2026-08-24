@@ -1,6 +1,7 @@
-import { API_BASE } from './apiRequest';
+import { API_BASE, apiRequest } from './apiRequest';
 
-const BASE_URL = `${API_BASE}/system-flashcards`;
+// Khởi tạo BASE_URL an toàn, tránh hoàn toàn lỗi thiếu export từ apiRequest.js
+const RESOLVED_BASE_URL = API_BASE ? `${API_BASE}/system-flashcards` : '/system-flashcards';
 
 // Lấy JWT đúng với hệ thống đang lưu trong app
 const getAuthHeaders = () => {
@@ -11,21 +12,26 @@ const getAuthHeaders = () => {
     };
 };
 
-// Hàm hỗ trợ đọc response an toàn
 const handleResponse = async (response) => {
-    if (response.status === 204) {
-        return { code: 204, message: "Success (No Content)" };
+    // Nếu status là 204 No Content hoặc response không có body thì trả về thành công luôn
+    if (response.status === 204 || response.status === 200) {
+        const text = await response.text();
+        if (!text || text.trim() === "") {
+            return { code: response.status, message: "Success" };
+        }
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            return { code: response.status, message: text };
+        }
     }
+
     const text = await response.text();
-    if (!text || text.trim() === "") {
-        return { code: response.status, message: "Success" };
-    }
     let data;
     try {
-        data = JSON.parse(text);
+        data = text ? JSON.parse(text) : {};
     } catch (error) {
-        console.error("Phản hồi từ server không phải định dạng JSON hợp lệ:", text);
-        throw new Error(text || "Lỗi phản hồi từ server");
+        data = { message: text };
     }
 
     if (!response.ok) {
@@ -40,13 +46,13 @@ const handleResponse = async (response) => {
 export const flashcardDeckApi = {
     getAll: async (params = {}) => {
         const queryParams = new URLSearchParams(params).toString();
-        const url = queryParams ? `${BASE_URL}?${queryParams}` : BASE_URL;
+        const url = queryParams ? `${RESOLVED_BASE_URL}?${queryParams}` : RESOLVED_BASE_URL;
         const response = await fetch(url, { headers: getAuthHeaders() });
         return handleResponse(response);
     },
 
     create: async (data) => {
-        const response = await fetch(BASE_URL, {
+        const response = await fetch(RESOLVED_BASE_URL, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(data)
@@ -55,7 +61,7 @@ export const flashcardDeckApi = {
     },
 
     update: async (id, data) => {
-        const response = await fetch(`${BASE_URL}/${id}`, {
+        const response = await fetch(`${RESOLVED_BASE_URL}/${id}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify(data)
@@ -64,7 +70,42 @@ export const flashcardDeckApi = {
     },
 
     delete: async (id) => {
-        const response = await fetch(`${BASE_URL}/${id}`, {
+        const response = await fetch(`${RESOLVED_BASE_URL}/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
+    },
+
+    // ===== ĐỦ BỘ CRUD CHO THẺ CON (ITEMS / TỪ VỰNG) =====
+    
+    getItems: async (deckId) => {
+        const response = await fetch(`${RESOLVED_BASE_URL}/items/${deckId}`, {
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
+    },
+
+    addItem: async (data) => {
+        const response = await fetch(`${RESOLVED_BASE_URL}/items`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(data)
+        });
+        return handleResponse(response);
+    },
+
+    updateItem: async (data) => {
+        const response = await fetch(`${RESOLVED_BASE_URL}/items`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(data)
+        });
+        return handleResponse(response);
+    },
+
+    removeItem: async (deckId, itemType, itemId) => {
+        const response = await fetch(`${RESOLVED_BASE_URL}/items?deckId=${deckId}&itemType=${itemType}&itemId=${itemId}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });

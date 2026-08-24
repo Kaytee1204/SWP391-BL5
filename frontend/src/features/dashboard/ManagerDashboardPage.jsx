@@ -11,8 +11,8 @@ import GrammarExerciseManagementView from '../grammar/GrammarExerciseManagementV
 import QuestionBankWorkspace from '../question-bank/QuestionBankWorkspace';
 
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
-import CategoryTable from '../../components/vocabulary_category/CategoryTable';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
+import CategoryItemsModal from '../../components/vocabulary_category/CategoryItemsModal';
 import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
 import CourseManagementView from '../courses/CourseManagementView';
 
@@ -24,13 +24,15 @@ export default function ManagerDashboardPage({
   onLogout
 }) {
   const [activeTab, setActiveTab] = useState('accounts');
-  const [materialSubTab, setMaterialSubTab] = useState('grammar_patterns'); // 'grammar_patterns' | 'grammar_exercises' | 'question_bank' | 'vocabulary_categories'
+  const [materialSubTab, setMaterialSubTab] = useState('grammar_patterns'); 
   const [showProPopup, setShowProPopup] = useState(false);
 
-  // State cho phần Quản lý Danh mục từ vựng
+  // States for Vocabulary Categories Management
   const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [selectedCategoryForItems, setSelectedCategoryForItems] = useState(null);
+  const [filterLevel, setFilterLevel] = useState('ALL');
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -39,7 +41,7 @@ export default function ManagerDashboardPage({
         setCategories(response.data || []);
       }
     } catch (error) {
-      console.error("Lỗi khi tải danh sách từ vựng:", error);
+      console.error("Error loading vocabulary categories:", error);
     }
   }, []);
 
@@ -60,21 +62,21 @@ export default function ManagerDashboardPage({
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) {
+    if (window.confirm("Are you sure you want to delete this category?")) {
       try {
         const response = await vocabularyCategoryApi.delete(id);
         if (response && (response.code === 200 || response.code === 204)) {
           fetchCategories(); 
         }
       } catch (error) {
-        console.error("Lỗi khi xóa danh mục:", error);
+        console.error("Error deleting category:", error);
       }
     }
   };
 
   const handleFormSubmit = async (formData) => {
     if (!formData.name || !formData.name.trim()) {
-      alert('Tên danh mục không được để trống!');
+      alert('Category name cannot be empty!');
       return;
     }
 
@@ -95,17 +97,41 @@ export default function ManagerDashboardPage({
 
       const success = response && (response.code === 200 || response.code === 201);
       if (!success) {
-        alert(response?.message || 'Không thể lưu danh mục.');
+        alert(response?.message || 'Failed to save category.');
         return;
       }
 
       setIsModalOpen(false);
       await fetchCategories();
     } catch (error) {
-      console.error("Lỗi khi lưu danh mục:", error);
-      alert(error?.message || 'Lỗi khi lưu danh mục.');
+      console.error("Error saving category:", error);
+      alert(error?.message || 'Error saving category.');
     }
   };
+
+  const getJlptBadgeStyle = (level) => {
+    const styles = {
+      'N5': { bg: '#dcfce7', color: '#166534' },
+      'N4': { bg: '#dbeafe', color: '#1e40af' },
+      'N3': { bg: '#fef3c7', color: '#92400e' },
+      'N2': { bg: '#ffedd5', color: '#c2410c' },
+      'N1': { bg: '#fee2e2', color: '#991b1b' },
+    };
+    const style = styles[level] || { bg: '#f1f5f9', color: '#475569' };
+    return {
+      backgroundColor: style.bg,
+      color: style.color,
+      padding: '4px 10px',
+      borderRadius: '9999px',
+      fontSize: '0.75rem',
+      fontWeight: 'bold',
+      display: 'inline-block'
+    };
+  };
+
+  const filteredCategories = filterLevel === 'ALL' 
+    ? categories 
+    : categories.filter(c => c.jlptLevel === filterLevel);
 
   return (
     <div className="dashboard-layout">
@@ -122,10 +148,7 @@ export default function ManagerDashboardPage({
         </div>
 
         <div className="sidebar-menu">
-          <div
-            className={`nav-item ${activeTab === 'accounts' ? 'active' : ''}`}
-            onClick={() => setActiveTab('accounts')}
-          >
+          <div className={`nav-item ${activeTab === 'accounts' ? 'active' : ''}`} onClick={() => setActiveTab('accounts')}>
             <div className="nav-item-left"><span>👥</span><span>Accounts</span></div>
             <span>›</span>
           </div>
@@ -143,24 +166,19 @@ export default function ManagerDashboardPage({
             <div className="nav-item-left"><span>📝</span><span>Learning Materials</span></div>
             <span>›</span>
           </div>
-          <div
-            className={`nav-item ${activeTab === 'culture_articles' ? 'active' : ''}`}
-            onClick={() => setActiveTab('culture_articles')}
-          >
+          <div className={`nav-item ${activeTab === 'materials' ? 'active' : ''}`} onClick={() => setActiveTab('materials')}>
+            <div className="nav-item-left"><span>📝</span><span>Learning Materials</span></div>
+            <span>›</span>
+          </div>
+          <div className={`nav-item ${activeTab === 'culture_articles' ? 'active' : ''}`} onClick={() => setActiveTab('culture_articles')}>
             <div className="nav-item-left"><span>⛩️</span><span>Cultural Articles</span></div>
             <span>›</span>
           </div>
-          <div
-            className={`nav-item ${activeTab === 'payment_report' ? 'active' : ''}`}
-            onClick={() => setActiveTab('payment_report')}
-          >
+          <div className={`nav-item ${activeTab === 'payment_report' ? 'active' : ''}`} onClick={() => setActiveTab('payment_report')}>
             <div className="nav-item-left"><span>💳</span><span>Payment Reports</span></div>
             <span>›</span>
           </div>
-          <div
-            className={`nav-item ${activeTab === 'refund_info' ? 'active' : ''}`}
-            onClick={() => setActiveTab('refund_info')}
-          >
+          <div className={`nav-item ${activeTab === 'refund_info' ? 'active' : ''}`} onClick={() => setActiveTab('refund_info')}>
             <div className="nav-item-left"><span>🔄</span><span>Refund Information</span></div>
             <span>›</span>
           </div>
@@ -169,20 +187,12 @@ export default function ManagerDashboardPage({
         <div className="sidebar-promo-card">
           <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#9a3412', marginBottom: '0.35rem' }}>✨ JLMS Pro</div>
           <div style={{ fontSize: '0.72rem', color: '#7c2d12', marginBottom: '0.75rem' }}>Advanced AI tools & learning management</div>
-          <button
-            className="btn-dash btn-dash-primary"
-            style={{ width: '100%', padding: '0.45rem' }}
-            onClick={() => setShowProPopup(true)}
-          >
+          <button className="btn-dash btn-dash-primary" style={{ width: '100%', padding: '0.45rem' }} onClick={() => setShowProPopup(true)}>
             Upgrade to Pro!
           </button>
         </div>
 
-        <div
-          className="sidebar-user-card"
-          onClick={onViewProfile}
-          title="Click to view & edit your profile"
-        >
+        <div className="sidebar-user-card" onClick={onViewProfile} title="Click to view & edit your profile">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', overflow: 'hidden' }}>
             <img src={currentUser?.avatarUrl || AVATAR_PRESETS[0].url} alt="avt" className="sidebar-avatar" />
             <div style={{ overflow: 'hidden' }}>
@@ -202,20 +212,14 @@ export default function ManagerDashboardPage({
             <p style={{ color: 'var(--text-body)', fontSize: '0.875rem' }}>JLMS System Administration Portal</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <FbProfileDropdown
-              currentUser={currentUser}
-              onViewProfile={onViewProfile}
-              onNavigate={onNavigate}
-              onLogout={onLogout}
-            />
+            <FbProfileDropdown currentUser={currentUser} onViewProfile={onViewProfile} onNavigate={onNavigate} onLogout={onLogout} />
           </div>
         </div>
 
-        {activeTab === 'accounts' && (
-          <AccountManagementView
-            currentUser={currentUser}
-            onAccountUpdated={() => {}}
-          />
+        {activeTab === 'accounts' && <AccountManagementView currentUser={currentUser} onAccountUpdated={() => {}} />}
+
+        {activeTab === 'courses' && (
+          <CourseManagementView currentUser={currentUser} />
         )}
 
         {activeTab === 'courses' && (
@@ -225,95 +229,14 @@ export default function ManagerDashboardPage({
         {activeTab === 'materials' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div style={{
-              display: 'flex',
-              gap: '0.75rem',
-              background: '#fff',
-              padding: '0.5rem',
-              borderRadius: '14px',
-              border: '1px solid #e2e8f0',
-              width: 'fit-content',
-              flexWrap: 'wrap'
+              display: 'flex', gap: '0.75rem', background: '#fff', padding: '0.5rem', borderRadius: '14px', border: '1px solid #e2e8f0', width: 'fit-content', flexWrap: 'wrap'
             }}>
-              <button
-                onClick={() => setMaterialSubTab('grammar_patterns')}
-                style={{
-                  padding: '0.5rem 1.15rem',
-                  borderRadius: '10px',
-                  border: 'none',
-                  fontSize: '0.88rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  background: materialSubTab === 'grammar_patterns' ? '#7C3AED' : 'transparent',
-                  color: materialSubTab === 'grammar_patterns' ? '#fff' : 'var(--text-body)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                📖 Grammar Patterns
-              </button>
-              <button
-                onClick={() => setMaterialSubTab('grammar_exercises')}
-                style={{
-                  padding: '0.5rem 1.15rem',
-                  borderRadius: '10px',
-                  border: 'none',
-                  fontSize: '0.88rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  background: materialSubTab === 'grammar_exercises' ? '#0d9488' : 'transparent',
-                  color: materialSubTab === 'grammar_exercises' ? '#fff' : 'var(--text-body)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                📝 Grammar Exercises
-              </button>
-              <button
-                onClick={() => setMaterialSubTab('question_bank')}
-                style={{
-                  padding: '0.5rem 1.15rem',
-                  borderRadius: '10px',
-                  border: 'none',
-                  fontSize: '0.88rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  background: materialSubTab === 'question_bank' ? '#d97706' : 'transparent',
-                  color: materialSubTab === 'question_bank' ? '#fff' : 'var(--text-body)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                🗂️ Question Bank
-              </button>
-              <button
-                onClick={() => setMaterialSubTab('vocabulary_categories')}
-                style={{
-                  padding: '0.5rem 1.15rem',
-                  borderRadius: '10px',
-                  border: 'none',
-                  fontSize: '0.88rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  background: materialSubTab === 'vocabulary_categories' ? '#10b981' : 'transparent',
-                  color: materialSubTab === 'vocabulary_categories' ? '#fff' : 'var(--text-body)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                📚 Vocabulary Categories
-              </button>
-              <button
-                onClick={() => setMaterialSubTab('flashcard_decks')}
-                style={{
-                  padding: '0.5rem 1.15rem',
-                  borderRadius: '10px',
-                  border: 'none',
-                  fontSize: '0.88rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  background: materialSubTab === 'flashcard_decks' ? '#3b82f6' : 'transparent',
-                  color: materialSubTab === 'flashcard_decks' ? '#fff' : 'var(--text-body)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                🃏 Flashcard Decks
-              </button>
+              <button onClick={() => setMaterialSubTab('grammar_patterns')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'grammar_patterns' ? '#7C3AED' : 'transparent', color: materialSubTab === 'grammar_patterns' ? '#fff' : 'var(--text-body)' }}>📖 Grammar Patterns</button>
+              <button onClick={() => setMaterialSubTab('grammar_exercises')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'grammar_exercises' ? '#0d9488' : 'transparent', color: materialSubTab === 'grammar_exercises' ? '#fff' : 'var(--text-body)' }}>📝 Grammar Exercises</button>
+              <button onClick={() => setMaterialSubTab('question_bank')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'question_bank' ? '#d97706' : 'transparent', color: materialSubTab === 'question_bank' ? '#fff' : 'var(--text-body)' }}>🗂️ Question Bank</button>
+              <button onClick={() => setMaterialSubTab('vocabulary_categories')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'vocabulary_categories' ? '#10b981' : 'transparent', color: materialSubTab === 'vocabulary_categories' ? '#fff' : 'var(--text-body)' }}>📚 Vocabulary Categories</button>
+              <button onClick={() => setMaterialSubTab('flashcard_decks')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'flashcard_decks' ? '#3b82f6' : 'transparent', color: materialSubTab === 'flashcard_decks' ? '#fff' : 'var(--text-body)' }}>🃏 Flashcard Decks</button>
+              <button onClick={() => setMaterialSubTab('error_reports')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: materialSubTab === 'error_reports' ? 'none' : '1px solid #fecdd3', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'error_reports' ? '#e11d48' : 'transparent', color: materialSubTab === 'error_reports' ? '#fff' : '#e11d48' }}>⚠️ Error Reports</button>
             </div>
 
             {materialSubTab === 'grammar_patterns' && (
@@ -329,34 +252,90 @@ export default function ManagerDashboardPage({
               <div style={{ backgroundColor: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '32px 24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                   <div>
-                    <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.75rem', fontWeight: '800' }}>Quản lý Danh mục Từ vựng</h2>
-                    <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Thêm, sửa, xóa các cấp độ từ vựng JLPT</p>
+                    <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.75rem', fontWeight: '800' }}>Vocabulary Categories Management</h2>
+                    <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Add, update, delete, and manage vocabulary items by JLPT level</p>
                   </div>
                   <button 
                     onClick={handleAddNew}
-                    style={{ 
-                      padding: '10px 20px', 
-                      backgroundColor: '#10b981', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '8px', 
-                      cursor: 'pointer', 
-                      fontWeight: '600',
-                      boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.3)',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    style={{ padding: '10px 20px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.3)' }}
                   >
-                    + Thêm mới
+                    + Add New
                   </button>
                 </div>
 
-                <CategoryTable 
-                  categories={categories} 
-                  onEdit={handleEdit} 
-                  onDelete={handleDelete} 
-                />
+                {/* JLPT Level Filter */}
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                  {['ALL', 'N5', 'N4', 'N3', 'N2', 'N1'].map((level) => (
+                    <button
+                      key={level}
+                      onClick={() => setFilterLevel(level)}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        backgroundColor: filterLevel === level ? '#10b981' : '#f1f5f9',
+                        color: filterLevel === level ? '#ffffff' : '#475569',
+                        fontSize: '0.85rem'
+                      }}
+                    >
+                      {level === 'ALL' ? 'All Levels' : level}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Cards Grid View */}
+                {filteredCategories.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '50px', color: '#94a3b8', fontStyle: 'italic' }}>
+                    No vocabulary categories found.
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                    {filteredCategories.map((cat) => {
+                      const itemCount = cat.items ? cat.items.length : 0;
+                      return (
+                        <div 
+                          key={cat.categoryId}
+                          style={{
+                            backgroundColor: '#ffffff',
+                            borderRadius: '12px',
+                            padding: '20px',
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between'
+                          }}
+                        >
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                              <span style={getJlptBadgeStyle(cat.jlptLevel)}>{cat.jlptLevel}</span>
+                              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>#{cat.categoryId}</span>
+                            </div>
+                            <h3 style={{ margin: '0 0 6px 0', color: '#0f172a', fontSize: '1.15rem', fontWeight: '700' }}>{cat.name}</h3>
+                            <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                              {cat.description || <span style={{ fontStyle: 'italic', color: '#cbd5e1' }}>No description</span>}
+                            </p>
+                          </div>
+
+                          <div style={{ marginTop: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <button
+                              onClick={() => setSelectedCategoryForItems(cat)}
+                              style={{ backgroundColor: '#e0e7ff', color: '#3730a3', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' }}
+                            >
+                              📚 View ({itemCount} words)
+                            </button>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button onClick={() => handleEdit(cat)} style={{ padding: '6px 10px', backgroundColor: '#fef3c7', color: '#d97706', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.75rem' }}>Edit</button>
+                              <button onClick={() => handleDelete(cat.categoryId)} style={{ padding: '6px 10px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.75rem' }}>Delete</button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 <CategoryFormModal 
                   isOpen={isModalOpen} 
@@ -364,31 +343,25 @@ export default function ManagerDashboardPage({
                   onSubmit={handleFormSubmit}
                   initialData={editingCategory}
                 />
+
+                <CategoryItemsModal 
+                  category={selectedCategoryForItems}
+                  onClose={() => setSelectedCategoryForItems(null)}
+                  currentUser={currentUser}
+                />
               </div>
             )}
-            {materialSubTab === 'flashcard_decks' && (
-              <FlashcardDeckManagementPage currentUser={currentUser} />
-            )}
+
+            {materialSubTab === 'flashcard_decks' && <FlashcardDeckManagementPage currentUser={currentUser} />}
+            {materialSubTab === 'error_reports' && <ManagerErrorReportView />}
           </div>
         )}
 
-        {activeTab === 'culture_articles' && (
-          <CultureArticleManagementView
-            currentUser={currentUser}
-            onReadArticle={(art) => onOpenArticleDetail(art, 'dashboard')}
-          />
-        )}
-
-        {activeTab === 'payment_report' && (
-          <PaymentReportView />
-        )}
-
-        {activeTab === 'refund_info' && (
-          <RefundInfoView />
-        )}
+        {activeTab === 'culture_articles' && <CultureArticleManagementView currentUser={currentUser} onReadArticle={(art) => onOpenArticleDetail(art, 'dashboard')} />}
+        {activeTab === 'payment_report' && <PaymentReportView />}
+        {activeTab === 'refund_info' && <RefundInfoView />}
       </main>
 
-      {/* Pro Promo Popup */}
       {showProPopup && (
         <div className="modal-overlay" onClick={() => setShowProPopup(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>

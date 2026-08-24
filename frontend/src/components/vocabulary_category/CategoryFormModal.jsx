@@ -5,7 +5,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
     const [name, setName] = useState('');
     const [jlptLevel, setJlptLevel] = useState('N5');
     const [description, setDescription] = useState('');
-    const [errorMessage, setErrorMessage] = useState(''); // State lưu thông báo lỗi validate/server
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         // Reset/sync mỗi lần mở để dữ liệu category trước không còn sót lại.
@@ -18,7 +18,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
             setJlptLevel('N5');
             setDescription('');
         }
-        setErrorMessage(''); // Xóa lỗi cũ mỗi khi mở modal
+        setErrorMessage('');
     }, [initialData, isOpen]);
 
     if (!isOpen) return null;
@@ -29,7 +29,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
 
         // Validate sớm để phản hồi nhanh; backend vẫn validate lại vì không thể tin hoàn toàn client.
         if (!name.trim()) {
-            setErrorMessage('Vui lòng nhập tên danh mục từ vựng!');
+            setErrorMessage('Please enter the vocabulary category name!');
             return;
         }
 
@@ -41,8 +41,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
                 description: description.trim()
             });
         } catch (error) {
-            // Bắt lỗi trả về từ Backend (ví dụ lỗi quá ký tự SQL, trùng tên, v.v.)
-            const errorMsg = error?.message || error?.response?.data?.message || 'Đã có lỗi xảy ra khi lưu dữ liệu!';
+            const errorMsg = error?.message || error?.response?.data?.message || 'An error occurred while saving data!';
             setErrorMessage(errorMsg);
         }
     };
@@ -69,7 +68,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: '#0f172a' }}>
-                        {initialData ? '✏️ Chỉnh Sửa Danh Mục Từ Vựng' : '✨ Thêm Mới Danh Mục Từ Vựng'}
+                        {initialData ? '✏️ Edit Vocabulary Category' : '✨ Add New Vocabulary Category'}
                     </h3>
                     <button 
                         onClick={onClose}
@@ -79,7 +78,6 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
                     </button>
                 </div>
 
-                {/* Khu vực hiển thị thông báo lỗi validate / server cực kỳ bắt mắt */}
                 {errorMessage && (
                     <div style={{
                         backgroundColor: '#fef2f2',
@@ -101,13 +99,13 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
                 <form onSubmit={handleSubmit}>
                     <div style={{ marginBottom: '16px' }}>
                         <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
-                            Tên danh mục <span style={{ color: '#ef4444' }}>*</span>
+                            Category Name <span style={{ color: '#ef4444' }}>*</span>
                         </label>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="Ví dụ: Từ vựng chủ đề Giao thông..."
+                            placeholder="e.g. Transportation Vocabulary..."
                             style={{
                                 width: '100%',
                                 padding: '10px 14px',
@@ -124,7 +122,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
 
                     <div style={{ marginBottom: '16px' }}>
                         <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
-                            Cấp độ JLPT
+                            JLPT Level
                         </label>
                         <select
                             value={jlptLevel}
@@ -139,22 +137,22 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
                                 outline: 'none'
                             }}
                         >
-                            <option value="N5">N5 (Sơ cấp)</option>
-                            <option value="N4">N4 (Sơ cấp)</option>
-                            <option value="N3">N3 (Trung cấp)</option>
-                            <option value="N2">N2 (Cao cấp)</option>
-                            <option value="N1">N1 (Siêu cao cấp)</option>
+                            <option value="N5">N5 (Beginner)</option>
+                            <option value="N4">N4 (Elementary)</option>
+                            <option value="N3">N3 (Intermediate)</option>
+                            <option value="N2">N2 (Advanced)</option>
+                            <option value="N1">N1 (Expert)</option>
                         </select>
                     </div>
 
                     <div style={{ marginBottom: '24px' }}>
                         <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
-                            Mô tả chi tiết
+                            Description
                         </label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Nhập mô tả ngắn gọn về danh mục từ vựng này..."
+                            placeholder="Enter a short description for this vocabulary category..."
                             rows={3}
                             style={{
                                 width: '100%',
@@ -184,7 +182,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
                                 cursor: 'pointer'
                             }}
                         >
-                            Hủy bỏ
+                            Cancel
                         </button>
                         <button
                             type="submit"
@@ -199,7 +197,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
                                 boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
                             }}
                         >
-                            {initialData ? 'Lưu Thay Đổi' : 'Tạo Mới'}
+                            {initialData ? 'Save Changes' : 'Create New'}
                         </button>
                     </div>
                 </form>

@@ -29,7 +29,18 @@ export async function apiRequest(endpoint, method = 'GET', body = null, token = 
 
   try {
     const res = await fetch(`${API_BASE}${endpoint}`, config);
-    const data = await res.json().catch(() => null);
+    
+    // Đọc response dưới dạng text trước để tránh lỗi cú pháp khi body rỗng hoặc 204 No Content
+    const text = await res.text();
+    let data = null;
+    
+    if (text && text.trim() !== "") {
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        data = { message: text };
+      }
+    }
 
     if (!res.ok) {
       const errorMsg = data?.message || `Lỗi hệ thống (${res.status})`;

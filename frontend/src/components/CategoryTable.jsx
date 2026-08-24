@@ -6,11 +6,11 @@ const CategoryTable = ({ categories, onEdit, onDelete }) => {
     // Hàm tạo màu sắc riêng cho từng level JLPT
     const getJlptBadgeStyle = (level) => {
         const styles = {
-            'N5': { bg: '#dcfce7', color: '#166534' }, // Xanh lá
-            'N4': { bg: '#dbeafe', color: '#1e40af' }, // Xanh dương
-            'N3': { bg: '#fef3c7', color: '#92400e' }, // Vàng
-            'N2': { bg: '#ffedd5', color: '#c2410c' }, // Cam
-            'N1': { bg: '#fee2e2', color: '#991b1b' }, // Đỏ
+            'N5': { bg: '#dcfce7', color: '#166534' },
+            'N4': { bg: '#dbeafe', color: '#1e40af' },
+            'N3': { bg: '#fef3c7', color: '#92400e' },
+            'N2': { bg: '#ffedd5', color: '#c2410c' },
+            'N1': { bg: '#fee2e2', color: '#991b1b' },
         };
         const style = styles[level] || { bg: '#f1f5f9', color: '#475569' };
         
@@ -18,7 +18,7 @@ const CategoryTable = ({ categories, onEdit, onDelete }) => {
             backgroundColor: style.bg,
             color: style.color,
             padding: '4px 10px',
-            borderRadius: '9999px', // Bo tròn hoàn toàn (dạng viên thuốc)
+            borderRadius: '9999px',
             fontSize: '0.75rem',
             fontWeight: 'bold',
             display: 'inline-block'
@@ -41,7 +41,7 @@ const CategoryTable = ({ categories, onEdit, onDelete }) => {
                             <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>JLPT Level</th>
                             <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Tên danh mục</th>
                             <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Mô tả</th>
-                            <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Ngày tạo</th>
+                            <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Từ vựng con</th>
                             <th style={{ padding: '16px 20px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', textAlign: 'center' }}>Thao tác</th>
                         </tr>
                     </thead>
@@ -70,16 +70,41 @@ const CategoryTable = ({ categories, onEdit, onDelete }) => {
                                             </button>
                                             {/* Nút Xóa bo góc */}
                                             <button 
-                                                onClick={() => onDelete(item.categoryId)} 
-                                                style={{ padding: '6px 12px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem', transition: 'all 0.2s' }}
-                                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fecaca'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fee2e2'}
+                                                onClick={() => onViewItems && onViewItems(item)}
+                                                style={{
+                                                    backgroundColor: '#e0e7ff',
+                                                    color: '#3730a3',
+                                                    border: 'none',
+                                                    padding: '6px 12px',
+                                                    borderRadius: '6px',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.85rem'
+                                                }}
                                             >
-                                                Xóa
+                                                📚 Xem ({itemCount} từ)
                                             </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
+                                        </td>
+
+                                        <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                                                <button 
+                                                    onClick={() => onEdit(item)} 
+                                                    style={{ padding: '6px 12px', backgroundColor: '#fef3c7', color: '#d97706', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}
+                                                >
+                                                    Sửa
+                                                </button>
+                                                <button 
+                                                    onClick={() => onDelete(item.categoryId)} 
+                                                    style={{ padding: '6px 12px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}
+                                                >
+                                                    Xóa
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         ) : (
                             <tr>
                                 <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
