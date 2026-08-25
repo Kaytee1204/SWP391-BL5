@@ -4,6 +4,13 @@ import { Modal } from '../components/Modal';
 import { FlashcardModal } from '../components/FlashcardModal';
 import { ArrowLeft, BookOpen, Edit2, MessageSquare, Play, Plus, Sparkles, Trash2 } from 'lucide-react';
 
+/**
+ * Màn 8-11 - Bộ Kanji cá nhân và mẹo ghi nhớ của học viên.
+ *
+ * Deck chỉ giữ liên kết tới Kanji trong kho học liệu; memorizationNote nằm trên liên kết đó
+ * nên mỗi học viên có thể ghi mẹo riêng mà không sửa Kanji gốc. Danh sách deck được tải nhẹ
+ * trước, còn items chỉ được lấy khi mở chi tiết. Mọi API đều suy ra owner từ JWT.
+ */
 export const PersonalKanjiDecksPage = ({ onNavigate }) => {
   // decks là summary; activeDeck có items; editingNoteItem là Kanji đang sửa ghi chú.
   const [decks, setDecks] = useState([]);
@@ -56,6 +63,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
     event.preventDefault();
     setSubmitting(true);
     try {
+      // Một form phục vụ cả create và update; editingDeck là cờ phân nhánh.
       if (editingDeck) {
         await deckApi.updateKanjiDeck(editingDeck.deckId, deckForm);
         setFeedback({ type: 'success', msg: 'Cập nhật deck thành công' });
@@ -64,7 +72,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
         setFeedback({ type: 'success', msg: 'Tạo deck mới thành công' });
       }
       setIsDeckModalOpen(false);
-      await fetchDecks();
+      fetchDecks();
       // Nếu đang xem deck vừa sửa, tải lại detail để header cập nhật ngay.
       if (activeDeck && editingDeck && activeDeck.deckId === editingDeck.deckId) {
         await openDeckDetail(activeDeck.deckId);
@@ -77,6 +85,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
   };
 
   const deleteDeck = async (deckId) => {
+    // Sau khi backend xóa item liên kết rồi xóa deck, UI bỏ activeDeck nếu đúng deck đang mở.
     if (!window.confirm('Bạn có chắc muốn xóa Deck Kanji này không?')) return;
     try {
       await deckApi.deleteKanjiDeck(deckId);
@@ -95,7 +104,7 @@ export const PersonalKanjiDecksPage = ({ onNavigate }) => {
       await deckApi.removeKanjiFromDeck(activeDeck.deckId, kanjiId);
       setFeedback({ type: 'success', msg: 'Đã bỏ chữ Kanji khỏi deck' });
       await openDeckDetail(activeDeck.deckId);
-      fetchDecks();
+      await fetchDecks();
     } catch (err) {
       setFeedback({ type: 'error', msg: err.message });
     }

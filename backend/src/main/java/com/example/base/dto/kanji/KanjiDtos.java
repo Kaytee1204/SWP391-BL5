@@ -24,9 +24,11 @@ public final class KanjiDtos {
         private String description;
         private Long createdById;
         private String createdByName;
+        private String updatedByName;
         private Integer kanjiCount;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private Long version;
     }
 
     @Data @NoArgsConstructor @AllArgsConstructor
@@ -39,6 +41,8 @@ public final class KanjiDtos {
         private String title;
         @Size(max = 500, message = "Module description must not exceed 500 characters")
         private String description;
+        // Frontend gửi lại version đã đọc khi sửa; request tạo mới không cần version.
+        private Long version;
     }
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
@@ -53,8 +57,11 @@ public final class KanjiDtos {
         private String kunyomi;
         private String meaning;
         private String compoundWords;
+        private String createdBy;
+        private String updatedBy;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private Long version;
     }
 
     @Data @NoArgsConstructor @AllArgsConstructor
@@ -73,5 +80,7 @@ public final class KanjiDtos {
         @Size(max = 300, message = "Meaning must not exceed 300 characters")
         private String meaning;
         private String compoundWords;
+        // Frontend gửi lại version đã đọc khi sửa; request tạo mới không cần version.
+        private Long version;
     }
 }

@@ -12,6 +12,18 @@ import {
   BookOpen
 } from 'lucide-react';
 
+/**
+ * Màn 4-7 - Bộ từ vựng cá nhân của học viên.
+ *
+ * Luồng chính:
+ * 1. Khi mount, màn hình chỉ tải danh sách deck dạng tóm tắt (có totalItems, chưa có items).
+ * 2. Khi người dùng mở một deck, API chi tiết mới tải các từ bên trong vào activeDeck.
+ * 3. Modal dùng chung cho tạo/sửa; editingDeck quyết định gọi POST hay PUT.
+ * 4. Sau thao tác ghi/xóa, tải lại summary và detail liên quan để UI khớp database.
+ *
+ * Student không được gửi studentId. axiosClient gắn JWT và backend lấy accountId từ token,
+ * nhờ đó một người không thể sửa deck của người khác bằng cách đổi ID trên request.
+ */
 export const PersonalVocabDecksPage = ({ onNavigate }) => {
   // Danh sách deck chỉ chứa dữ liệu tóm tắt; activeDeck chứa đầy đủ item của deck đang mở.
   const [decks, setDecks] = useState([]);
@@ -71,6 +83,7 @@ export const PersonalVocabDecksPage = ({ onNavigate }) => {
   const handleSaveDeck = async (e) => {
     e.preventDefault();
     try {
+      // editingDeck có giá trị nghĩa là form đang sửa deck cũ; null nghĩa là tạo deck mới.
       if (editingDeck) {
         await deckApi.updateVocabDeck(editingDeck.deckId, deckForm);
         setFeedback({ type: 'success', msg: 'Cập nhật deck thành công' });
@@ -90,6 +103,7 @@ export const PersonalVocabDecksPage = ({ onNavigate }) => {
   };
 
   const handleDeleteDeck = async (deckId) => {
+    // Xác nhận ở UI tránh thao tác nhầm; backend vẫn là nơi kiểm tra owner và thực hiện xóa thật.
     if (!window.confirm('Bạn có chắc muốn xóa Deck này không?')) return;
     try {
       await deckApi.deleteVocabDeck(deckId);

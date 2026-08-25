@@ -1,13 +1,20 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Plus, Edit2, Trash2, Folder, Search, BookOpen, Layers, Volume2, List, Grid } from 'lucide-react';
+import { Plus, Edit2, Trash2, Folder, Search, BookOpen, Layers, List, Grid } from 'lucide-react';
 import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import { vocabApi } from '../../api';
 import CategoryFormModal from '../../components/vocabulary_category/CategoryFormModal';
 import VocabularyItemFormModal from './components/VocabularyItemFormModal';
-import { playAudio } from '../../utils/audioHelper';
 
 const JLPT_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
+/**
+ * Màn 32-35 - Quản lý mục từ vựng dành cho Lecturer/Manager.
+ *
+ * Luồng đọc: state bộ lọc -> tạo params -> GET /vocab-items -> render bảng.
+ * Luồng ghi: mở modal với editingItem -> modal validate/tạo payload -> POST hoặc PUT -> tải lại.
+ * Khi PUT, payload mang theo version đã đọc để backend phát hiện người khác vừa sửa cùng bản ghi.
+ * Category được tải riêng vì form cần danh sách category và bảng cần hiển thị thống kê liên quan.
+ */
 export default function VocabularyManagementView({ currentUser }) {
   const canManage = currentUser?.role === 'Lecturer' || currentUser?.role === 'Manager';
   
@@ -28,7 +35,7 @@ export default function VocabularyManagementView({ currentUser }) {
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
-  // Fetch Categories
+  // Tải category trước để bộ lọc và dropdown trong form luôn dùng cùng một nguồn dữ liệu.
   const fetchCategories = useCallback(async () => {
     try {
       const res = await vocabularyCategoryApi.getAll();
@@ -40,7 +47,7 @@ export default function VocabularyManagementView({ currentUser }) {
     }
   }, []);
 
-  // Fetch Items
+  // Ghép state bộ lọc thành query params; backend quyết định nhánh truy vấn tương ứng.
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
@@ -59,6 +66,7 @@ export default function VocabularyManagementView({ currentUser }) {
   }, [selectedLevel, selectedCategoryId, searchQuery]);
 
   useEffect(() => {
+    // useCallback giữ tham chiếu hàm ổn định, tránh effect chạy lại không cần thiết.
     fetchCategories();
   }, [fetchCategories]);
 
@@ -100,7 +108,7 @@ export default function VocabularyManagementView({ currentUser }) {
     }
   };
 
-  // Handle Item CRUD
+  // CRUD item: modal chỉ thu thập dữ liệu, view này chịu trách nhiệm chọn endpoint và refresh UI.
   const handleSaveItem = async (formData) => {
     try {
       if (editingItem) {
@@ -114,11 +122,18 @@ export default function VocabularyManagementView({ currentUser }) {
       fetchItems();
       fetchCategories();
     } catch (err) {
-      setFeedback({ type: 'error', msg: err.message || 'Lỗi khi lưu từ vựng.' });
+      setFeedback({
+        type: err.status === 409 ? 'conflict' : 'error',
+        msg: err.status === 409
+          ? 'This content was updated by another lecturer. Please refresh the page before editing it again.'
+          : (err.message || 'Lỗi khi lưu từ vựng.')
+      });
+      throw err;
     }
   };
 
   const handleDeleteItem = async (item) => {
+    // Xác nhận phía client chỉ hỗ trợ UX; quyền Lecturer/Manager vẫn được backend kiểm tra.
     if (!window.confirm(`Bạn có chắc muốn xóa từ vựng "${item.word}" (${item.meaning})?`)) return;
     try {
       await vocabApi.deleteItem(item.itemId);
@@ -370,11 +385,14 @@ export default function VocabularyManagementView({ currentUser }) {
           borderRadius: '10px',
           fontSize: '0.86rem',
           fontWeight: 600,
-          background: feedback.type === 'error' ? '#fee2e2' : '#dcfce7',
-          color: feedback.type === 'error' ? '#b91c1c' : '#15803d',
-          border: `1px solid ${feedback.type === 'error' ? '#fca5a5' : '#86efac'}`
+          background: feedback.type === 'success' ? '#dcfce7' : '#fee2e2',
+          color: feedback.type === 'success' ? '#15803d' : '#b91c1c',
+          border: `1px solid ${feedback.type === 'success' ? '#86efac' : '#fca5a5'}`
         }}>
           {feedback.msg}
+          {feedback.type === 'conflict' && (
+            <button type="button" onClick={fetchItems} style={{ marginLeft: '12px' }}>Refresh</button>
+          )}
         </div>
       )}
 
@@ -427,6 +445,7 @@ export default function VocabularyManagementView({ currentUser }) {
                     <th style={{ padding: '14px 16px', width: '140px' }}>Cách Đọc (Romaji)</th>
                     <th style={{ padding: '14px 16px', width: '200px' }}>Ý Nghĩa Tiếng Việt</th>
                     <th style={{ padding: '14px 16px' }}>Câu Ví Dụ</th>
+                    <th style={{ padding: '14px 16px', minWidth: '190px' }}>Lecturer</th>
                     {canManage && <th style={{ padding: '14px 16px', textAlign: 'right', width: '150px' }}>Thao Tác</th>}
                   </tr>
                 </thead>
@@ -463,21 +482,6 @@ export default function VocabularyManagementView({ currentUser }) {
                             <span style={{ fontWeight: 800, color: '#0f172a', fontSize: '1.05rem', fontFamily: '"Hiragino Kaku Gothic Pro", Meiryo, sans-serif' }}>
                               {item.word}
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => playAudio(null, item.kanji || item.word)}
-                              style={{
-                                background: '#e0e7ff',
-                                color: '#3730a3',
-                                border: 'none',
-                                borderRadius: '6px',
-                                padding: '3px 6px',
-                                cursor: 'pointer'
-                              }}
-                              title="Phát âm tiếng Nhật"
-                            >
-                              <Volume2 size={13} />
-                            </button>
                           </div>
                           <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
                             📂 {item.categoryName || 'Danh mục'}
@@ -511,6 +515,12 @@ export default function VocabularyManagementView({ currentUser }) {
                           ) : (
                             <span style={{ color: '#cbd5e1' }}>Chưa có ví dụ</span>
                           )}
+                        </td>
+
+                        <td style={{ padding: '14px 16px', fontSize: '0.76rem', color: '#64748b', lineHeight: 1.5 }}>
+                          <div><strong>Added By:</strong> {item.createdBy || '—'}</div>
+                          <div><strong>Last Updated:</strong> {item.updatedBy || '—'}</div>
+                          <div>{item.updatedAt ? new Date(item.updatedAt).toLocaleString('vi-VN') : '—'}</div>
                         </td>
 
                         {canManage && (

@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { vocabApi, deckApi } from '../../api';
 import { Modal } from '../../components/Modal';
-import { BookmarkPlus, Search, Volume2, Folder, Sparkles, BookOpen, Layers, CheckCircle2 } from 'lucide-react';
-import { playAudio } from '../../utils/audioHelper';
+import { BookmarkPlus, Search, Folder, Sparkles, BookOpen, Layers, CheckCircle2 } from 'lucide-react';
 
 const JLPT_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
@@ -114,7 +113,7 @@ export default function StudentVocabularyView({ currentUser, onNavigate }) {
               </span>
             </div>
             <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontSize: '0.86rem' }}>
-              Học từ vựng tiếng Nhật theo cấp độ JLPT, phát âm mẫu và lưu vào bộ Flashcard cá nhân
+              Học từ vựng tiếng Nhật theo cấp độ JLPT và lưu vào bộ Flashcard cá nhân
             </p>
           </div>
 
@@ -366,25 +365,6 @@ export default function StudentVocabularyView({ currentUser, onNavigate }) {
                       {item.kanji || item.word}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => playAudio(null, item.kanji || item.word)}
-                      style={{
-                        background: '#e0e7ff',
-                        color: '#3730a3',
-                        border: 'none',
-                        borderRadius: '50%',
-                        width: '32px',
-                        height: '32px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer'
-                      }}
-                      title="Nghe phát âm"
-                    >
-                      <Volume2 size={16} />
-                    </button>
                   </div>
 
                   {item.kanji && (

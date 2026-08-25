@@ -4,6 +4,12 @@ import { Modal } from '../components/Modal';
 import { BookmarkPlus, Edit2, Folder, Plus, Search, Trash2 } from 'lucide-react';
 import KanjiFormModal from '../features/materials/components/KanjiFormModal';
 
+/**
+ * Màn 40-43 - Danh sách/chi tiết Kanji dùng chung cho hai vai trò.
+ * Lecturer/Manager có thể CRUD học liệu; Student chỉ xem và lưu Kanji vào deck cá nhân.
+ * Module, JLPT và keyword trở thành query params cho backend. Form update gửi kèm version
+ * để tránh một giảng viên lưu dữ liệu cũ đè lên thay đổi mới của giảng viên khác.
+ */
 export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   const role = currentUser?.role;
   const isStudent = role === 'Student';
@@ -27,6 +33,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   const [memorizationNote, setMemorizationNote] = useState('');
 
   const fetchData = async () => {
+    // Hai request độc lập nên chạy song song để lấy danh sách module và Kanji nhanh hơn.
     setLoading(true);
     try {
       const params = {};
@@ -56,17 +63,26 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   };
 
   const handleSaveKanji = async (formData) => {
-    if (editingKanji) {
-      await kanjiApi.updateKanji(editingKanji.kanjiId, formData);
-      setFeedback({ type: 'success', msg: 'Cập nhật chữ Kanji thành công!' });
-    } else {
-      await kanjiApi.createKanji(formData);
-      setFeedback({ type: 'success', msg: 'Tạo chữ Kanji mới thành công!' });
+    try {
+      // editingKanji tồn tại thì cập nhật đúng ID; ngược lại tạo Kanji mới.
+      if (editingKanji) {
+        await kanjiApi.updateKanji(editingKanji.kanjiId, formData);
+        setFeedback({ type: 'success', msg: 'Cập nhật chữ Kanji thành công!' });
+      } else {
+        await kanjiApi.createKanji(formData);
+        setFeedback({ type: 'success', msg: 'Tạo chữ Kanji mới thành công!' });
+      }
+      fetchData();
+    } catch (err) {
+      if (err.status === 409) {
+        setFeedback({ type: 'conflict', msg: 'This content was updated by another lecturer. Please refresh the page before editing it again.' });
+      }
+      throw err;
     }
-    fetchData();
   };
 
   const deleteKanji = async (id, char) => {
+    // Backend chặn xóa nếu Kanji vẫn nằm trong bất kỳ personal Kanji deck nào.
     if (!window.confirm(`Bạn có chắc muốn xóa chữ Kanji "${char || ''}" này không?`)) return;
     try {
       await kanjiApi.deleteKanji(id);
@@ -78,6 +94,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   };
 
   const openAddToDeck = async (kanji) => {
+    // Chỉ khi Student bấm lưu mới tải deck cá nhân, tránh request thừa lúc chỉ xem từ điển.
     try {
       setSelectedKanjiForDeck(kanji);
       setMemorizationNote('');
@@ -93,6 +110,7 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
   const saveToDeck = async () => {
     if (!targetDeckId) return;
     try {
+      // Endpoint có tính upsert: đã có Kanji trong deck thì backend cập nhật note thay vì tạo trùng.
       await deckApi.addKanjiToDeck(targetDeckId, {
         kanjiId: selectedKanjiForDeck.kanjiId,
         memorizationNote: memorizationNote.trim() || null,
@@ -300,11 +318,14 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
           borderRadius: '10px',
           fontSize: '0.86rem',
           fontWeight: 600,
-          background: feedback.type === 'error' ? '#fee2e2' : '#dcfce7',
-          color: feedback.type === 'error' ? '#b91c1c' : '#15803d',
-          border: `1px solid ${feedback.type === 'error' ? '#fca5a5' : '#86efac'}`
+          background: feedback.type === 'success' ? '#dcfce7' : '#fee2e2',
+          color: feedback.type === 'success' ? '#15803d' : '#b91c1c',
+          border: `1px solid ${feedback.type === 'success' ? '#86efac' : '#fca5a5'}`
         }}>
           {feedback.msg}
+          {feedback.type === 'conflict' && (
+            <button type="button" onClick={fetchData} style={{ marginLeft: '12px' }}>Refresh</button>
+          )}
         </div>
       )}
 
@@ -472,6 +493,11 @@ export const KanjiPage = ({ currentUser, readOnly = false, onNavigate }) => {
                     {kanji.compoundWords}
                   </div>
                 )}
+
+                <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.75rem', lineHeight: 1.5 }}>
+                  <div><strong>Added By:</strong> {kanji.createdBy || '—'}</div>
+                  <div><strong>Last Updated:</strong> {kanji.updatedBy || '—'}{kanji.updatedAt ? ` · ${new Date(kanji.updatedAt).toLocaleString('vi-VN')}` : ''}</div>
+                </div>
 
                 {/* Action Buttons */}
                 <div style={{

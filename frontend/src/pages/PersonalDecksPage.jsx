@@ -3,6 +3,10 @@ import { BookOpen, Sparkles } from 'lucide-react';
 import { PersonalKanjiDecksPage } from './PersonalKanjiDecksPage';
 import { PersonalVocabDecksPage } from './PersonalVocabDecksPage';
 
+/**
+ * Màn bao điều phối hai loại deck cá nhân. Component không gọi API và không chứa nghiệp vụ;
+ * nó chỉ mount đúng page con để state của vocabulary deck và Kanji deck không lẫn nhau.
+ */
 export const PersonalDecksPage = ({ onNavigate }) => {
   // Component này chỉ điều phối loại deck; mỗi page con tự quản lý state và API riêng.
   const [deckType, setDeckType] = useState('vocabulary');

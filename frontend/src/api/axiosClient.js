@@ -28,7 +28,11 @@ axiosClient.interceptors.response.use(
     }
     // Chuẩn hóa mọi lỗi thành Error(message), nhờ đó page chỉ cần đọc err.message trong catch.
     const message = error.response?.data?.message || error.message || 'Đã có lỗi xảy ra';
-    return Promise.reject(new Error(typeof message === 'string' ? message : JSON.stringify(message)));
+    const normalizedError = new Error(typeof message === 'string' ? message : JSON.stringify(message));
+    // Giu HTTP status de man edit nhan biet 409 va yeu cau refresh, tuyet doi khong tu ghi de.
+    normalizedError.status = error.response?.status;
+    normalizedError.rawResponse = error.response?.data;
+    return Promise.reject(normalizedError);
   },
 );
 
