@@ -54,7 +54,7 @@ export default function ReadingPassageManagementView({ currentUser }) {
         jlptLevel,
         page,
         size: PAGE_SIZE,
-        sort: 'updatedAt,desc'
+        sort: 'passageId,asc'
       };
       const response = onlyMine
         ? await readingPassageApi.getMine(params)
@@ -261,6 +261,7 @@ export default function ReadingPassageManagementView({ currentUser }) {
             <table className="rp-table">
               <thead>
                 <tr>
+                  <th>STT</th>
                   <th>Bài đọc</th>
                   <th>JLPT</th>
                   <th>Người tạo</th>
@@ -270,8 +271,9 @@ export default function ReadingPassageManagementView({ currentUser }) {
                 </tr>
               </thead>
               <tbody>
-                {passages.map((passage) => (
+                {passages.map((passage,index) => (
                   <tr key={passage.passageId}>
+                    <td>{page*PAGE_SIZE+index+1}</td>
                     <td>
                       <button type="button" className="rp-title-button" onClick={() => handleView(passage)}>
                         <span>{passage.title}</span>

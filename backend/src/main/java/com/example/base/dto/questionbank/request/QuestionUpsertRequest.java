@@ -44,6 +44,10 @@ public class QuestionUpsertRequest { //nhận dữ liệu mà frontend gửi
     @Size(max = 5000, message = "Giải thích không được vượt quá 5000 ký tự")
     private String explanation;
 
+    private Long readingPassageId;
+
+    private Long listeningExerciseId;
+
 }
 
 //Khong de frontend gui truc tiep jpa

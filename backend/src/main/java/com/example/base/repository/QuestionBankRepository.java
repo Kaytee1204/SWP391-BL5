@@ -7,6 +7,10 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long>, JpaSpecificationExecutor<QuestionBank> {
     boolean existsByDuplicateHash(String duplicateHash); //check trung cau hoi
     boolean existsByDuplicateHashAndQuestionIdNot(String duplicateHash, Long questionId); //phục vụ cho việc update //
+    boolean existsByListeningExerciseListeningExerciseId(
+            Long listeningExerciseId
+    );
+    boolean existsByReadingPassagePassageId(Long passageId);
 }
 
 //jparepository cung cap crud(findById,findAll,save,delete)

@@ -11,6 +11,7 @@ import com.example.base.exception.ResourceNotFoundException;
 import com.example.base.mapper.ListeningExerciseMapper;
 import com.example.base.repository.AccountRepository;
 import com.example.base.repository.ListeningExerciseRepository;
+import com.example.base.repository.QuestionBankRepository;
 import com.example.base.security.UserPrincipal;
 import com.example.base.service.listening_exercise.ListeningAudioStorageService;
 import com.example.base.service.listening_exercise.ListeningAudioStorageService.StoredAudio;
@@ -32,7 +33,7 @@ public class ListeningExerciseServiceImpl implements ListeningExerciseService {
     private final AccountRepository accountRepository;
     private final ListeningExerciseMapper mapper;
     private final ListeningAudioStorageService audioStorage;
-
+    private final QuestionBankRepository questionBankRepository;
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ListeningExerciseResponse> search(
@@ -120,7 +121,15 @@ public class ListeningExerciseServiceImpl implements ListeningExerciseService {
         ListeningExercise entity = findExercise(id);
         checkOwnershipOrManager(entity, currentUser);
         String storageName = entity.getAudioStorageName();
-
+        if (
+                questionBankRepository
+                        .existsByListeningExerciseListeningExerciseId(id)
+        ) {
+            throw new AppException(
+                    ErrorCode.CONFLICT,
+                    "Không thể xóa bài nghe vì đang được câu hỏi sử dụng"
+            );
+        }
         repository.delete(entity);
         repository.flush();
         audioStorage.deleteQuietly(storageName);

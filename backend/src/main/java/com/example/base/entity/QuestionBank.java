@@ -54,7 +54,13 @@ public class QuestionBank {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reading_passage_id")
+    private ReadingPassage readingPassage;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "listening_exercise_id")
+    private ListeningExercise listeningExercise;
 
     @PrePersist
     protected void onCreate() {

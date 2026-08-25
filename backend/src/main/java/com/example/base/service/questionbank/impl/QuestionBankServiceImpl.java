@@ -8,9 +8,7 @@ import com.example.base.exception.AppException;
 import com.example.base.exception.ErrorCode;
 import com.example.base.exception.ResourceNotFoundException;
 import com.example.base.mapper.QuestionBankMapper;
-import com.example.base.repository.AccountRepository;
-import com.example.base.repository.QuestionBankRepository;
-import com.example.base.repository.QuestionSetItemRepository;
+import com.example.base.repository.*;
 import com.example.base.security.UserPrincipal;
 import com.example.base.service.questionbank.QuestionBankService;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +33,8 @@ public class QuestionBankServiceImpl implements QuestionBankService {
     private final AccountRepository accountRepository;
     private final QuestionBankMapper questionBankMapper;
     private final QuestionDuplicateHashGenerator duplicateHashGenerator;
-
+    private final ReadingPassageRepository readingPassageRepository;
+    private final ListeningExerciseRepository listeningExerciseRepository;
     public final QuestionSetItemRepository questionSetItemRepository;
 //    Ba tham số:
 //            - root: đại diện entity QuestionBank.
@@ -109,7 +108,9 @@ public class QuestionBankServiceImpl implements QuestionBankService {
                         currentUser.getAccountId()
                 ));
         QuestionBank question = questionBankMapper.toEntity(request,creator); // json sang entity
+        applyQuestionResource(request, question);
         question.setDuplicateHash(duplicateHash);
+
         QuestionBank saved = saveWithDuplicateHandling(question); //lưu xuống DB (INSERT vì là entity mới), nhận lại entity đã có id
 
         return questionBankMapper.toResponse(saved); //convert Entity đã lưu thành DTO để trả về Controller
@@ -129,6 +130,7 @@ public class QuestionBankServiceImpl implements QuestionBankService {
             );
         }
         questionBankMapper.updateEntity(request,question); //update entity, cần truyền vào yêu cầu và câu hỏi
+        applyQuestionResource(request, question);
         question.setDuplicateHash(duplicateHash);
         QuestionBank saved = saveWithDuplicateHandling(question); //dùng dto lưu xuống db
         return questionBankMapper.toResponse(saved); //convert Entity đã lưu thành DTO để trả về Controller
@@ -281,6 +283,97 @@ public class QuestionBankServiceImpl implements QuestionBankService {
                 .replaceAll("[\\p{Z}\\s]+", " ")
                 .trim()
                 .toLowerCase(Locale.ROOT);
+    }
+
+    private void applyQuestionResource(
+            QuestionUpsertRequest request,
+            QuestionBank question
+    ) {
+        QuestionSkillType skillType = request.getSkillType();
+
+        if (skillType == QuestionSkillType.reading) {
+            if (request.getReadingPassageId() == null) {
+                throw new AppException(
+                        ErrorCode.BAD_REQUEST,
+                        "Câu hỏi Reading phải chọn một bài đọc"
+                );
+            }
+
+            if (request.getListeningExerciseId() != null) {
+                throw new AppException(
+                        ErrorCode.BAD_REQUEST,
+                        "Câu hỏi Reading không được liên kết với bài nghe"
+                );
+            }
+
+            ReadingPassage passage = readingPassageRepository
+                    .findById(request.getReadingPassageId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "ReadingPassage",
+                            "passageId",
+                            request.getReadingPassageId()
+                    ));
+
+            if (passage.getJlptLevel() != request.getJlptLevel()) {
+                throw new AppException(
+                        ErrorCode.BAD_REQUEST,
+                        "JLPT level của bài đọc không khớp với câu hỏi"
+                );
+            }
+
+            question.setReadingPassage(passage);
+            question.setListeningExercise(null);
+            return;
+        }
+
+        if (skillType == QuestionSkillType.listening) {
+            if (request.getListeningExerciseId() == null) {
+                throw new AppException(
+                        ErrorCode.BAD_REQUEST,
+                        "Câu hỏi Listening phải chọn một bài nghe"
+                );
+            }
+
+            if (request.getReadingPassageId() != null) {
+                throw new AppException(
+                        ErrorCode.BAD_REQUEST,
+                        "Câu hỏi Listening không được liên kết với bài đọc"
+                );
+            }
+
+            ListeningExercise exercise = listeningExerciseRepository
+                    .findById(request.getListeningExerciseId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "ListeningExercise",
+                            "listeningExerciseId",
+                            request.getListeningExerciseId()
+                    ));
+
+            if (exercise.getJlptLevel() != request.getJlptLevel()) {
+                throw new AppException(
+                        ErrorCode.BAD_REQUEST,
+                        "JLPT level của bài nghe không khớp với câu hỏi"
+                );
+            }
+
+            question.setListeningExercise(exercise);
+            question.setReadingPassage(null);
+            return;
+        }
+
+        /*
+         * Vocabulary và Grammar không sử dụng hai tài nguyên trên.
+         */
+        if (request.getReadingPassageId() != null
+                || request.getListeningExerciseId() != null) {
+            throw new AppException(
+                    ErrorCode.BAD_REQUEST,
+                    "Chỉ câu hỏi Reading hoặc Listening mới được chọn tài nguyên"
+            );
+        }
+
+        question.setReadingPassage(null);
+        question.setListeningExercise(null);
     }
 
 

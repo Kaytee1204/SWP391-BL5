@@ -13,6 +13,7 @@ import com.example.base.exception.ErrorCode;
 import com.example.base.exception.ResourceNotFoundException;
 import com.example.base.mapper.ReadingPassageMapper;
 import com.example.base.repository.AccountRepository;
+import com.example.base.repository.QuestionBankRepository;
 import com.example.base.repository.ReadingPassageRepository;
 import com.example.base.security.UserPrincipal;
 import com.example.base.service.reading_passage.ReadingPassageHtmlSanitizer;
@@ -33,7 +34,7 @@ public class ReadingPassageServiceImpl implements ReadingPassageService {
     private final AccountRepository accountRepository;
     private final ReadingPassageMapper readingPassageMapper;
     private final ReadingPassageHtmlSanitizer htmlSanitizer;
-
+    private final QuestionBankRepository questionBankRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -81,7 +82,7 @@ public class ReadingPassageServiceImpl implements ReadingPassageService {
             ReadingPassageCreateRequest request,
             UserPrincipal currentUser
     ) {
-        requireAuthenticated(currentUser);
+        requireAuthenticated(currentUser); // xác thực
 
         if (!hasAuthority(currentUser, "Lecturer")) {
             throw new AppException(
@@ -170,6 +171,15 @@ public class ReadingPassageServiceImpl implements ReadingPassageService {
         ReadingPassage passage = findPassage(passageId);
         checkOwnershipOrManager(passage, currentUser);
 
+        if (
+                questionBankRepository
+                        .existsByReadingPassagePassageId(passageId)
+        ) {
+            throw new AppException(
+                    ErrorCode.CONFLICT,
+                    "Không thể xóa bài đọc vì đang được câu hỏi sử dụng"
+            );
+        }
         readingPassageRepository.delete(passage);
 
         log.info(
