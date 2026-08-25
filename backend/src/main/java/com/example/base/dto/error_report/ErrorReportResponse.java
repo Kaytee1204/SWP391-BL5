@@ -15,6 +15,9 @@ public class ErrorReportResponse {
     private Long targetId;
     private String description;
     private ReportStatus status;
+    private String reviewerNote;
+    private Long reviewedBy;
+    private LocalDateTime reviewedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

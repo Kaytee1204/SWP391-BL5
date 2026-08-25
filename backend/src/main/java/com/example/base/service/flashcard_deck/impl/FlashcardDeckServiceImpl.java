@@ -21,11 +21,14 @@ public class FlashcardDeckServiceImpl implements FlashcardDeckService {
 
     @Override
     public FlashcardDeckResponse createDeck(FlashcardDeckCreateRequest request, Long lecturerId) {
-        if (repository.existsByTitle(request.getTitle())) {
+        String title = request.getTitle().trim();
+        if (repository.existsByTitleIgnoreCase(title)) {
             throw new IllegalArgumentException("System flashcard deck with this title already exists.");
         }
 
         FlashcardDeck entity = mapper.toEntity(request);
+        entity.setTitle(title);
+        entity.setDescription(normalizeDescription(request.getDescription()));
         entity.setCreatedBy(lecturerId);
         FlashcardDeck savedEntity = repository.save(entity);
         repository.flush();
@@ -39,13 +42,16 @@ public class FlashcardDeckServiceImpl implements FlashcardDeckService {
                 .orElseThrow(() -> new IllegalArgumentException("Flashcard deck not found."));
 
         // 2. Check trùng tên nếu tên bị thay đổi
-        if (!existingEntity.getTitle().equals(request.getTitle()) &&
-                repository.existsByTitle(request.getTitle())) {
+        String title = request.getTitle().trim();
+        if (!existingEntity.getTitle().equalsIgnoreCase(title) &&
+            repository.existsByTitleIgnoreCase(title)) {
             throw new IllegalArgumentException("Title already in use by another deck.");
         }
 
         // 3. Update dữ liệu và lưu
         mapper.updateEntity(existingEntity, request);
+        existingEntity.setTitle(title);
+        existingEntity.setDescription(normalizeDescription(request.getDescription()));
         FlashcardDeck updatedEntity = repository.save(existingEntity);
 
         return mapper.toResponse(updatedEntity);
@@ -64,4 +70,13 @@ public class FlashcardDeckServiceImpl implements FlashcardDeckService {
             throw new IllegalArgumentException("Flashcard deck not found.");
         }
         repository.deleteById(deckId);
-    }}
+    }
+
+    private String normalizeDescription(String description) {
+        if (description == null) {
+            return null;
+        }
+        String trimmed = description.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+}

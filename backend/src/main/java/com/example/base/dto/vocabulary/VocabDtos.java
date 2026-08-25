@@ -1,11 +1,15 @@
 package com.example.base.dto.vocabulary;
 
+import java.time.LocalDateTime;
+
 import com.example.base.entity.JlptLevel;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
-
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** Tap hop DTO cho response va request cua muc tu vung. */
 public final class VocabDtos {

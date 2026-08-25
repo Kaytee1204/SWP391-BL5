@@ -49,6 +49,9 @@ public class GrammarExampleServiceImpl implements GrammarExampleService {
                 .orElseThrow(() -> new RuntimeException("Mẫu ngữ pháp không tồn tại (ID: " + patternId +")"));
 
                GrammarExample newExample = mapper.toEntity(request);
+               newExample.setSentenceJp(request.getSentenceJp().trim());
+               newExample.setTranslation(request.getTranslation().trim());
+               newExample.setAudioUrl(trimToNull(request.getAudioUrl()));
                 newExample.setPattern(pattern);
             GrammarExample saveExample = exampleRepository.save(newExample);
             return mapper.toResponse(saveExample);
@@ -62,15 +65,18 @@ public class GrammarExampleServiceImpl implements GrammarExampleService {
         existingExample.setSentenceJp(request.getSentenceJp().trim());
         existingExample.setTranslation(request.getTranslation().trim());
 
-        if(request.getAudioUrl() != null) {
-            existingExample.setAudioUrl(request.getAudioUrl());
-        }
-        else {
-            existingExample.setAudioUrl(null);
-        }
+        existingExample.setAudioUrl(trimToNull(request.getAudioUrl()));
 
         GrammarExample updateExample = exampleRepository.save(existingExample);
         return mapper.toResponse(updateExample);
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     @Override

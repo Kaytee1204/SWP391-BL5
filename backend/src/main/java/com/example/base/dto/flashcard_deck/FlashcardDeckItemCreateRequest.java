@@ -19,12 +19,21 @@ public class FlashcardDeckItemCreateRequest {
 
     @NotBlank(message = "Word is required.")
     @Size(max = 50, message = "Word must not exceed 50 characters.")
+        @Pattern(
+            regexp = "^[\\p{sc=Hiragana}\\p{sc=Katakana}\\p{IsHan}々ー・]+$",
+            message = "Word may contain only Hiragana, Katakana, and Kanji characters."
+        )
     private String word;
 
     @NotBlank(message = "Meaning is required.")
     @Size(max = 50, message = "Meaning must not exceed 50 characters.")
+        @Pattern(regexp = "^[^\\p{Cntrl}]*$", message = "Meaning contains invalid control characters.")
     private String meaning;
 
     @Size(max = 50, message = "Reading must not exceed 50 characters.")
+        @Pattern(
+                regexp = "^(?:[\\p{L}\\p{N}々ー・]+(?:[ \\- '\\u00A0][\\p{L}\\p{N}々ー・]+)*)?$",
+            message = "Reading contains invalid characters."
+        )
     private String reading;
 }

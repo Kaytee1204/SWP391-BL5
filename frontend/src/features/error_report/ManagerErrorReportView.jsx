@@ -36,8 +36,28 @@ export default function ManagerErrorReportView({ currentUser }) {
 
     if (!window.confirm(`Bạn có chắc muốn ${actionName} cho báo cáo #${reportId}?`)) return;
 
+    let reviewerNote = '';
+    if (newStatus === 'RESOLVED' || newStatus === 'REJECTED') {
+      reviewerNote = window.prompt(
+        newStatus === 'RESOLVED'
+          ? 'Nhập phản hồi cho học viên về việc xử lý báo cáo:'
+          : 'Nhập lý do từ chối báo cáo:'
+      )?.trim() || '';
+      if (!reviewerNote) {
+        setFeedback({ type: 'error', msg: 'Bạn phải nhập phản hồi trước khi hoàn tất thao tác.' });
+        return;
+      }
+      if (reviewerNote.length > 500 || /[\u0000-\u001F\u007F<>]/.test(reviewerNote)) {
+        setFeedback({ type: 'error', msg: 'Phản hồi tối đa 500 ký tự và không được chứa ký tự không hợp lệ.' });
+        return;
+      }
+    }
+
     try {
-      const updatedData = await apiRequest(`/error-reports/${reportId}/status`, 'PATCH', { status: newStatus });
+      const updatedData = await apiRequest(`/error-reports/${reportId}/status`, 'PATCH', {
+        status: newStatus,
+        reviewerNote: reviewerNote || null
+      });
       if (updatedData?.data) {
         setReports(prevReports => 
           prevReports.map(r => 
@@ -433,6 +453,12 @@ export default function ManagerErrorReportView({ currentUser }) {
                   </div>
                   "{report.description}"
                 </div>
+
+                {report.reviewerNote && (
+                  <div style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '0.75rem', borderLeft: '3px solid #94a3b8', paddingLeft: '0.75rem' }}>
+                    <strong>Phản hồi đã gửi:</strong> {report.reviewerNote}
+                  </div>
+                )}
 
                 {/* Card Footer: Metadata & Action Buttons */}
                 <div style={{

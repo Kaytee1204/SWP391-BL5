@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { validateVocabularyCategory } from '../../utils/vocabularyCategoryValidation';
 
 export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialData }) {
     // Input là controlled state; initialData có giá trị khi sửa và null khi tạo.
@@ -28,8 +29,9 @@ export default function CategoryFormModal({ isOpen, onClose, onSubmit, initialDa
         setErrorMessage('');
 
         // Validate sớm để phản hồi nhanh; backend vẫn validate lại vì không thể tin hoàn toàn client.
-        if (!name.trim()) {
-            setErrorMessage('Please enter the vocabulary category name!');
+        const validationError = validateVocabularyCategory({ name, description });
+        if (validationError) {
+            setErrorMessage(validationError);
             return;
         }
 
