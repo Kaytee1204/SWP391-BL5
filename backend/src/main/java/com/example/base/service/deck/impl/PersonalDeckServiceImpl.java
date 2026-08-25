@@ -1,5 +1,5 @@
 package com.example.base.service.deck.impl;
-    // Xóa item chỉ xóa liên kết trong deck cá nhân, không xóa bản ghi Kanji dùng chung.
+
 import com.example.base.dto.deck.DeckDtos.*;
 import com.example.base.dto.vocabulary.VocabDtos.VocabItemDto;
 import com.example.base.entity.*;
@@ -139,7 +139,7 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
     @Override
     @Transactional
     public PersonalKanjiDeckDto updateKanjiDeck(Long deckId, CreateDeckRequest request, Long studentId) {
-        // Cap nhat deck ca nhan; chi cho owner sua title/description, sau do save va tra ve summary DTO.
+        // Chỉ owner được sửa title/description; item trong deck không bị ảnh hưởng bởi thao tác này.
         PersonalKanjiDeck deck = requireOwnedKanjiDeck(deckId, studentId);
         deck.setTitle(request.getTitle().trim());
         deck.setDescription(trimToNull(request.getDescription()));
@@ -179,7 +179,6 @@ public class PersonalDeckServiceImpl implements PersonalDeckService {
         item.setMemorizationNote(trimToNull(request.getMemorizationNote()));
         kanjiItemRepository.save(item);
     }
-    // Xóa item chỉ xóa liên kết trong deck cá nhân, không xóa bản ghi Kanji dùng chung.
     @Override
     @Transactional
     public void removeKanji(Long deckId, Long kanjiId, Long studentId) {

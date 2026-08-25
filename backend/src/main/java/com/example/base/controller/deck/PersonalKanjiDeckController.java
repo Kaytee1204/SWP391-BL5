@@ -31,27 +31,27 @@ public class PersonalKanjiDeckController {
 
     @GetMapping("/{id}")
     public ApiResponse<PersonalKanjiDeckDto> getOne(@PathVariable Long id, @AuthenticationPrincipal UserPrincipal principal) {
-        // Lay mot personal kanji deck theo id va owner; service nap kem danh sach kanji item trong deck.
+        // Lấy theo cả deck ID và owner; service nạp thêm danh sách Kanji khi mở chi tiết.
         return ApiResponse.success(deckService.getKanjiDeck(id, principal.getAccountId()));
     }
 
     @PostMapping
     public ApiResponse<PersonalKanjiDeckDto> create(@Valid @RequestBody CreateDeckRequest request,
                                                     @AuthenticationPrincipal UserPrincipal principal) {
-        // Tao personal kanji deck moi cho user dang login; title/description duoc validate roi service save deck.
+        // Tạo deck cho user đăng nhập; title/description đã qua Bean Validation trước khi vào service.
         return ApiResponse.success("Kanji deck created successfully", deckService.createKanjiDeck(request, principal.getAccountId()));
     }
 
     @PutMapping("/{id}")
     public ApiResponse<PersonalKanjiDeckDto> update(@PathVariable Long id, @Valid @RequestBody CreateDeckRequest request,
                                                     @AuthenticationPrincipal UserPrincipal principal) {
-        // Cap nhat title va description cua deck; service dam bao deck thuoc dung student dang login.
+        // Cập nhật title/description; service bảo đảm deck thuộc đúng Student đang đăng nhập.
         return ApiResponse.success("Kanji deck updated successfully", deckService.updateKanjiDeck(id, request, principal.getAccountId()));
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id, @AuthenticationPrincipal UserPrincipal principal) {
-        // Xoa personal kanji deck; service xoa cac item trong deck truoc roi moi xoa deck.
+        // Service xóa các bản ghi liên kết trước rồi mới xóa deck cha để thỏa khóa ngoại.
         deckService.deleteKanjiDeck(id, principal.getAccountId());
         return ApiResponse.success("Kanji deck deleted successfully", null);
     }
@@ -76,7 +76,7 @@ public class PersonalKanjiDeckController {
     @DeleteMapping("/{id}/items/{kanjiId}")
     public ApiResponse<Void> removeItem(@PathVariable Long id, @PathVariable Long kanjiId,
                                          @AuthenticationPrincipal UserPrincipal principal) {
-        // Xoa mot kanji khoi deck; service dam bao deck dung owner va item dang nam trong deck.
+        // Chỉ xóa liên kết khỏi deck đúng owner, không xóa Kanji nguồn trong kho học liệu.
         deckService.removeKanji(id, kanjiId, principal.getAccountId());
         return ApiResponse.success("Kanji removed from deck successfully", null);
     }

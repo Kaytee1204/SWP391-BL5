@@ -7,11 +7,14 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-/** Tap hop DTO cho response va request cua muc tu vung. */
+/**
+ * Các object đi qua biên API của màn 32-35. DTO response làm phẳng entity/category/audit;
+ * request chỉ chứa trường client được phép nhập, không có createdBy hoặc updatedBy.
+ */
 public final class VocabDtos {
     private VocabDtos() {}
 
-    /** Du lieu mot muc tu vung duoc tra ve qua API. */
+    /** Dữ liệu mục từ trả về; categoryName và JLPT giúp bảng render mà không gọi API phụ. */
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class VocabItemDto {
         private Long itemId;
@@ -24,11 +27,14 @@ public final class VocabDtos {
         private String meaning;
         private String exampleSentence;
         private String exampleTranslation;
+        private String createdBy;
+        private String updatedBy;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private Long version;
     }
 
-    /** Du lieu frontend gui len khi tao hoac cap nhat tu vung. */
+    /** Payload dùng chung cho tạo/cập nhật; Bean Validation chặn trường bắt buộc trước service. */
     @Data @NoArgsConstructor @AllArgsConstructor
     public static class VocabItemRequest {
         @NotNull(message = "Category ID is required")
@@ -42,5 +48,7 @@ public final class VocabDtos {
         private String meaning;
         private String exampleSentence;
         private String exampleTranslation;
+        // Frontend gửi lại version đã đọc khi edit; create không cần field này.
+        private Long version;
     }
 }

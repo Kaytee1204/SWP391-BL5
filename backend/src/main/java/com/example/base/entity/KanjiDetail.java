@@ -13,11 +13,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 /**
- * Một chữ Kanji cụ thể trong kho học liệu. Cấp độ JLPT không lưu trực tiếp ở đây mà
- * được lấy qua module cha, nhờ vậy khi đổi cấp độ module thì toàn bộ Kanji con đồng bộ theo.
+ * Bản ghi nguồn của màn 40-43. Module cha cung cấp nhóm bài và JLPT; personal Kanji deck
+ * chỉ giữ tham chiếu tới kanjiId cùng ghi chú riêng, không sao chép nội dung chữ Kanji.
  */
 public class KanjiDetail {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "kanji_id")
@@ -25,7 +24,6 @@ public class KanjiDetail {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "module_id", nullable = false)
-    // Đây là phía giữ module_id, nên mỗi Kanji bắt buộc thuộc đúng một module bài học.
     private KanjiLessonModule module;
 
     @Column(name = "character", nullable = false, length = 10)
@@ -43,15 +41,30 @@ public class KanjiDetail {
     @Column(name = "compound_words", columnDefinition = "NVARCHAR(MAX)")
     private String compoundWords;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", nullable = false, updatable = false)
+    // createdBy không đổi sau khi tạo, kể cả khi Lecturer khác chỉnh sửa.
+    private Account createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by", nullable = false)
+    // updatedBy đổi mỗi khi có Lecturer chỉnh sửa bản ghi.
+    private Account updatedBy;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // @Version phát hiện hai Lecturer cùng sửa và chặn request mang dữ liệu cũ ghi đè dữ liệu mới.
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
+
     @PrePersist
     protected void onCreate() {
-        // Tự gắn thời gian trước khi INSERT, tránh phụ thuộc frontend phải gửi timestamp.
+        // Timestamp do backend tạo; frontend không thể giả mạo ngày tạo/cập nhật.
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
@@ -59,7 +72,7 @@ public class KanjiDetail {
 
     @PreUpdate
     protected void onUpdate() {
-        // Chỉ cập nhật mốc sửa cuối; ngày tạo ban đầu không được thay đổi.
+        // Chỉ updatedAt thay đổi khi edit; createdAt luôn giữ mốc tạo ban đầu.
         this.updatedAt = LocalDateTime.now();
     }
 }

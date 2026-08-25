@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * REST API cho Kanji lesson module. CRUD dành cho Giảng viên (Lecturer) và Quản lý (Manager).
+ * Điểm vào HTTP của màn 36-39 - quản lý module bài Kanji.
+ * GET cho phép đọc danh sách/chi tiết; các endpoint ghi yêu cầu Lecturer hoặc Manager.
+ * Module là cha của Kanji detail, vì vậy điều kiện xóa an toàn được xử lý ở service thay vì controller.
  */
 @RestController
 @RequestMapping("/kanji-modules")
@@ -24,6 +26,7 @@ public class KanjiModuleController {
 
     @GetMapping
     public ApiResponse<List<KanjiModuleDto>> getAll(@RequestParam(required = false) JlptLevel jlptLevel) {
+        // jlptLevel null có nghĩa lấy toàn bộ module; DTO trả thêm kanjiCount cho bảng quản lý.
         return ApiResponse.success(kanjiService.getModules(jlptLevel));
     }
 
@@ -33,21 +36,27 @@ public class KanjiModuleController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
     public ApiResponse<KanjiModuleDto> create(@Valid @RequestBody KanjiModuleRequest request,
                                                @AuthenticationPrincipal UserPrincipal principal) {
+        // Người tạo lấy từ JWT, không nhận createdById do client gửi lên.
         return ApiResponse.success("Kanji module created successfully", kanjiService.createModule(request, principal.getAccountId()));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
-    public ApiResponse<KanjiModuleDto> update(@PathVariable Long id, @Valid @RequestBody KanjiModuleRequest request) {
-        return ApiResponse.success("Kanji module updated successfully", kanjiService.updateModule(id, request));
+    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    public ApiResponse<KanjiModuleDto> update(@PathVariable Long id,
+                                               @Valid @RequestBody KanjiModuleRequest request,
+                                               @AuthenticationPrincipal UserPrincipal principal) {
+        // Người cập nhật lấy từ security context để client không thể mạo danh giảng viên khác.
+        return ApiResponse.success("Kanji module updated successfully",
+                kanjiService.updateModule(id, request, principal.getAccountId()));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
+        // Service sẽ chặn nếu Kanji con đang được lưu trong personal deck của học viên.
         kanjiService.deleteModule(id);
         return ApiResponse.success("Kanji module deleted successfully", null);
     }

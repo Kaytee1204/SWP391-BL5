@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Volume2, Plus, Edit2, Trash2 } from 'lucide-react';
-import { playAudio } from '../../utils/audioHelper';
+import { X, Plus, Edit2, Trash2 } from 'lucide-react';
 
 export default function CategoryItemsModal({ category, onClose, currentUser }) {
     const [items, setItems] = useState([]);
@@ -168,15 +167,6 @@ export default function CategoryItemsModal({ category, onClose, currentUser }) {
                                             </div>
 
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                {/* Nút Listen */}
-                                                <button 
-                                                    onClick={() => playAudio(null, wordText)}
-                                                    style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', background: '#e0e7ff', color: '#3730a3', border: 'none', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.85rem' }}
-                                                    title="Listen"
-                                                >
-                                                    <Volume2 size={14} /> Listen
-                                                </button>
-
                                                 {/* Các nút Sửa, Xóa */}
                                                 {isManagerOrLecturer && (
                                                     <>

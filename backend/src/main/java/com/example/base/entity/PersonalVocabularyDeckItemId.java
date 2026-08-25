@@ -8,7 +8,10 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
-/** Khoa ghep xac dinh duy nhat mot muc tu vung trong mot deck ca nhan. */
+/**
+ * Khóa ghép xác định duy nhất một từ trong một deck. Serializable cùng equals/hashCode
+ * giúp JPA tìm, so sánh và xóa đúng quan hệ bằng cặp ID này.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -41,11 +41,21 @@ public class KanjiLessonModule {
     // Chỉ lưu khóa ngoại người tạo. LAZY giúp tránh tải toàn bộ Account khi chỉ cần danh sách module.
     private Account createdBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by", nullable = false)
+    // updatedBy đổi khi Lecturer sửa module; createdBy vẫn ghi nhận người tạo ban đầu.
+    private Account updatedBy;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    // @Version phát hiện hai Lecturer cùng sửa và từ chối bản lưu dùng version đã cũ.
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 
     @Builder.Default
     @OneToMany(mappedBy = "module", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

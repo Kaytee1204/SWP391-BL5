@@ -5,7 +5,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-/** Deck tu vung do mot hoc vien tao va so huu. */
+/**
+ * Bảng cha của màn 4-7: một bộ từ vựng cá nhân do đúng một học viên sở hữu.
+ * Từ vựng bên trong nằm ở bảng liên kết PersonalVocabularyDeckItem, không lưu trực tiếp tại đây.
+ */
 @Entity
 @Table(name = "PersonalVocabularyDeck")
 @Getter
@@ -22,6 +25,7 @@ public class PersonalVocabularyDeck {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
+    // student_id là dữ liệu ownership dùng kèm deckId trong mọi truy vấn đọc/sửa/xóa.
     private Account student;
 
     @Column(name = "title", nullable = false, length = 150)
@@ -38,6 +42,7 @@ public class PersonalVocabularyDeck {
 
     @PrePersist
     protected void onCreate() {
+        // Backend tự quản lý timestamp để client không thể giả mạo thời điểm tạo/cập nhật.
         LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
@@ -45,6 +50,7 @@ public class PersonalVocabularyDeck {
 
     @PreUpdate
     protected void onUpdate() {
+        // Khi sửa metadata deck chỉ cập nhật updatedAt; createdAt luôn giữ nguyên.
         updatedAt = LocalDateTime.now();
     }
 }
