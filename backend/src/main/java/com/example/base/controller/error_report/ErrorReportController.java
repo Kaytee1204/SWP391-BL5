@@ -20,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -110,9 +109,11 @@ public class ErrorReportController {
     @Operation(summary = "Update Error Report Status (Manager/Lecturer only)", description = "Thay đổi trạng thái báo cáo sang IN_PROGRESS, RESOLVED, hoặc REJECTED")
     public ResponseEntity<ApiResponse<ErrorReportResponse>> updateReportStatus(
             @PathVariable("id") Long reportId,
-            @Valid @RequestBody UpdateReportStatusRequest request) {
+            @Valid @RequestBody UpdateReportStatusRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
 
-        ErrorReportResponse response = reportService.updateReportStatus(reportId, request.getStatus());
+        ErrorReportResponse response = reportService.updateReportStatus(
+                reportId, request.getStatus(), request.getReviewerNote(), currentUser.getAccountId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

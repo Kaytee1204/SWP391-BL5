@@ -21,11 +21,13 @@ public class ErrorReportServiceImpl implements ErrorReportService {
     @Override
     @Transactional
     public ErrorReportResponse createReport(ErrorReportRequest request, Long studentId) {
+        String targetType = request.getTargetType().trim().toUpperCase();
+        String description = request.getDescription().trim();
 
         // 1. KIỂM TRA TRÙNG LẶP: Chặn nếu học viên đã gửi báo cáo cho nội dung này và vẫn đang PENDING
         boolean isDuplicate = errorReportRepository.existsByStudentIdAndTargetTypeAndTargetIdAndStatus(
                 studentId,
-                request.getTargetType(),
+            targetType,
                 request.getTargetId(),
                 ReportStatus.PENDING
         );
@@ -36,9 +38,9 @@ public class ErrorReportServiceImpl implements ErrorReportService {
         // 2. Nếu không trùng, tiến hành tạo mới
         ErrorReport report = ErrorReport.builder()
                 .studentId(studentId)
-                .targetType(request.getTargetType())
+                .targetType(targetType)
                 .targetId(request.getTargetId())
-                .description(request.getDescription())
+                .description(description)
                 .status(ReportStatus.PENDING)
                 .build();
 
@@ -60,8 +62,7 @@ public class ErrorReportServiceImpl implements ErrorReportService {
         if(report.getStatus() != ReportStatus.PENDING) {
             throw new RuntimeException("Chỉ có thể sửa báo cáo khi đang ở trạng thái PENDING");
         }
-        report.setDescription(request.getDescription());
-        report.setTargetType(request.getTargetType());
+        report.setDescription(request.getDescription().trim());
 
         ErrorReport updateReport = errorReportRepository.save(report);
         return mapToResponse(updateReport); // Sửa lại thành updateReport thay vì report
@@ -88,7 +89,7 @@ public class ErrorReportServiceImpl implements ErrorReportService {
 
     @Override
     @Transactional
-    public ErrorReportResponse updateReportStatus(Long reportId, String status) {
+    public ErrorReportResponse updateReportStatus(Long reportId, String status, String reviewerNote, Long reviewerId) {
         // 1. Tìm báo cáo trong DB
         ErrorReport report = errorReportRepository.findById(reportId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy báo cáo lỗi với ID: " + reportId));
@@ -96,7 +97,17 @@ public class ErrorReportServiceImpl implements ErrorReportService {
         // 2. Chuyển String sang Enum và cập nhật
         try {
             ReportStatus enumStatus = ReportStatus.valueOf(status.trim().toUpperCase());
+            if (!isAllowedStatusTransition(report.getStatus(), enumStatus)) {
+                throw new IllegalArgumentException("Chuyển trạng thái báo cáo không hợp lệ");
+            }
+            String note = trimToNull(reviewerNote);
+            if ((enumStatus == ReportStatus.RESOLVED || enumStatus == ReportStatus.REJECTED) && note == null) {
+                throw new IllegalArgumentException("Phải nhập phản hồi khi hoàn tất hoặc từ chối báo cáo");
+            }
             report.setStatus(enumStatus);
+            report.setReviewerNote(note);
+            report.setReviewedBy(reviewerId);
+            report.setReviewedAt(java.time.LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Trạng thái cập nhật không hợp lệ: " + status);
         }
@@ -136,8 +147,26 @@ public class ErrorReportServiceImpl implements ErrorReportService {
                 .targetId(report.getTargetId())
                 .description(report.getDescription())
                 .status(report.getStatus())
+                .reviewerNote(report.getReviewerNote())
+                .reviewedBy(report.getReviewedBy())
+                .reviewedAt(report.getReviewedAt())
                 .createdAt(report.getCreatedAt())
                 .updatedAt(report.getUpdatedAt())
                 .build();
+    }
+
+    private boolean isAllowedStatusTransition(ReportStatus currentStatus, ReportStatus nextStatus) {
+        return (currentStatus == ReportStatus.PENDING
+                && (nextStatus == ReportStatus.IN_PROGRESS || nextStatus == ReportStatus.REJECTED))
+                || (currentStatus == ReportStatus.IN_PROGRESS
+                && (nextStatus == ReportStatus.RESOLVED || nextStatus == ReportStatus.REJECTED));
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

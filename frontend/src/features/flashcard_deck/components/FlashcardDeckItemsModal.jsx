@@ -44,6 +44,31 @@ export default function FlashcardDeckItemsModal({ deck, onClose, onDeckUpdated }
         e.preventDefault();
         
         const trimmedWord = itemForm.word.trim();
+        const trimmedMeaning = itemForm.meaning.trim();
+        const trimmedReading = itemForm.reading.trim();
+        const wordPattern = /^[\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Han}々ー・]+$/u;
+        const readingPattern = /^(?:[\p{L}\p{N}々ー・]+(?:[ \-'\u00a0][\p{L}\p{N}々ー・]+)*)?$/u;
+
+        if (!trimmedWord) {
+            alert('Word is required.');
+            return;
+        }
+        if (!wordPattern.test(trimmedWord)) {
+            alert('Word may contain only Hiragana, Katakana, and Kanji characters.');
+            return;
+        }
+        if (!trimmedMeaning) {
+            alert('Meaning is required.');
+            return;
+        }
+        if (!/^[^\p{Cc}]*$/u.test(trimmedMeaning)) {
+            alert('Meaning contains invalid control characters.');
+            return;
+        }
+        if (!readingPattern.test(trimmedReading)) {
+            alert('Reading contains invalid characters.');
+            return;
+        }
 
         // Check if the word already exists in the list to prevent duplicates
         const isDuplicate = items.some(item => {
@@ -65,8 +90,8 @@ export default function FlashcardDeckItemsModal({ deck, onClose, onDeckUpdated }
                 itemType: itemForm.itemType,
                 itemId: editingItem ? editingItem.itemId : Date.now(),
                 word: trimmedWord,
-                meaning: itemForm.meaning.trim(),
-                reading: itemForm.reading ? itemForm.reading.trim() : ''
+                meaning: trimmedMeaning,
+                reading: trimmedReading || null
             };
 
             if (editingItem) {
