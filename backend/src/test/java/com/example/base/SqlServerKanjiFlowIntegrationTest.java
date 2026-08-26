@@ -48,10 +48,11 @@ class SqlServerKanjiFlowIntegrationTest {
         // Tạo dữ liệu theo đúng thứ tự phụ thuộc khóa ngoại, sau đó thêm Kanji vào deck
         // bằng các service công khai giống luồng controller sẽ gọi trong ứng dụng.
         KanjiModuleDto module = kanjiService.createModule(
-                new KanjiModuleRequest(JlptLevel.N5, "Kanji cơ bản", "Bài kiểm tra SQL Server"),
+                new KanjiModuleRequest(JlptLevel.N5, "Kanji cơ bản", "Bài kiểm tra SQL Server", null),
                 author.getAccountId());
         KanjiDetailDto kanji = kanjiService.createKanji(new KanjiDetailRequest(
-                module.getModuleId(), "日", "ニチ", "ひ", "Nhật, mặt trời", "日本"));
+                module.getModuleId(), "日", "ニチ", "ひ", "Nhật, mặt trời", "日本", null),
+                author.getAccountId());
         PersonalKanjiDeckDto deck = deckService.createKanjiDeck(
                 new CreateDeckRequest("N5 của tôi", "Deck kiểm tra"), student.getAccountId());
 

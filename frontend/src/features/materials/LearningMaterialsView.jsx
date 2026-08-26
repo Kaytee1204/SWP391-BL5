@@ -21,6 +21,7 @@ export default function LearningMaterialsView({
   onLogout,
   initialTab = 'grammar_patterns'
 }) {
+  // Tab chỉ điều phối màn con. Hai màn Kanji được mount cùng nhau vì module là cha của Kanji detail.
   const [materialTab, setMaterialTab] = useState(initialTab);
 
   return (
@@ -236,6 +237,7 @@ export default function LearningMaterialsView({
         )}
 
         {materialTab === 'kanji_modules' && (
+          // Quản lý module (36-39) và Kanji detail (40-43) trên cùng workspace để thấy quan hệ cha-con.
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <KanjiModuleManagementView currentUser={currentUser} />
             <KanjiPage currentUser={currentUser} onNavigate={onNavigate} />

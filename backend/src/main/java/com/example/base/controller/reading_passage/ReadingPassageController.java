@@ -53,8 +53,8 @@ public class ReadingPassageController {
             @PageableDefault(
                     page = 0,
                     size = 10,
-                    sort = "updatedAt",
-                    direction = Sort.Direction.DESC
+                    sort = "passageId",
+                    direction = Sort.Direction.ASC
             )
             Pageable pageable
     ) {

@@ -37,6 +37,7 @@ public class QuestionSetUpsertRequest {
     )
     private JlptLevel jlptLevel;
 
+    @NotNull
     @Min(value = 1, message = "Thời lượng tối thiểu là 1 phút")
     @Max(value = 300, message = "Thời lượng tối đa là 300 phút")
     private Integer durationMinutes = 60;

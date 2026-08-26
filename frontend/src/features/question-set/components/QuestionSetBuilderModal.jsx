@@ -89,7 +89,7 @@ export default function QuestionSetBuilderModal({ questionSetId, onClose, onSave
       jlptLevel: questionSet.jlptLevel,
       page: String(availablePage),
       size: String(AVAILABLE_PAGE_SIZE),
-      sort: 'questionId,desc'
+      sort: 'questionId,asc'
     });
     if (questionSet.skillType !== 'mixed') params.set('skillType', questionSet.skillType);
     if (keyword) params.set('keyword', keyword);

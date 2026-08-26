@@ -40,6 +40,12 @@ export const questionSetApi = {
     return apiRequest(`/question-sets/${questionSetId}/questions`, 'POST', payload);
   },
 
+  changePublicationStatus(questionSetId, publicationStatus) {
+    return apiRequest(`/question-sets/${questionSetId}/publication`, 'PATCH', {
+      publicationStatus
+    });
+  },
+
   remove(questionSetId) {
     return apiRequest(`/question-sets/${questionSetId}`, 'DELETE');
   }

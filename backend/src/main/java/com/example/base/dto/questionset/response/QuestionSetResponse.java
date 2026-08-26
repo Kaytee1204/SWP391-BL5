@@ -1,6 +1,7 @@
 package com.example.base.dto.questionset.response;
 
 import com.example.base.entity.JlptLevel;
+import com.example.base.entity.QuestionSetPublicationStatus;
 import com.example.base.entity.QuestionSkillType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +21,8 @@ public class QuestionSetResponse {
     private QuestionSkillType skillType;
     private JlptLevel jlptLevel;
     private Integer durationMinutes;
+
+    private QuestionSetPublicationStatus publicationStatus;
 
     private Long createdById;
     private String createdByName;

@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Locale;
 
 @Entity
 @Table ( name = "QuestionSet")
@@ -46,6 +45,11 @@ public class QuestionSet {
 
     @Column(name="updated_at",nullable = false)
     private LocalDateTime updatedAt;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "publication_status", nullable = false, length = 20)
+    private QuestionSetPublicationStatus publicationStatus = QuestionSetPublicationStatus.DRAFT;
 
     @PrePersist
     protected void onCreate() {

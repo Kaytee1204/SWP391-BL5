@@ -1,6 +1,7 @@
 package com.example.base.service.questionbank;
 
 import com.example.base.dto.questionbank.request.QuestionUpsertRequest;
+import com.example.base.entity.QuestionSkillType;
 import com.example.base.entity.QuestionType;
 import org.springframework.stereotype.Component;
 
@@ -16,10 +17,39 @@ import java.util.Locale;
 @Component
 public class QuestionDuplicateHashGenerator {
     public String generate(QuestionUpsertRequest request){
-        return generate(
-                request.getQuestionType(), //check theo loại câu hỏi
-                request.getQuestionText(), //check theo nội dung
-                request.getCorrectAnswers() // check theo đáp án
+        if (request == null) {
+            throw new IllegalArgumentException(
+                    "Question request không được null"
+            );
+        }
+
+        QuestionSkillType skillType =
+                request.getSkillType();
+
+        /*
+         * Giữ nguyên cách tạo hash cũ cho Vocabulary và Grammar.
+         * Nhờ vậy hash của dữ liệu cũ không bị thay đổi.
+         */
+        if (skillType != QuestionSkillType.reading
+                && skillType != QuestionSkillType.listening) {
+
+            return generate(
+                    request.getQuestionType(),
+                    request.getQuestionText(),
+                    request.getCorrectAnswers()
+            );
+        }
+
+        /*
+         * Reading và Listening tính thêm resourceKey.
+         */
+        String resourceKey = buildResourceKey(request);
+
+        return generateWithResource(
+                resourceKey,
+                request.getQuestionType(),
+                request.getQuestionText(),
+                request.getCorrectAnswers()
         );
     }
 
@@ -27,6 +57,7 @@ public class QuestionDuplicateHashGenerator {
     public String generate(QuestionType questionType, String questionText, List<String> correctAnswers){
         try{
             MessageDigest digest = MessageDigest.getInstance("SHA-256"); // dùng sha-256 để tạo mã băm
+
 
             boolean isChoiceQuestion =
                     questionType == QuestionType.multiple_choice
@@ -92,10 +123,163 @@ public class QuestionDuplicateHashGenerator {
      * Ví dụ:
      * ["ab", "c"] và ["a", "bc"] không được tạo cùng dữ liệu đầu vào.
      */
+    private String generateWithResource(
+            String resourceKey,
+            QuestionType questionType,
+            String questionText,
+            List<String> correctAnswers
+    ) {
+        try {
+            MessageDigest digest =
+                    MessageDigest.getInstance("SHA-256");
 
+            /*
+             * Ví dụ:
+             * reading:12
+             * listening:8
+             */
+            addPart(digest, resourceKey);
+
+            appendQuestionData(
+                    digest,
+                    questionType,
+                    questionText,
+                    correctAnswers
+            );
+
+            return HexFormat.of()
+                    .formatHex(digest.digest());
+
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalArgumentException(
+                    "JVM không hỗ trợ SHA-256",
+                    exception
+            );
+        }
+    }
+
+    /**
+     * Tạo khóa xác định passage/audio được câu hỏi sử dụng.
+     */
+    private String buildResourceKey(
+            QuestionUpsertRequest request
+    ) {
+        if (request.getSkillType()
+                == QuestionSkillType.reading) {
+
+            if (request.getReadingPassageId() == null) {
+                throw new IllegalArgumentException(
+                        "Câu hỏi Reading phải có readingPassageId"
+                );
+            }
+
+            return "reading:"
+                    + request.getReadingPassageId();
+        }
+
+        if (request.getSkillType()
+                == QuestionSkillType.listening) {
+
+            if (request.getListeningExerciseId() == null) {
+                throw new IllegalArgumentException(
+                        "Câu hỏi Listening phải có listeningExerciseId"
+                );
+            }
+
+            return "listening:"
+                    + request.getListeningExerciseId();
+        }
+
+        return "";
+    }
+
+    /**
+     * Ghi loại câu hỏi, nội dung và đáp án vào digest.
+     */
+    private void appendQuestionData(
+            MessageDigest digest,
+            QuestionType questionType,
+            String questionText,
+            List<String> correctAnswers
+    ) {
+        boolean isChoiceQuestion =
+                questionType == QuestionType.multiple_choice
+                        || questionType
+                        == QuestionType.multiple_select;
+
+        /*
+         * multiple_choice và multiple_select dùng chung nhóm hash.
+         * Việc đổi loại chọn một thành chọn nhiều không giúp tạo
+         * một câu hỏi trùng.
+         */
+        String hashQuestionType;
+
+        if (isChoiceQuestion) {
+            hashQuestionType =
+                    QuestionType.multiple_choice.name();
+        } else if (questionType == null) {
+            hashQuestionType = "";
+        } else {
+            hashQuestionType = questionType.name();
+        }
+
+        addPart(digest, hashQuestionType);
+        addPart(
+                digest,
+                normalizeText(questionText)
+        );
+
+        /*
+         * Với câu hỏi lựa chọn, chỉ cần cùng resource và cùng
+         * questionText là được xem là trùng.
+         *
+         * Không phụ thuộc vào đáp án đúng.
+         */
+        if (isChoiceQuestion) {
+            return;
+        }
+
+        /*
+         * Với fill_blank, đáp án đúng cũng tham gia vào hash.
+         */
+        List<String> normalizedAnswers =
+                correctAnswers == null
+                        ? List.of()
+                        : correctAnswers.stream()
+                        .map(this::normalizeText)
+                        .filter(
+                                answer ->
+                                        !answer.isBlank()
+                        )
+                        .distinct()
+                        .sorted()
+                        .toList();
+
+        addPart(
+                digest,
+                String.valueOf(
+                        normalizedAnswers.size()
+                )
+        );
+
+        for (String answer : normalizedAnswers) {
+            addPart(digest, answer);
+        }
+    }
     private void addPart(MessageDigest digest,String value){
-        byte[] bytes = value.getBytes((StandardCharsets.UTF_8)); //chuyển mảng byte theo utf8
-        byte[] lengthBytes = ByteBuffer.allocate(Integer.BYTES).putInt(bytes.length).array(); //
+        String safeValue =
+                value == null ? "" : value;
+
+        byte[] bytes =
+                safeValue.getBytes(
+                        StandardCharsets.UTF_8
+                );
+
+        byte[] lengthBytes =
+                ByteBuffer.allocate(Integer.BYTES)
+                        .putInt(bytes.length)
+                        .array();
+
         digest.update(lengthBytes);
         digest.update(bytes);
     }

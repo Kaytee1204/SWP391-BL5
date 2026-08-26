@@ -227,6 +227,7 @@
 
 .qs-set-badges {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.4rem;
 }
 
@@ -243,6 +244,26 @@
 .qs-level-badge.is-n3 { color: #b45309; background: #fef3c7; }
 .qs-level-badge.is-n2 { color: #7e22ce; background: #f3e8ff; }
 .qs-level-badge.is-n1 { color: #be123c; background: #ffe4e6; }
+
+.qs-set-badges .qs-ownership-badge.is-owned {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.qs-set-badges .qs-ownership-badge.is-shared {
+  color: #4338ca;
+  background: #eef2ff;
+}
+
+.qs-set-badges .qs-publication-badge.is-published {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.qs-set-badges .qs-publication-badge.is-draft {
+  color: #9a3412;
+  background: #ffedd5;
+}
 
 .qs-set-id {
   color: #94a3b8;
@@ -364,6 +385,23 @@
   background: #4f46e5;
   border-color: #4f46e5;
   font-weight: 800;
+}
+
+.qs-set-card-actions .qs-publication-button.is-published {
+  color: #9a3412;
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.qs-set-card-actions .qs-publication-button.is-draft {
+  color: #047857;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.qs-set-card-actions button:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .qs-set-card-actions .is-danger,

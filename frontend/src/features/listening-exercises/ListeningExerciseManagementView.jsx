@@ -38,7 +38,7 @@ export default function ListeningExerciseManagementView({ currentUser }) {
     setLoading(true);
     setError('');
     try {
-      const params = { keyword, jlptLevel, page, size: PAGE_SIZE, sort: 'updatedAt,desc' };
+      const params = { keyword, jlptLevel, page, size: PAGE_SIZE, sort: 'listeningExerciseId,asc' };
       const response = onlyMine
         ? await listeningExerciseApi.searchMine(params)
         : await listeningExerciseApi.search(params);
@@ -131,8 +131,8 @@ export default function ListeningExerciseManagementView({ currentUser }) {
         <div className="le-summary"><div><strong>{pageInfo.totalElements}</strong> bài nghe</div><span>Trang {pageInfo.totalPages ? page + 1 : 0}/{pageInfo.totalPages}</span></div>
         {loading ? <div className="le-state"><div className="le-spinner" /> Đang tải bài nghe...</div>
           : exercises.length === 0 ? <div className="le-empty"><Headphones size={32} /><h3>Chưa tìm thấy bài nghe</h3><p>Thay đổi bộ lọc hoặc tạo bài nghe đầu tiên.</p>{canCreate && <button type="button" className="le-button primary" onClick={() => setShowForm(true)}><Plus size={17} /> Tạo bài nghe</button>}</div>
-            : <div className="le-table-scroll"><table className="le-table"><thead><tr><th>Bài nghe</th><th>JLPT</th><th>Audio</th><th>Người tạo</th><th>Cập nhật</th><th aria-label="Thao tác" /></tr></thead><tbody>
-              {exercises.map((exercise) => <tr key={exercise.listeningExerciseId}>
+            : <div className="le-table-scroll"><table className="le-table"><thead><tr><th>STT</th><th>Bài nghe</th><th>JLPT</th><th>Audio</th><th>Người tạo</th><th>Cập nhật</th><th aria-label="Thao tác" /></tr></thead><tbody>
+              {exercises.map((exercise,index) => <tr key={exercise.listeningExerciseId}><td>{page * PAGE_SIZE + index + 1}</td>
                 <td><button type="button" className="le-title" onClick={() => openDetail(exercise)}><strong>{exercise.title}</strong><small>ID #{exercise.listeningExerciseId}</small></button></td>
                 <td><span className={`le-level is-${exercise.jlptLevel?.toLowerCase()}`}>{exercise.jlptLevel}</span></td>
                 <td><audio className="le-table-audio" controls preload="none" src={resolveListeningAudioUrl(exercise.audioUrl)} /></td>

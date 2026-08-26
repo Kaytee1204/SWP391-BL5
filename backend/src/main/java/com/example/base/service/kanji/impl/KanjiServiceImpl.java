@@ -9,8 +9,10 @@ import com.example.base.service.kanji.KanjiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class KanjiServiceImpl implements KanjiService {
 
     @Override
     public KanjiModuleDto getModule(Long moduleId) {
-        // Lay mot module theo id; requireModule kiem tra ton tai truoc khi map entity sang DTO.
+        // requireModule kiểm tra tồn tại trước khi map entity sang DTO.
         return toModuleDto(requireModule(moduleId));
     }
 
@@ -48,19 +50,23 @@ public class KanjiServiceImpl implements KanjiService {
                 .title(request.getTitle().trim())
                 .description(trimToNull(request.getDescription()))
                 .createdBy(creator)
+                .updatedBy(creator)
                 .build();
         return toModuleDto(moduleRepository.save(module));
     }
 
     @Override
     @Transactional
-    public KanjiModuleDto updateModule(Long moduleId, KanjiModuleRequest request) {
-        // Cap nhat module kanji; load module theo id, ghi lai level/title/description tu request, save, roi map DTO.
+    public KanjiModuleDto updateModule(Long moduleId, KanjiModuleRequest request, Long lecturerId) {
+        // Nạp module cũ, kiểm tra version rồi chỉ ghi lại các field mà form cho phép sửa.
         KanjiLessonModule module = requireModule(moduleId);
+        requireCurrentVersion(request.getVersion(), module.getVersion(), KanjiLessonModule.class, moduleId);
         module.setJlptLevel(request.getJlptLevel());
         module.setTitle(request.getTitle().trim());
         module.setDescription(trimToNull(request.getDescription()));
-        return toModuleDto(moduleRepository.save(module));
+        // Quyền sửa dựa trên role, không dựa trên người tạo; vì vậy createdBy luôn được giữ nguyên.
+        module.setUpdatedBy(requireAccount(lecturerId));
+        return toModuleDto(moduleRepository.saveAndFlush(module));
     }
 
     @Override
@@ -102,13 +108,15 @@ public class KanjiServiceImpl implements KanjiService {
 
     @Override
     public KanjiDetailDto getKanji(Long kanjiId) {
-        // Lay mot kanji detail theo id; requireKanji dam bao entity ton tai truoc khi map DTO.
+        // requireKanji bảo đảm entity tồn tại trước khi map DTO.
         return toKanjiDto(requireKanji(kanjiId));
     }
 
     @Override
     @Transactional
-    public KanjiDetailDto createKanji(KanjiDetailRequest request) {
+    public KanjiDetailDto createKanji(KanjiDetailRequest request, Long lecturerId) {
+        // lecturerId đến từ JWT, không đến từ form nên client không thể chọn người tạo.
+        Account lecturer = requireAccount(lecturerId);
         // moduleId từ request được đổi thành entity bằng requireModule trước khi gắn quan hệ.
         KanjiDetail kanji = KanjiDetail.builder()
                 .module(requireModule(request.getModuleId()))
@@ -117,22 +125,27 @@ public class KanjiServiceImpl implements KanjiService {
                 .kunyomi(trimToNull(request.getKunyomi()))
                 .meaning(request.getMeaning().trim())
                 .compoundWords(trimToNull(request.getCompoundWords()))
+                .createdBy(lecturer)
+                .updatedBy(lecturer)
                 .build();
-        return toKanjiDto(kanjiRepository.save(kanji));
+        return toKanjiDto(kanjiRepository.saveAndFlush(kanji));
     }
 
     @Override
     @Transactional
-    public KanjiDetailDto updateKanji(Long kanjiId, KanjiDetailRequest request) {
-        // Cap nhat kanji detail; load kanji cu, gan module moi hop le va trim cac field.
+    public KanjiDetailDto updateKanji(Long kanjiId, KanjiDetailRequest request, Long lecturerId) {
+        // Nạp Kanji cũ, kiểm tra version, gắn module hợp lệ rồi chuẩn hóa các chuỗi.
         KanjiDetail kanji = requireKanji(kanjiId);
+        requireCurrentVersion(request.getVersion(), kanji.getVersion(), kanjiId);
         kanji.setModule(requireModule(request.getModuleId()));
         kanji.setCharacter(request.getCharacter().trim());
         kanji.setOnyomi(trimToNull(request.getOnyomi()));
         kanji.setKunyomi(trimToNull(request.getKunyomi()));
         kanji.setMeaning(request.getMeaning().trim());
         kanji.setCompoundWords(trimToNull(request.getCompoundWords()));
-        return toKanjiDto(kanjiRepository.save(kanji));
+        // Quyền sửa dựa trên role ở controller; createdBy giữ nguyên và updatedBy nhận người hiện tại.
+        kanji.setUpdatedBy(requireAccount(lecturerId));
+        return toKanjiDto(kanjiRepository.saveAndFlush(kanji));
     }
 
     @Override
@@ -147,15 +160,31 @@ public class KanjiServiceImpl implements KanjiService {
     }
 
     private KanjiLessonModule requireModule(Long id) {
-        // Tim module theo id; neu khong co thi nem ResourceNotFoundException de controller tra loi loi phu hop.
+        // Gom quy tắc 404 để create/update/read có cùng hành vi khi module không tồn tại.
         return moduleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kanji module", "id", id));
     }
 
     private KanjiDetail requireKanji(Long id) {
-        // Tim kanji theo id; neu khong co thi nem ResourceNotFoundException de dung luong nghiep vu hien tai.
+        // Gom quy tắc 404 để các luồng đọc/sửa/xóa dùng cùng một cách tìm Kanji.
         return kanjiRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Kanji", "id", id));
+    }
+
+    private Account requireAccount(Long id) {
+        return accountRepository.findByAccountIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", id));
+    }
+
+    private void requireCurrentVersion(Long requestedVersion, Long currentVersion, Long id) {
+        // So sánh sớm cho lỗi rõ ràng; @Version vẫn bảo vệ nếu DB đổi sau check nhưng trước flush.
+        requireCurrentVersion(requestedVersion, currentVersion, KanjiDetail.class, id);
+    }
+
+    private void requireCurrentVersion(Long requestedVersion, Long currentVersion, Class<?> entityType, Long id) {
+        if (requestedVersion == null || !Objects.equals(requestedVersion, currentVersion)) {
+            throw new ObjectOptimisticLockingFailureException(entityType, id);
+        }
     }
 
     private KanjiModuleDto toModuleDto(KanjiLessonModule module) {
@@ -167,9 +196,11 @@ public class KanjiServiceImpl implements KanjiService {
                 .description(module.getDescription())
                 .createdById(module.getCreatedBy().getAccountId())
                 .createdByName(module.getCreatedBy().getFullName())
+                .updatedByName(module.getUpdatedBy().getFullName())
                 .kanjiCount(Math.toIntExact(kanjiRepository.countByModule_ModuleId(module.getModuleId())))
                 .createdAt(module.getCreatedAt())
                 .updatedAt(module.getUpdatedAt())
+                .version(module.getVersion())
                 .build();
     }
 
@@ -185,8 +216,11 @@ public class KanjiServiceImpl implements KanjiService {
                 .kunyomi(kanji.getKunyomi())
                 .meaning(kanji.getMeaning())
                 .compoundWords(kanji.getCompoundWords())
+                .createdBy(kanji.getCreatedBy().getFullName())
+                .updatedBy(kanji.getUpdatedBy().getFullName())
                 .createdAt(kanji.getCreatedAt())
                 .updatedAt(kanji.getUpdatedAt())
+                .version(kanji.getVersion())
                 .build();
     }
 

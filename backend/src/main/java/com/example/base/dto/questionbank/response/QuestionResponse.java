@@ -32,6 +32,14 @@ public class QuestionResponse { // chứa dữ liệu câu hỏi trả về fe
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private Long readingPassageId;
+    private String readingPassageTitle;
+    private String readingContentHtml;
+
+    private Long listeningExerciseId;
+    private String listeningTitle;
+    private String listeningAudioUrl;
+
 }
 
 //khong tra entiry truc tiep

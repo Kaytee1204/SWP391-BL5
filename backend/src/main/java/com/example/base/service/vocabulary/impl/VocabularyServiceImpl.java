@@ -7,10 +7,12 @@ import com.example.base.exception.ResourceNotFoundException;
 import com.example.base.repository.*;
 import com.example.base.service.vocabulary.VocabularyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Thực thi nghiệp vụ mục từ vựng: chọn truy vấn theo filter, chuẩn hóa input,
@@ -23,6 +25,7 @@ public class VocabularyServiceImpl implements VocabularyService {
 
     private final VocabularyCategoryRepository categoryRepository;
     private final VocabularyItemRepository itemRepository;
+    private final AccountRepository accountRepository;
 
     @Override
     public List<VocabItemDto> getItems(Long categoryId, JlptLevel level, String search) {
@@ -49,7 +52,9 @@ public class VocabularyServiceImpl implements VocabularyService {
 
     @Override
     @Transactional
-    public VocabItemDto createItem(VocabItemRequest request) {
+    public VocabItemDto createItem(VocabItemRequest request, Long lecturerId) {
+        // lecturerId đến từ JWT, không đến từ form nên client không thể chọn người tạo.
+        Account lecturer = requireAccount(lecturerId);
         // requireCategory biến categoryId từ JSON thành entity thật và chặn khóa ngoại không hợp lệ.
         VocabularyItem item = VocabularyItem.builder()
                 .category(requireCategory(request.getCategoryId()))
@@ -59,15 +64,18 @@ public class VocabularyServiceImpl implements VocabularyService {
                 .meaning(request.getMeaning().trim())
                 .exampleSentence(request.getExampleSentence())
                 .exampleTranslation(request.getExampleTranslation())
+                .createdBy(lecturer)
+                .updatedBy(lecturer)
                 .build();
-        return toItemDto(itemRepository.save(item));
+        return toItemDto(itemRepository.saveAndFlush(item));
     }
 
     @Override
     @Transactional
-    public VocabItemDto updateItem(Long itemId, VocabItemRequest request) {
+    public VocabItemDto updateItem(Long itemId, VocabItemRequest request, Long lecturerId) {
         // Nạp entity đang được quản lý, thay các field cho phép sửa rồi save; ID/timestamp không lấy từ client.
         VocabularyItem item = requireItem(itemId);
+        requireCurrentVersion(request.getVersion(), item.getVersion(), itemId);
         item.setCategory(requireCategory(request.getCategoryId()));
         item.setWord(request.getWord().trim());
         item.setKanji(trimToNull(request.getKanji()));
@@ -75,7 +83,9 @@ public class VocabularyServiceImpl implements VocabularyService {
         item.setMeaning(request.getMeaning().trim());
         item.setExampleSentence(request.getExampleSentence());
         item.setExampleTranslation(request.getExampleTranslation());
-        return toItemDto(itemRepository.save(item));
+        // Quyền sửa dựa trên role ở controller; createdBy giữ nguyên và updatedBy nhận người hiện tại.
+        item.setUpdatedBy(requireAccount(lecturerId));
+        return toItemDto(itemRepository.saveAndFlush(item));
     }
 
     @Override
@@ -95,6 +105,18 @@ public class VocabularyServiceImpl implements VocabularyService {
                 .orElseThrow(() -> new ResourceNotFoundException("Vocabulary item", "id", id));
     }
 
+    private Account requireAccount(Long id) {
+        return accountRepository.findByAccountIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", id));
+    }
+
+    private void requireCurrentVersion(Long requestedVersion, Long currentVersion, Long id) {
+        // So sánh sớm cho lỗi rõ ràng; @Version vẫn bảo vệ nếu DB đổi sau check nhưng trước flush.
+        if (requestedVersion == null || !Objects.equals(requestedVersion, currentVersion)) {
+            throw new ObjectOptimisticLockingFailureException(VocabularyItem.class, id);
+        }
+    }
+
     public VocabItemDto toItemDto(VocabularyItem item) {
         // Làm phẳng dữ liệu category để frontend không cần truy cập cấu trúc entity lồng nhau.
         return VocabItemDto.builder()
@@ -108,8 +130,11 @@ public class VocabularyServiceImpl implements VocabularyService {
                 .meaning(item.getMeaning())
                 .exampleSentence(item.getExampleSentence())
                 .exampleTranslation(item.getExampleTranslation())
+                .createdBy(item.getCreatedBy().getFullName())
+                .updatedBy(item.getUpdatedBy().getFullName())
                 .createdAt(item.getCreatedAt())
                 .updatedAt(item.getUpdatedAt())
+                .version(item.getVersion())
                 .build();
     }
 

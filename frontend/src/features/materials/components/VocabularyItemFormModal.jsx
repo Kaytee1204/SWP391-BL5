@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
+/**
+ * Form nhập một mục từ vựng. Component chỉ quản lý state/validate phía giao diện rồi gọi onSave;
+ * view cha mới quyết định create hay update. Khi sửa, version của item được gửi nguyên về backend
+ * để thực hiện optimistic locking; khi tạo, version là null.
+ */
 export default function VocabularyItemFormModal({
   isOpen,
   item,
@@ -19,6 +24,7 @@ export default function VocabularyItemFormModal({
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Mỗi lần mở/đổi item, reset form từ props để dữ liệu lần mở trước không bị giữ lại.
     if (item) {
       setCategoryId(String(item.categoryId || ''));
       setWord(item.word || '');
@@ -42,6 +48,7 @@ export default function VocabularyItemFormModal({
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
+    // Validate nhanh cho UX; Bean Validation ở backend vẫn là lớp kiểm tra bắt buộc.
     e.preventDefault();
     if (!categoryId) {
       setError('Vui lòng chọn Danh mục bài học cho từ vựng này.');
@@ -71,11 +78,14 @@ export default function VocabularyItemFormModal({
         reading: reading.trim(),
         meaning: meaning.trim(),
         exampleSentence: exampleSentence.trim() || null,
-        exampleTranslation: exampleTranslation.trim() || null
+        exampleTranslation: exampleTranslation.trim() || null,
+        version: item?.version ?? null
       });
       onClose();
     } catch (err) {
-      setError(err.message || 'Lỗi khi lưu từ vựng.');
+      setError(err.status === 409
+        ? 'This content was updated by another lecturer. Please refresh the page before editing it again.'
+        : (err.message || 'Lỗi khi lưu từ vựng.'));
     } finally {
       setLoading(false);
     }

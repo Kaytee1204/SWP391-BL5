@@ -2,9 +2,7 @@ package com.example.base.mapper;
 
 import com.example.base.dto.questionbank.request.QuestionUpsertRequest;
 import com.example.base.dto.questionbank.response.QuestionResponse;
-import com.example.base.entity.Account;
-import com.example.base.entity.QuestionBank;
-import com.example.base.entity.QuestionType;
+import com.example.base.entity.*;
 import com.example.base.exception.AppException;
 import com.example.base.exception.ErrorCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -52,7 +50,8 @@ public class QuestionBankMapper {
 
     public QuestionResponse toResponse(QuestionBank entity){
         Account creator = entity.getCreatedBy();
-
+        ReadingPassage passage = entity.getReadingPassage();
+        ListeningExercise listening = entity.getListeningExercise();
         return QuestionResponse.builder()
                 .questionId(entity.getQuestionId())
                 .skillType(entity.getSkillType())
@@ -62,6 +61,28 @@ public class QuestionBankMapper {
                 .choices(fromJson(entity.getChoices()))
                 .correctAnswers(fromJson(entity.getCorrectAnswer()))
                 .explanation(entity.getExplanation())
+                .readingPassageId(
+                passage == null ? null : passage.getPassageId()
+        )
+                .readingPassageTitle(
+                        passage == null ? null : passage.getTitle()
+                )
+                .readingContentHtml(
+                        passage == null ? null : passage.getContentHtml()
+                )
+
+                .listeningExerciseId(
+                        listening == null
+                                ? null
+                                : listening.getListeningExerciseId()
+                )
+                .listeningTitle(
+                        listening == null ? null : listening.getTitle()
+                )
+                .listeningAudioUrl(
+                        listening == null ? null : listening.getAudioUrl()
+                )
+
                 .createdById(creator!=null ? creator.getAccountId():null)
                 .createdByName(creator!=null?creator.getFullName():null)
                 .createdByEmail(creator!=null?creator.getEmail():null)

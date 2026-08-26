@@ -42,7 +42,7 @@ public class QuestionBankController {
                     page=0,
                     size=10,
                     sort = "questionId",
-                    direction = Sort.Direction.DESC
+                    direction = Sort.Direction.ASC
             )Pageable pageable // phân trang.
     ){
         PageResponse<QuestionResponse> response =

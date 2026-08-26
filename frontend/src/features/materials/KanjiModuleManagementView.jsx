@@ -5,6 +5,14 @@ import KanjiModuleFormModal from './components/KanjiModuleFormModal';
 
 const JLPT_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
+/**
+ * Màn 36-39 - Quản lý module bài Kanji theo JLPT.
+ *
+ * Bộ lọc JLPT được gửi xuống backend; tìm theo title được lọc trên tập module đã nhận.
+ * Modal dùng chung cho create/update và gửi lại version khi update để chống ghi đè đồng thời.
+ * Xóa module có thể kéo theo Kanji con, nhưng backend sẽ từ chối nếu một Kanji đang được
+ * deck cá nhân tham chiếu nhằm bảo toàn dữ liệu học của Student.
+ */
 export default function KanjiModuleManagementView({ currentUser }) {
   const canManage = currentUser?.role === 'Lecturer' || currentUser?.role === 'Manager';
   const [selectedLevel, setSelectedLevel] = useState('ALL');
@@ -16,6 +24,7 @@ export default function KanjiModuleManagementView({ currentUser }) {
   const [editingModule, setEditingModule] = useState(null);
 
   const loadModules = async () => {
+    // ALL được đổi thành null: axios bỏ param và backend hiểu là lấy tất cả cấp độ.
     setLoading(true);
     try {
       const data = await kanjiApi.getModules(selectedLevel === 'ALL' ? null : selectedLevel);
@@ -32,6 +41,7 @@ export default function KanjiModuleManagementView({ currentUser }) {
   }, [selectedLevel]);
 
   const filteredModules = useMemo(() => {
+    // Chỉ lọc title ở client vì danh sách đã được giới hạn theo JLPT từ server.
     if (!keyword.trim()) return modules;
     const q = keyword.toLowerCase().trim();
     return modules.filter(m => m.title?.toLowerCase().includes(q));
@@ -47,17 +57,26 @@ export default function KanjiModuleManagementView({ currentUser }) {
   };
 
   const handleSaveModule = async (formData) => {
-    if (editingModule) {
-      await kanjiApi.updateModule(editingModule.moduleId, formData);
-      setFeedback({ type: 'success', message: 'Cập nhật module Kanji thành công!' });
-    } else {
-      await kanjiApi.createModule(formData);
-      setFeedback({ type: 'success', message: 'Tạo module Kanji mới thành công!' });
+    try {
+      // editingModule quyết định PUT bản ghi hiện có hay POST bản ghi mới.
+      if (editingModule) {
+        await kanjiApi.updateModule(editingModule.moduleId, formData);
+        setFeedback({ type: 'success', message: 'Cập nhật module Kanji thành công!' });
+      } else {
+        await kanjiApi.createModule(formData);
+        setFeedback({ type: 'success', message: 'Tạo module Kanji mới thành công!' });
+      }
+      await loadModules();
+    } catch (error) {
+      if (error.status === 409) {
+        setFeedback({ type: 'conflict', message: 'This content was updated by another lecturer. Please refresh the page before editing it again.' });
+      }
+      throw error;
     }
-    await loadModules();
   };
 
   const deleteModule = async (module) => {
+    // Backend mới là nguồn quyết định cuối cùng vì nó phải kiểm tra tham chiếu từ personal deck.
     if (!window.confirm(`Bạn có chắc muốn xóa module "${module.title}"? Các chữ Kanji thuộc module này cũng sẽ bị xóa!`)) return;
 
     try {
@@ -215,11 +234,14 @@ export default function KanjiModuleManagementView({ currentUser }) {
           borderRadius: '10px',
           fontSize: '0.86rem',
           fontWeight: 600,
-          background: feedback.type === 'error' ? '#fee2e2' : '#dcfce7',
-          color: feedback.type === 'error' ? '#b91c1c' : '#15803d',
-          border: `1px solid ${feedback.type === 'error' ? '#fca5a5' : '#86efac'}`
+          background: feedback.type === 'success' ? '#dcfce7' : '#fee2e2',
+          color: feedback.type === 'success' ? '#15803d' : '#b91c1c',
+          border: `1px solid ${feedback.type === 'success' ? '#86efac' : '#fca5a5'}`
         }}>
           {feedback.message}
+          {feedback.type === 'conflict' && (
+            <button type="button" onClick={loadModules} style={{ marginLeft: '12px' }}>Refresh</button>
+          )}
         </div>
       )}
 
@@ -247,7 +269,7 @@ export default function KanjiModuleManagementView({ currentUser }) {
         </div>
       ) : (
         <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
+          <table style={{ width: '100%', minWidth: '1120px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
             <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
               <tr style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 <th style={{ padding: '14px 18px', width: '80px' }}>ID</th>
@@ -298,6 +320,13 @@ export default function KanjiModuleManagementView({ currentUser }) {
                           {module.description}
                         </div>
                       )}
+                      <div style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '7px', lineHeight: 1.5 }}>
+                        <div><strong>Added By:</strong> {module.createdByName || '—'}</div>
+                        <div>
+                          <strong>Last Updated:</strong> {module.updatedByName || module.createdByName || '—'}
+                          {module.updatedAt ? ` · ${new Date(module.updatedAt).toLocaleString('vi-VN')}` : ''}
+                        </div>
+                      </div>
                     </td>
 
                     <td style={{ padding: '16px 18px', textAlign: 'center' }}>

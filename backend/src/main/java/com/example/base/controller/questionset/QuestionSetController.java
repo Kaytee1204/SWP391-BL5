@@ -4,6 +4,7 @@ import com.example.base.dto.common.ApiResponse;
 import com.example.base.dto.common.PageResponse;
 import com.example.base.dto.questionbank.request.QuestionUpsertRequest;
 import com.example.base.dto.questionset.request.QuestionSetItemsReplaceRequest;
+import com.example.base.dto.questionset.request.QuestionSetPublicationRequest;
 import com.example.base.dto.questionset.request.QuestionSetUpsertRequest;
 import com.example.base.dto.questionset.response.QuestionSetResponse;
 import com.example.base.entity.JlptLevel;
@@ -50,8 +51,8 @@ public class QuestionSetController {
 
             @PageableDefault( page = 0,
                     size = 10,
-                    sort = "updatedAt",
-                    direction = Sort.Direction.DESC)
+                    sort = "questionSetId",
+                    direction = Sort.Direction.ASC)
             Pageable pageable,
 
             @AuthenticationPrincipal
@@ -166,5 +167,19 @@ public class QuestionSetController {
                                 currentUser
                         )
                 ));
+    }
+
+    @PatchMapping("/{setId}/publication")
+    public ResponseEntity<ApiResponse<QuestionSetResponse>> changePublicationStatus(
+            @PathVariable Long setId,
+            @Valid @RequestBody QuestionSetPublicationRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Cập nhật trạng thái chia sẻ thành công",
+                        service.changePublicationStatus(setId,request, currentUser)
+                )
+        );
     }
 }
