@@ -4,7 +4,6 @@ import GrammarReaderPage from '../grammar/GrammarReaderPage';
 import StudentVocabularyView from '../vocabulary/StudentVocabularyView';
 import { KanjiPage } from '../../pages/KanjiPage';
 import GrammarExercisePracticeView from '../grammar/GrammarExercisePracticeView';
-import { PersonalKanjiDecksPage } from '../../pages/PersonalKanjiDecksPage';
 
 export default function FreeCoursesPage({
   currentUser,
@@ -125,34 +124,6 @@ export default function FreeCoursesPage({
             <span>Kanji Dictionary</span>
           </button>
 
-          {currentUser?.role === 'Student' && (
-            <button
-              type="button"
-              onClick={() => setActiveTab('kanji-decks')}
-              style={{
-                flex: 1,
-                minWidth: '150px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.4rem',
-                padding: '0.6rem 1.1rem',
-                borderRadius: '9999px',
-                border: 'none',
-                fontWeight: 700,
-                fontSize: '0.88rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                background: activeTab === 'kanji-decks' ? 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)' : 'transparent',
-                color: activeTab === 'kanji-decks' ? '#fff' : '#475569',
-                boxShadow: activeTab === 'kanji-decks' ? '0 4px 12px rgba(13, 148, 136, 0.25)' : 'none'
-              }}
-            >
-              <span>🗂️</span>
-              <span>My Kanji Decks</span>
-            </button>
-          )}
-
           <button
             type="button"
             onClick={() => setActiveTab('quiz')}
@@ -205,14 +176,6 @@ export default function FreeCoursesPage({
               currentUser={currentUser}
               onNavigate={onNavigate}
               readOnly={true}
-            />
-          </div>
-        )}
-
-        {activeTab === 'kanji-decks' && (
-          <div className="app-shell" style={{ paddingTop: '0' }}>
-            <PersonalKanjiDecksPage
-              onNavigate={onNavigate}
             />
           </div>
         )}

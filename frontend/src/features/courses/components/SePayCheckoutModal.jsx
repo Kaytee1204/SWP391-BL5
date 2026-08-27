@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { paymentApi } from '../../../api/paymentApi';
 
+/**
+ * =========================================================================================
+ * SePayCheckoutModal: Modal hiển thị mã VietQR thanh toán & Tự động đối soát giao dịch
+ * =========================================================================================
+ * Các tính năng chính:
+ * 1. Hiển thị mã VietQR động từ SePay chứa đúng cú pháp `SEVQR <orderCode>`.
+ * 2. Auto-Polling (Tự động kiểm tra trạng thái mỗi 3 giây):
+ *    - Gọi `paymentApi.checkPaymentStatus(orderCode)` ngầm.
+ *    - Ngay khi SePay Webhook kích hoạt đơn hàng thành công, modal tự chuyển sang màn hình 🎉 "Thanh toán thành công!".
+ * 3. Hỗ trợ nút sao chép nhanh số tài khoản và nội dung chuyển khoản.
+ * 4. Nút bấm "Vào học ngay" đưa học viên đến thẳng khóa học vừa mua.
+ */
 export default function SePayCheckoutModal({ paymentData, onClose, onSuccess, onNavigateLearning }) {
   const [checking, setChecking] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
@@ -11,7 +23,7 @@ export default function SePayCheckoutModal({ paymentData, onClose, onSuccess, on
   const amount = paymentData?.amount || 0;
   const accountName = paymentData?.accountName || 'TRINH BAO KHANH';
 
-  // Luôn bắt buộc tiền tố SEVQR theo đúng quy định của VietinBank & SePay
+  // 1. Chuẩn hóa nội dung chuyển khoản với tiền tố SEVQR theo quy định của VietinBank & SePay
   let rawContent = paymentData?.transferContent || '';
   if (rawContent.startsWith('JLMS ')) {
     rawContent = 'SEVQR ' + rawContent.substring(5);
@@ -20,7 +32,7 @@ export default function SePayCheckoutModal({ paymentData, onClose, onSuccess, on
     ? rawContent 
     : `SEVQR ${paymentData?.orderCode || ''}`;
 
-  // Sử dụng chuẩn mã QR chính thức từ SePay với tiền tố SEVQR
+  // 2. Link ảnh mã QR chuẩn Napas247 từ máy chủ SePay
   const finalQrUrl = `https://qr.sepay.vn/img?acc=${accountNumber}&bank=VietinBank&amount=${amount}&des=${encodeURIComponent(transferContent)}&template=compact`;
 
   const formatVND = (num) => {
@@ -33,7 +45,14 @@ export default function SePayCheckoutModal({ paymentData, onClose, onSuccess, on
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  // Tự động kiểm tra trạng thái thanh toán mỗi 3 giây (Auto-Polling từ SePay Webhook)
+  /**
+   * =====================================================================================
+   * AUTO-POLLING: TỰ ĐỘNG KIỂM TRA TRẠNG THÁI THANH TOÁN MỖI 3 GIÂY
+   * =====================================================================================
+   * Khi người dùng quét mã và chuyển tiền trên điện thoại:
+   * - Ngân hàng -> SePay -> Webhook Backend đổi status thành "paid".
+   * - Polling ở đây bắt được status === 'paid' và lập tức hiển thị màn hình chúc mừng!
+   */
   useEffect(() => {
     if (!paymentData?.orderCode || isPaid) return;
 
@@ -47,14 +66,18 @@ export default function SePayCheckoutModal({ paymentData, onClose, onSuccess, on
           onSuccess && onSuccess(res.data);
         }
       } catch (err) {
-        // Ignore polling errors
+        // Bỏ qua lỗi mạng nhất thời trong quá trình polling
       }
     }, 3000);
 
     return () => clearInterval(interval);
   }, [paymentData, isPaid, onSuccess]);
 
-  // Kiểm tra thủ công khi người dùng click
+  /**
+   * =====================================================================================
+   * KIỂM TRA THỦ CÔNG KHI HỌC VIÊN BẤM "TÔI ĐÃ CHUYỂN KHOẢN XONG"
+   * =====================================================================================
+   */
   const handleManualCheck = async () => {
     if (!paymentData?.orderCode) return;
     setChecking(true);
@@ -78,7 +101,9 @@ export default function SePayCheckoutModal({ paymentData, onClose, onSuccess, on
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px', textAlign: 'center', maxHeight: '90vh', overflowY: 'auto', borderRadius: '24px' }}>
         
-        {/* MÀN HÌNH 1: ĐÃ THANH TOÁN THÀNH CÔNG */}
+        {/* ================================================================== */}
+        {/* MÀN HÌNH 1: ĐÃ THANH TOÁN THÀNH CÔNG (isPaid === true)            */}
+        {/* ================================================================== */}
         {isPaid ? (
           <div style={{ padding: '1.5rem 0.5rem' }}>
             <div style={{ fontSize: '4.5rem', marginBottom: '0.5rem' }}>🎉</div>
@@ -126,7 +151,9 @@ export default function SePayCheckoutModal({ paymentData, onClose, onSuccess, on
             </div>
           </div>
         ) : (
-          /* MÀN HÌNH 2: HIỂN THỊ MÃ QR CHUYỂN KHOẢN */
+          /* ================================================================== */
+          /* MÀN HÌNH 2: HIỂN THỊ MÃ QR CHUYỂN KHOẢN                           */
+          /* ================================================================== */
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -138,7 +165,7 @@ export default function SePayCheckoutModal({ paymentData, onClose, onSuccess, on
               <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#94a3b8' }}>✕</button>
             </div>
 
-            {/* Khóa học & Số tiền */}
+            {/* Thông tin Khóa học & Số tiền */}
             <div style={{ background: '#f8fafc', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1rem' }}>
               <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Khóa học:</div>
               <strong style={{ fontSize: '1rem', color: 'var(--text-heading)', display: 'block', margin: '0.2rem 0' }}>
@@ -149,7 +176,7 @@ export default function SePayCheckoutModal({ paymentData, onClose, onSuccess, on
               </div>
             </div>
 
-            {/* QR Code VietQR */}
+            {/* Khung quét mã QR VietQR */}
             <div style={{ margin: '0.75rem 0' }}>
               <div style={{ padding: '0.75rem', background: '#fff', display: 'inline-block', borderRadius: '16px', border: '2px dashed #059669', boxShadow: '0 4px 15px rgba(5, 150, 105, 0.08)', maxWidth: '320px', width: '100%' }}>
                 <img
@@ -163,7 +190,7 @@ export default function SePayCheckoutModal({ paymentData, onClose, onSuccess, on
               </p>
             </div>
 
-            {/* Bảng thông tin chuyển khoản */}
+            {/* Bảng chi tiết chuyển khoản thủ công */}
             <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0.85rem 1rem', textAlign: 'left', fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: '#64748b' }}>Ngân hàng:</span>
@@ -204,7 +231,7 @@ export default function SePayCheckoutModal({ paymentData, onClose, onSuccess, on
               </div>
             </div>
 
-            {/* Nút thao tác */}
+            {/* Nhóm nút thao tác */}
             <div style={{ display: 'flex', gap: '0.65rem', marginTop: '1rem', justifyContent: 'center' }}>
               <button type="button" className="btn-dash btn-dash-secondary" onClick={onClose}>
                 Đóng

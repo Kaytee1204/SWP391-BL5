@@ -24,10 +24,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * =========================================================================================
  * PaymentController: Quản lý toàn bộ API Thanh toán Khóa học qua cổng SePay VietQR (VietinBank).
- * Cung cấp các endpoint:
- * 1. POST /payments/create-payment-link : Khởi tạo giao dịch thanh toán & sinh mã QR SePay.
- * 2. POST /payments/sepay-webhook       : Nhận thông báo biến động số dư tự động từ SePay.
+ * =========================================================================================
+ * Các luồng nghiệp vụ chính:
+ * 1. POST /payments/create-payment-link : Khởi tạo đơn hàng & sinh mã QR SePay chuyển khoản.
+ * 2. POST /payments/sepay-webhook       : Nhận thông báo biến động số dư tự động (Webhook) từ SePay.
  * 3. GET  /payments/check-status/{code} : Kiểm tra trạng thái đơn hàng (dùng cho Auto-Polling phía Frontend).
  * 4. GET  /payments                     : Xem danh sách giao dịch & doanh thu (dành cho Manager & Lecturer).
  * 5. GET  /payments/my-history          : Xem lịch sử thanh toán của cá nhân học viên.
@@ -42,13 +44,17 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     /**
-     * BƯỚC 1: HỌC VIÊN BẤM MUA KHÓA HỌC
-     * Nhận `courseId` từ Frontend, tạo bản ghi Payment trạng thái "pending",
-     * sinh mã đơn hàng (orderCode) và trả về link ảnh VietQR SePay chứa nội dung `SEVQR <orderCode>`.
+     * =====================================================================================
+     * BƯỚC 1: HỌC VIÊN BẤM MUA KHÓA HỌC (TẠO ĐƠN HÀNG & SINH MÃ VIETQR)
+     * =====================================================================================
+     * - Nhận `courseId` từ Frontend.
+     * - Kiểm tra học viên đã mua khóa học này chưa (tránh mua trùng).
+     * - Tạo bản ghi Payment trong Database ở trạng thái "pending" với mã `orderCode` duy nhất.
+     * - Trả về thông tin chuyển khoản kèm link ảnh VietQR SePay chứa nội dung `SEVQR <orderCode>`.
      */
     @PostMapping("/create-payment-link")
-    @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Create SePay VietQR payment for a course")
+    @PreAuthorize("hasAnyAuthority('Student', 'ROLE_Student', 'ROLE_STUDENT', 'student')")
+    @Operation(summary = "Create SePay VietQR payment for a course (Student only)")
     public ResponseEntity<ApiResponse<PaymentLinkResponse>> createPaymentLink(
             @Valid @RequestBody CreatePaymentLinkRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
@@ -57,9 +63,13 @@ public class PaymentController {
     }
 
     /**
-     * BƯỚC 2: SEPAY BẮN WEBHOOK KHI NGÂN HÀNG NHẬN ĐƯỢC TIỀN
-     * Endpoint công khai (Public) tiếp nhận Webhook từ SePay khi có biến động số dư VietinBank.
-     * Tự động trích xuất mã đơn hàng, đối soát số tiền, đổi trạng thái sang "paid" và ghi danh học viên.
+     * =====================================================================================
+     * BƯỚC 2: SEPAY BẮN WEBHOOK VỀ KHI NGÂN HÀNG NHẬN ĐƯỢC TIỀN (XÁC THỰC TỰ ĐỘNG)
+     * =====================================================================================
+     * - Endpoint công khai (Public) tiếp nhận Webhook từ SePay khi có biến động số dư VietinBank.
+     * - Xử lý bóc tách `orderCode` từ nội dung chuyển khoản (`transactionContent`).
+     * - Đối soát số tiền `amountIn >= payment.amount`.
+     * - Đổi trạng thái sang "paid", ghi nhận `paidAt`, và tự động ghi danh (Enrollment) cho học viên.
      */
     @PostMapping("/sepay-webhook")
     @Operation(summary = "SePay Webhook handler for instant bank transfer notifications")
@@ -72,8 +82,13 @@ public class PaymentController {
     }
 
     /**
-     * BƯỚC 3: AUTO-POLLING TỪ FRONTEND
-     * Modal trên Frontend định kỳ gọi endpoint này mỗi 3 giây để kiểm tra xem đơn hàng đã được Webhook kích hoạt thành công hay chưa.
+     * =====================================================================================
+     * BƯỚC 3: AUTO-POLLING TỪ FRONTEND (KIỂM TRA TRẠNG THÁI GIAO DỊCH REAL-TIME)
+     * =====================================================================================
+     * - Modal phía Frontend định kỳ gọi endpoint này mỗi 3 giây để kiểm tra xem đơn hàng
+     *   đã được Webhook kích hoạt thành công hay chưa.
+     * - Nếu trong DB vẫn là "pending", Backend sẽ chủ động gọi API SePay dự phòng (Fallback)
+     *   để kiểm tra sao kê ngân hàng và kích hoạt đơn nếu tiền đã vào.
      */
     @GetMapping("/check-status/{orderCode}")
     @Operation(summary = "Check payment transaction status by orderCode")
@@ -83,7 +98,9 @@ public class PaymentController {
     }
 
     /**
-     * Xác thực đơn hàng khi quay lại từ trang thanh toán (Verify Payment Return)
+     * =====================================================================================
+     * XÁC THỰC KHI QUAY LẠI TỪ LINK THANH TOÁN (Verify Payment Return)
+     * =====================================================================================
      */
     @GetMapping("/verify-return")
     @Operation(summary = "Verify payment return")
@@ -94,7 +111,9 @@ public class PaymentController {
     }
 
     /**
-     * Báo cáo Doanh thu & Lịch sử giao dịch toàn hệ thống (Manager & Lecturer)
+     * =====================================================================================
+     * BÁO CÁO DOANH THU & LỊCH SỬ GIAO DỊCH TOÀN HỆ THỐNG (DÀNH CHO MANAGER & LECTURER)
+     * =====================================================================================
      */
     @GetMapping
     @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')")
@@ -117,7 +136,9 @@ public class PaymentController {
     }
 
     /**
-     * API Báo cáo thanh toán tổng hợp cho Manager Dashboard (Thống kê & Tìm kiếm xử lý 100% ở Backend)
+     * =====================================================================================
+     * API BÁO CÁO THANH TOÁN TỔNG HỢP CHO MANAGER DASHBOARD
+     * =====================================================================================
      */
     @GetMapping("/report")
     @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')")
@@ -133,7 +154,9 @@ public class PaymentController {
     }
 
     /**
-     * Đồng bộ giao dịch SePay thủ công (Manager & Lecturer)
+     * =====================================================================================
+     * ĐỒNG BỘ THỦ CÔNG CÁC ĐƠN PENDING VỚI SEPAY API (Sync Payments)
+     * =====================================================================================
      */
     @PostMapping("/sync")
     @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')")
@@ -144,7 +167,9 @@ public class PaymentController {
     }
 
     /**
-     * Xem sao kê tài khoản ngân hàng SePay trực tiếp (Manager & Lecturer)
+     * =====================================================================================
+     * XEM SAO KÊ TRỰC TIẾP TỪ TÀI KHOẢN NGÂN HÀNG SEPAY
+     * =====================================================================================
      */
     @GetMapping("/sepay-transactions")
     @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer')")
@@ -155,7 +180,9 @@ public class PaymentController {
     }
 
     /**
-     * Lịch sử thanh toán của riêng học viên đang đăng nhập
+     * =====================================================================================
+     * LỊCH SỬ THANH TOÁN CỦA RIÊNG HỌC VIÊN ĐANG ĐĂNG NHẬP
+     * =====================================================================================
      */
     @GetMapping("/my-history")
     @PreAuthorize("isAuthenticated()")

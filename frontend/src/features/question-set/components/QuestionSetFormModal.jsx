@@ -126,7 +126,7 @@ export default function QuestionSetFormModal({ questionSet, onClose, onSaved }) 
 
               <label className="qs-field">
                 <span>JLPT level <b>*</b></span>
-                <select name="jlptLevel" value={form.jlptLevel} onChange={updateField} disabled={classificationLocked}>
+                <select name="jlptLevel" value={form.jlptLevel} onChange={updateField}>
                   {QUESTION_SET_LEVELS.filter(Boolean).map((level) => (
                     <option key={level} value={level}>{level}</option>
                   ))}

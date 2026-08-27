@@ -5,10 +5,7 @@ import com.example.base.dto.payment.PaymentLinkResponse;
 import com.example.base.dto.payment.PaymentReportResponse;
 import com.example.base.dto.payment.PaymentResponse;
 import com.example.base.dto.payment.SePayWebhookPayload;
-import com.example.base.entity.Account;
-import com.example.base.entity.Course;
-import com.example.base.entity.Enrollment;
-import com.example.base.entity.Payment;
+import com.example.base.entity.*;
 import com.example.base.exception.AppException;
 import com.example.base.exception.ErrorCode;
 import com.example.base.exception.ResourceNotFoundException;
@@ -35,11 +32,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
+ * =========================================================================================
  * PaymentServiceImpl: Triển khai toàn bộ nghiệp vụ thanh toán SePay VietQR (VietinBank).
- * Xử lý hoàn toàn ở Backend:
- * 1. Khởi tạo đơn hàng & sinh link VietQR SePay.
- * 2. Xử lý Webhook từ ngân hàng & tự động tạo Enrollment.
- * 3. Báo cáo doanh thu & tìm kiếm theo tên học sinh / mã đơn hàng từ Database.
+ * =========================================================================================
+ * Toàn bộ quy trình xác thực thanh toán:
+ * 1. Khởi tạo đơn hàng & sinh link VietQR SePay động chứa nội dung "SEVQR <orderCode>".
+ * 2. Tiếp nhận Webhook từ SePay khi có biến động số dư ngân hàng:
+ *    - Bóc tách mã đơn `orderCode` từ nội dung chuyển khoản qua Regex.
+ *    - Đối soát số tiền thực nhận `amountIn >= payment.amount`.
+ *    - Cập nhật trạng thái `status = "paid"` và tự động tạo `Enrollment` mở khóa học.
+ * 3. Hỗ trợ Fallback Polling: Kiểm tra qua API SePay nếu mạng bị trễ Webhook.
+ * 4. Báo cáo doanh thu & tìm kiếm lịch sử giao dịch.
  */
 @Slf4j
 @Service
@@ -53,22 +56,30 @@ public class PaymentServiceImpl implements PaymentService {
     private final SePayService sePayService;
 
     // ========================================================================
-    // 1. HỌC VIÊN BẤM "MUA KHÓA HỌC" -> TẠO ĐƠN HÀNG & SINH MÃ QR SEPAY
+    // BƯỚC 1: HỌC VIÊN BẤM "MUA KHÓA HỌC" -> TẠO ĐƠN HÀNG & SINH MÃ QR SEPAY
     // ========================================================================
     @Override
     @Transactional
     public PaymentLinkResponse createPaymentLink(CreatePaymentLinkRequest request, String studentEmail) {
+        // 1.1. Tìm thông tin học viên & khóa học từ Database
         Account student = accountRepository.findByEmail(studentEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "email", studentEmail));
+
+        if (student.getRole() != Role.Student) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Chỉ tài khoản Học viên (Student) mới có thể thực hiện thanh toán mua khóa học!");
+        }
 
         Course course = courseRepository.findById(request.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course", "id", request.getCourseId()));
 
+        // 1.2. Kiểm tra chặn mua trùng: Nếu học viên đã sở hữu khóa học thì báo lỗi ngay
         if (enrollmentRepository.existsByStudent_AccountIdAndCourse_CourseId(student.getAccountId(), course.getCourseId())) {
             throw new AppException(ErrorCode.BAD_REQUEST, "Bạn đã đăng ký và sở hữu khóa học này rồi!");
         }
 
         Long amount = course.getPrice() != null ? course.getPrice() : 0L;
+
+        // 1.3. Trường hợp khóa học miễn phí (Giá = 0đ): Kích hoạt ghi danh ngay lập tức
 
         if (amount <= 0) {
             Enrollment enrollment = Enrollment.builder()
@@ -86,14 +97,17 @@ public class PaymentServiceImpl implements PaymentService {
                     .build();
         }
 
+        // 1.4. Sinh mã đơn hàng (orderCode) ngẫu nhiên 6 chữ số duy nhất dựa theo timestamp + random suffix
         long randomSuffix = (long) (Math.random() * 9000L) + 1000L;
         long orderCode = (System.currentTimeMillis() / 1000L) % 100000L * 1000L + (randomSuffix % 1000L);
         if (orderCode < 100000L) {
             orderCode += 100000L;
         }
 
+        // 1.5. Cú pháp nội dung chuyển khoản bắt buộc theo chuẩn SePay VietinBank: "SEVQR <orderCode>"
         String transferContent = "SEVQR " + orderCode;
 
+        // 1.6. Tao ban ghi
         Payment payment = Payment.builder()
                 .student(student)
                 .course(course)
@@ -106,8 +120,10 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("Created SePay pending payment id={}, orderCode={}, student={}, course={}, amount={}",
                 savedPayment.getPaymentId(), orderCode, studentEmail, course.getTitle(), amount);
 
+        // 1.7. Tạo link ảnh mã VietQR SePay động (đã nhúng số tài khoản, số tiền và nội dung chuyển khoản)
         String qrCodeUrl = sePayService.generateQrCodeUrl(amount, transferContent);
 
+        // 1.8. Trả về thông tin cho Frontend hiển thị Modal thanh toán QR
         return PaymentLinkResponse.builder()
                 .paymentId(savedPayment.getPaymentId())
                 .orderCode(orderCode)
@@ -125,19 +141,22 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     // ========================================================================
-    // 2. SEPAY BẮN WEBHOOK VỀ -> XỬ LÝ ĐỐI SOÁT & KÍCH HOẠT KHÓA HỌC TỰ ĐỘNG
+    // BƯỚC 2: SEPAY BẮN WEBHOOK VỀ -> XỬ LÝ ĐỐI SOÁT & KÍCH HOẠT KHÓA HỌC TỰ ĐỘNG
     // ========================================================================
     @Override
     @Transactional
     public void processSePayWebhook(SePayWebhookPayload payload) {
+        //json ->
         log.info("Received SePay Webhook: content='{}', amountIn={}, gateway={}, ref={}",
                 payload.getTransactionContent(), payload.getAmountIn(), payload.getGateway(), payload.getReferenceNumber());
 
+        // 2.1. Bỏ qua nếu giao dịch không có tiền hoặc là giao dịch tiền ra
         if (payload.getAmountIn() == null || payload.getAmountIn() <= 0) {
             log.info("Ignoring outgoing/zero amount transaction");
             return;
         }
 
+        // 2.2. Thu thập nội dung chuyển khoản từ payload của SePay
         String contentToParse = payload.getTransactionContent();
         if (contentToParse == null || contentToParse.isBlank()) {
             contentToParse = payload.getCode();
@@ -146,12 +165,14 @@ public class PaymentServiceImpl implements PaymentService {
             contentToParse = payload.getDescription();
         }
 
+        // 2.3. Bóc tách mã đơn hàng `orderCode` từ nội dung chuyển khoản bằng Regex
         Long orderCode = sePayService.extractOrderCodeFromContent(contentToParse);
         Payment payment = null;
         if (orderCode != null) {
             payment = paymentRepository.findByOrderCode(orderCode).orElse(null);
         }
 
+        // 2.4. Phương án tìm kiếm phụ: Quét tất cả cụm số 4-12 chữ số trong nội dung nếu regex chính chưa bắt được
         if (payment == null && contentToParse != null) {
             Matcher m = Pattern.compile("(\\d{4,12})").matcher(contentToParse);
             while (m.find()) {
@@ -168,22 +189,26 @@ public class PaymentServiceImpl implements PaymentService {
             }
         }
 
+        // 2.5. Nếu không tìm thấy đơn hàng tương ứng trong hệ thống -> Bỏ qua
         if (payment == null) {
             log.warn("Payment record not found for SePay content: '{}'", contentToParse);
             return;
         }
 
+        // 2.6. Chống xử lý trùng lặp (Idempotency): Nếu đơn hàng đã "paid" thì không xử lý lại
         if ("paid".equalsIgnoreCase(payment.getStatus())) {
             log.info("Payment orderCode={} was already marked as paid", orderCode);
             return;
         }
 
+        // 2.7. ĐỐI SOÁT SỐ TIỀN: Tiền thực nhận vào tài khoản phải >= Giá tiền đơn hàng
         if (payload.getAmountIn() >= (payment.getAmount() != null ? payment.getAmount() : 0)) {
             payment.setStatus("paid");
             payment.setPaidAt(LocalDateTime.now());
             paymentRepository.save(payment);
             log.info("Payment orderCode={} marked as PAID via SePay Webhook", orderCode);
 
+            // Tự động kích hoạt ghi danh (Enrollment) mở khóa học cho học viên
             createEnrollmentIfNotExists(payment);
         } else {
             log.warn("Payment orderCode={} received insufficient amount (required={}, received={})",
@@ -192,14 +217,16 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     // ========================================================================
-    // 3. KIỂM TRA TRẠNG THÁI THANH TOÁN
+    // BƯỚC 3: KIỂM TRA TRẠNG THÁI THANH TOÁN
     // ========================================================================
     @Override
     @Transactional
     public PaymentResponse checkPaymentStatus(Long orderCode) {
+        // 3.1. Tìm đơn hàng theo orderCode
         Payment payment = paymentRepository.findByOrderCode(orderCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", "orderCode", orderCode));
 
+        // 3.2. Nếu đơn hàng vẫn ở trạng thái "pending", chủ động gọi SePay API kiểm tra sao kê gần nhất (Cơ chế Fallback)
         if ("pending".equalsIgnoreCase(payment.getStatus())) {
             boolean isPaidViaApi = sePayService.checkRecentTransactionsViaApi(orderCode, payment.getAmount());
             if (isPaidViaApi) {
@@ -214,6 +241,9 @@ public class PaymentServiceImpl implements PaymentService {
         return toPaymentResponse(payment);
     }
 
+    // ========================================================================
+    // ĐỒNG BỘ GIAO DỊCH TỪ SEPAY API THỦ CÔNG
+    // ========================================================================
     @Override
     @Transactional
     public int syncPendingPaymentsWithSePay() {
@@ -258,7 +288,6 @@ public class PaymentServiceImpl implements PaymentService {
                     paymentRepository.save(payment);
                     createEnrollmentIfNotExists(payment);
                     syncedCount++;
-                    log.info("Synced payment orderCode={} from SePay API as PAID", orderCode);
                 }
             }
         }
@@ -266,7 +295,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Map<String, Object>> getSePayBankTransactions() {
         List<Map<String, Object>> list = sePayService.fetchRecentTransactionsFromApi(50);
         for (Map<String, Object> tx : list) {
@@ -298,11 +326,17 @@ public class PaymentServiceImpl implements PaymentService {
         return list;
     }
 
+    /**
+     * =====================================================================================
+     * HÀM TỰ ĐỘNG GHI DANH KHÓA HỌC (TẠO ENROLLMENT) CHO HỌC VIÊN
+     * =====================================================================================
+     */
     private void createEnrollmentIfNotExists(Payment payment) {
         if (payment.getStudent() != null && payment.getCourse() != null) {
             Long studentId = payment.getStudent().getAccountId();
             Long courseId = payment.getCourse().getCourseId();
 
+            // Kiểm tra xem đã ghi danh chưa (tránh tạo 2 bản ghi trùng)
             if (!enrollmentRepository.existsByStudent_AccountIdAndCourse_CourseId(studentId, courseId)) {
                 Enrollment enrollment = Enrollment.builder()
                         .student(payment.getStudent())
@@ -319,7 +353,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     // ========================================================================
-    // 4. BÁO CÁO DOANH THU & TÌM KIẾM TỪ DATABASE (TÍNH TOÁN 100% Ở BACKEND)
+    // BÁO CÁO DOANH THU & TÌM KIẾM TỪ DATABASE (TÍNH TOÁN 100% Ở BACKEND)
     // ========================================================================
     @Override
     @Transactional(readOnly = true)

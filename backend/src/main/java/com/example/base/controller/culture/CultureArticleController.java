@@ -73,15 +73,15 @@ public class CultureArticleController {
                 .body(ApiResponse.success("Article published successfully", response));
     }
 
-    // 5. Cập nhật bài viết (Chỉ Author sở hữu bài viết mới được sửa)
+    // 5. Cập nhật bài viết (Author sở hữu bài HOẶC Manager được quyền sửa)
     @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.POST})
-    @PreAuthorize("hasAnyAuthority('Author', 'ROLE_Author', 'ROLE_AUTHOR', 'author')")
-    @Operation(summary = "Edit an existing Culture Article (Author owner only)")
+    @PreAuthorize("hasAnyAuthority('Author', 'ROLE_Author', 'ROLE_AUTHOR', 'author', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @Operation(summary = "Edit an existing Culture Article (Author owner or Manager)")
     public ResponseEntity<ApiResponse<CultureArticleResponse>> updateArticle(
             @PathVariable Long id,
             @Valid @RequestBody CultureArticleUpdateRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        // Service sẽ kiểm tra xem bài này có phải do currentUser tạo không
+        // Service sẽ kiểm tra xem bài này do currentUser tạo hoặc currentUser là Manager
         CultureArticleResponse response = cultureArticleService.updateArticle(id, request, currentUser);
         return ResponseEntity.ok(ApiResponse.success("Article updated successfully", response));
     }

@@ -42,6 +42,12 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
         status: status ? status.toLowerCase() : 'published'
       };
 
+      if (content.trim().length < 10) {
+        setError('Nội dung bài viết quá ngắn. Vui lòng nhập tối thiểu 10 ký tự!');
+        setLoading(false);
+        return;
+      }
+
       // Gọi API tạo bài viết mới
       const res = await apiRequest('/culture-articles', 'POST', body);
       alert('Đăng bài viết văn hóa thành công!');
@@ -133,13 +139,21 @@ export default function CreateArticleModal({ onClose, onCreateSuccess }) {
 
           {/* SOẠN NỘI DUNG BÀI VIẾT */}
           <div>
-            <label style={{ fontSize: '0.82rem', fontWeight: 700 }}>Article Content *</label>
+            <label style={{ fontSize: '0.82rem', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
+              <span>Article Content * (Min 10 - Max 50,000 chars)</span>
+              <span style={{ color: content.trim().length > 0 && content.trim().length < 10 ? '#e11d48' : 'var(--text-muted)', fontWeight: 600 }}>
+                {content.length}/50,000
+              </span>
+            </label>
             <textarea
-              placeholder="Write cultural insights, youth slangs, everyday Japanese etiquette, or life tips..."
+              placeholder="Write cultural insights, youth slangs, everyday Japanese etiquette, or life tips (tối thiểu 10 ký tự)..."
               value={content}
               onChange={e => setContent(e.target.value)}
               className="form-textarea"
-              style={{ minHeight: '180px' }}
+              style={{
+                minHeight: '180px',
+                borderColor: content.trim().length > 0 && content.trim().length < 10 ? '#f43f5e' : undefined
+              }}
               required
             />
           </div>

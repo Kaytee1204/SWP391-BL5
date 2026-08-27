@@ -15,11 +15,29 @@ export default function MyProfileModal({ currentUser, onClose, onUpdateSuccess }
   const handleSave = async (e) => {
     e.preventDefault();
     setError(null);
+
+    const cleanName = fullName.trim();
+    if (cleanName.length < 2) {
+      setError('Họ và tên phải có tối thiểu 2 ký tự');
+      return;
+    }
+
+    if (cleanName.length > 200) {
+      setError(`Họ và tên không được vượt quá 200 ký tự (Hiện tại: ${cleanName.length} ký tự)`);
+      alert(`⚠️ Họ và tên không được vượt quá 200 ký tự! (Hiện tại: ${cleanName.length} ký tự)`);
+      return;
+    }
+
+    if (newPassword.trim() && newPassword.trim().length < 6) {
+      setError('Mật khẩu mới phải có tối thiểu 6 ký tự');
+      return;
+    }
+
     setLoading(true);
     try {
       const body = {
         email: email.trim(),
-        fullName: fullName.trim(),
+        fullName: cleanName,
         avatarUrl,
         jlptTargetLevel
       };
@@ -27,6 +45,7 @@ export default function MyProfileModal({ currentUser, onClose, onUpdateSuccess }
       
       // Mọi role (Student, Lecturer, Author, Manager) đều gọi endpoint /auth/me
       const res = await apiRequest('/auth/me', 'PUT', body);
+      alert('Cập nhật thông tin cá nhân thành công!');
       onUpdateSuccess(res.data);
       onClose();
     } catch (err) {
@@ -117,8 +136,23 @@ export default function MyProfileModal({ currentUser, onClose, onUpdateSuccess }
             </div>
 
             <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Full Name *</label>
-              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} className="form-input" required />
+              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+                <span>Full Name *</span>
+                <span style={{ color: fullName.length > 200 ? '#e11d48' : '#64748b', fontWeight: fullName.length > 200 ? 800 : 600 }}>
+                  {fullName.length}/200 {fullName.length > 200 && '⚠️ (Vượt quá 200 ký tự)'}
+                </span>
+              </label>
+              <input 
+                type="text" 
+                value={fullName} 
+                onChange={e => setFullName(e.target.value)} 
+                className="form-input" 
+                style={{
+                  borderColor: fullName.length > 200 ? '#ef4444' : undefined,
+                  boxShadow: fullName.length > 200 ? '0 0 0 3px rgba(239, 68, 68, 0.2)' : undefined
+                }}
+                required 
+              />
             </div>
             <div>
               <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Email Address *</label>
