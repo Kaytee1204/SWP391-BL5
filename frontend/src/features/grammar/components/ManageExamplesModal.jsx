@@ -58,23 +58,32 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
 
   const validateForm = () => {
     const newErrors = {};
+    const textPattern = /^[^\p{Cc}<>]*$/u;
+    const audioUrlPattern = /^(?:https?:\/\/[^\s<>]+)?$/i;
+    const sentenceJp = formData.sentenceJp.trim();
+    const translation = formData.translation.trim();
+    const audioUrl = formData.audioUrl.trim();
     
-    if (!formData.sentenceJp.trim()) {
+    if (!sentenceJp) {
       newErrors.sentenceJp = 'Japanese sentence cannot be empty.';
-    } else if (formData.sentenceJp.length > 150) {
+    } else if (sentenceJp.length > 150) {
       newErrors.sentenceJp = 'Japanese sentence cannot exceed 150 characters.';
+    } else if (!textPattern.test(sentenceJp)) {
+      newErrors.sentenceJp = 'Japanese sentence contains invalid characters.';
     }
 
-    if (!formData.translation.trim()) {
+    if (!translation) {
       newErrors.translation = 'Translation cannot be empty.';
-    } else if (formData.translation.length > 150) {
+    } else if (translation.length > 150) {
       newErrors.translation = 'Translation cannot exceed 150 characters.';
+    } else if (!textPattern.test(translation)) {
+      newErrors.translation = 'Translation contains invalid characters.';
     }
 
-    if (formData.audioUrl.trim()) {
-      if (formData.audioUrl.length > 500) {
-        newErrors.audioUrl = 'Audio URL cannot exceed 500 characters.';
-      }
+    if (audioUrl.length > 500) {
+      newErrors.audioUrl = 'Audio URL cannot exceed 500 characters.';
+    } else if (!audioUrlPattern.test(audioUrl)) {
+      newErrors.audioUrl = 'Audio URL must be a valid http or https URL.';
     }
 
     setErrors(newErrors);
@@ -89,11 +98,16 @@ export default function ManageExamplesModal({ pattern, currentUser, onClose }) {
     }
 
     setFormLoading(true);
+    const payload = {
+      sentenceJp: formData.sentenceJp.trim(),
+      translation: formData.translation.trim(),
+      audioUrl: formData.audioUrl.trim() || null
+    };
     try {
       if (editingId) {
-        await updateExample(editingId, formData);
+        await updateExample(editingId, payload);
       } else {
-        await createExample(pattern.patternId, formData);
+        await createExample(pattern.patternId, payload);
       }
       resetForm();
       fetchExamples();

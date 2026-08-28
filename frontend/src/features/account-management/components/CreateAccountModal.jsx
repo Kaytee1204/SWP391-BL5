@@ -30,13 +30,30 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
 
+    const cleanName = fullName.trim();
+    if (cleanName.length < 2) {
+      setError('Họ và tên phải có tối thiểu 2 ký tự');
+      return;
+    }
+
+    if (cleanName.length > 200) {
+      setError(`Họ và tên không được vượt quá 200 ký tự (Hiện tại: ${cleanName.length} ký tự)`);
+      alert(`⚠️ Họ và tên không được vượt quá 200 ký tự! (Hiện tại: ${cleanName.length} ký tự)`);
+      return;
+    }
+
+    if (password.trim().length < 6) {
+      setError('Mật khẩu phải có tối thiểu 6 ký tự');
+      return;
+    }
+
+    setLoading(true);
     try {
       const body = {
         email: email.trim(),
         password: password.trim(),
-        fullName: fullName.trim(),
+        fullName: cleanName,
         role,
         jlptTargetLevel,
         avatarUrl
@@ -53,6 +70,8 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
       setLoading(false);
     }
   };
+
+  const isNameExceeded = fullName.length > 200;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -90,8 +109,24 @@ export default function CreateAccountModal({ onClose, onCreateSuccess }) {
 
           {/* NHẬP HỌ VÀ TÊN */}
           <div>
-            <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>Full Name *</label>
-            <input type="text" placeholder="e.g. Alex Johnson" value={fullName} onChange={e => setFullName(e.target.value)} className="form-input" required />
+            <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+              <span>Full Name *</span>
+              <span style={{ color: isNameExceeded ? '#e11d48' : '#64748b', fontWeight: isNameExceeded ? 800 : 600 }}>
+                {fullName.length}/200 {isNameExceeded && '⚠️ (Vượt quá 200 ký tự)'}
+              </span>
+            </label>
+            <input 
+              type="text" 
+              placeholder="VD: Nguyễn Văn A" 
+              value={fullName} 
+              onChange={e => setFullName(e.target.value)} 
+              className="form-input" 
+              style={{
+                borderColor: isNameExceeded ? '#ef4444' : undefined,
+                boxShadow: isNameExceeded ? '0 0 0 3px rgba(239, 68, 68, 0.2)' : undefined
+              }}
+              required 
+            />
           </div>
 
           {/* NHẬP EMAIL */}

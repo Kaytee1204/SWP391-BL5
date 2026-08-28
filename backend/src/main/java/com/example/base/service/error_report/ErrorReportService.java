@@ -17,5 +17,5 @@ public interface ErrorReportService {
 
     void cancelReport(Long reportId, Long studentId);
     Page<ErrorReportResponse> getAllReports(String status, Pageable pageable);
-    ErrorReportResponse updateReportStatus(Long reportId, String status);
+    ErrorReportResponse updateReportStatus(Long reportId, String status, String reviewerNote, Long reviewerId);
 }

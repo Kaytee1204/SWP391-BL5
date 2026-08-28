@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../../api/apiRequest';
 import { JLPT_LEVELS } from '../../assets/constants';
 import InlineErrorReport from '../../components/common/InlineErrorReport';
+import CreateGrammarModal from './components/CreateGrammarModal';
 
 export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
   const [patterns, setPatterns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [keyword, setKeyword] = useState('');
+  const [showCreatePatternModal, setShowCreatePatternModal] = useState(false);
   
   // Khách chưa đăng nhập (Guest) mặc định bắt buộc là N5
   const [selectedLevel, setSelectedLevel] = useState('N5');
@@ -21,6 +23,7 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
   const [exampleSubmitting, setExampleSubmitting] = useState(false);
 
   const isGuest = !currentUser;
+  const canManageExamples = currentUser?.role === 'Lecturer' || currentUser?.role === 'Manager';
 
   const fetchPatterns = async () => {
     setLoading(true);
@@ -266,20 +269,38 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
         )}
       </div>
 
-      {/* Search Bar */}
+      {/* Search Bar & Action Toolbar */}
       <div className="card" style={{ padding: '0.85rem 1.25rem' }}>
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.6rem' }}>
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
           <input
             type="text"
             placeholder={isGuest ? "Search N5 preview grammar points..." : "Search grammar point (e.g. 〜てもいい, permission, must, と思う)..."}
             value={keyword}
             onChange={e => setKeyword(e.target.value)}
             className="form-input"
-            style={{ flex: 1, fontSize: '0.92rem' }}
+            style={{ flex: 1, minWidth: '220px', fontSize: '0.92rem' }}
           />
           <button type="submit" className="btn-dash btn-dash-primary" style={{ padding: '0.65rem 1.4rem', fontSize: '0.92rem' }}>
             🔍 Search
           </button>
+          {canManageExamples && (
+            <button
+              type="button"
+              onClick={() => setShowCreatePatternModal(true)}
+              className="btn-dash"
+              style={{
+                background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+                color: '#fff',
+                padding: '0.65rem 1.25rem',
+                fontSize: '0.92rem',
+                fontWeight: 800,
+                border: 'none',
+                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.25)'
+              }}
+            >
+              ➕ Soạn Mẫu Mới
+            </button>
+          )}
         </form>
       </div>
 
@@ -406,7 +427,7 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
                         <div style={{ fontWeight: 800, color: 'var(--text-heading)', fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                           🗣️ Example Sentences:
                         </div>
-                        {currentUser && (
+                        {canManageExamples && (
                           <button
                             type="button"
                             onClick={() => openAddExample(p.patternId)}
@@ -427,7 +448,7 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
                       </div>
 
                       {/* Inline Form Thêm/Sửa câu ví dụ */}
-                      {addingExamplePatternId === p.patternId && (
+                      {canManageExamples && addingExamplePatternId === p.patternId && (
                         <div style={{ background: '#f5f3ff', border: '1.5px solid #c4b5fd', borderRadius: '10px', padding: '0.85rem', marginBottom: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                           <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#5b21b6' }}>
                             {editingExample ? '✏️ Edit Example Sentence' : '➕ Add New Example Sentence'}
@@ -486,7 +507,7 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
                                 <audio controls src={ex.audioUrl} style={{ height: '30px', marginTop: '0.4rem', maxWidth: '100%' }} />
                               )}
                             </div>
-                            {currentUser && (
+                            {canManageExamples && (
                               <div style={{ display: 'flex', gap: '0.3rem', flexShrink: 0 }}>
                                 <button
                                   type="button"
@@ -524,6 +545,7 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
           })}
 
           {/* Guest Unlock Card */}
+          {/* Guest Signup Promo */}
           {isGuest && (
             <div style={{
               background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
@@ -559,6 +581,17 @@ export default function GrammarReaderPage({ currentUser, onOpenAuth }) {
             </div>
           )}
         </div>
+      )}
+
+      {/* Modal soạn mẫu ngữ pháp mới cho Lecturer & Manager */}
+      {showCreatePatternModal && (
+        <CreateGrammarModal
+          onClose={() => setShowCreatePatternModal(false)}
+          onCreateSuccess={() => {
+            setShowCreatePatternModal(false);
+            fetchPatterns();
+          }}
+        />
       )}
     </div>
   );

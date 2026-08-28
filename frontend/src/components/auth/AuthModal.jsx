@@ -29,15 +29,28 @@ export default function AuthModal({ initialMode, onLoginSuccess, onClose }) {
 
     try {
       if (isRegister) {
+        const cleanName = fullName.trim();
+        if (cleanName.length < 2) {
+          setError('Họ và tên phải có tối thiểu 2 ký tự');
+          setLoading(false);
+          return;
+        }
+        if (cleanName.length > 200) {
+          setError(`Họ và tên không được vượt quá 200 ký tự (Hiện tại: ${cleanName.length} ký tự)`);
+          alert(`⚠️ Họ và tên không được vượt quá 200 ký tự! (Hiện tại: ${cleanName.length} ký tự)`);
+          setLoading(false);
+          return;
+        }
+
         const res = await apiRequest('/auth/register', 'POST', {
           email: email.trim(),
           password: password.trim(),
-          fullName: fullName.trim(),
+          fullName: cleanName,
           jlptTargetLevel,
           avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Kenji',
           role: 'Student'
         });
-        alert('Account registered successfully!');
+        alert('Đăng ký tài khoản thành công!');
         onLoginSuccess(res.data);
       } else {
         const res = await apiRequest('/auth/login', 'POST', {
@@ -52,6 +65,8 @@ export default function AuthModal({ initialMode, onLoginSuccess, onClose }) {
       setLoading(false);
     }
   };
+
+  const isNameExceeded = fullName.length > 200;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -72,13 +87,22 @@ export default function AuthModal({ initialMode, onLoginSuccess, onClose }) {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {isRegister && (
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.25rem' }}>Full Name *</label>
+              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+                <span>Full Name *</span>
+                <span style={{ color: isNameExceeded ? '#e11d48' : '#64748b', fontWeight: isNameExceeded ? 800 : 600 }}>
+                  {fullName.length}/200 {isNameExceeded && '⚠️ (Vượt quá 200 ký tự)'}
+                </span>
+              </label>
               <input
                 type="text"
-                placeholder="e.g. John Doe"
+                placeholder="VD: Nguyễn Văn A"
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 className="form-input"
+                style={{
+                  borderColor: isNameExceeded ? '#ef4444' : undefined,
+                  boxShadow: isNameExceeded ? '0 0 0 3px rgba(239, 68, 68, 0.2)' : undefined
+                }}
                 required
               />
             </div>

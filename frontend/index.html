@@ -9,9 +9,75 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Tinh chỉnh giao diện Chatbase nhỏ gọn, tinh tế -->
+  <style>
+    /* Thu nhỏ khung chat Chatbase gọn gàng */
+    #chatbase-bubble-window {
+      width: 350px !important;
+      height: 500px !important;
+      max-width: 90vw !important;
+      max-height: 75vh !important;
+      bottom: 85px !important;
+      right: 24px !important;
+      border-radius: 20px !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16) !important;
+      border: 1px solid rgba(226, 232, 240, 0.8) !important;
+      overflow: hidden !important;
+    }
+
+    /* Tinh chỉnh nút tròn bật chat nhỏ gọn */
+    #chatbase-bubble-button {
+      width: 52px !important;
+      height: 52px !important;
+      bottom: 22px !important;
+      right: 24px !important;
+      box-shadow: 0 8px 24px rgba(225, 29, 72, 0.28) !important;
+      transition: transform 0.2s ease !important;
+    }
+    #chatbase-bubble-button:hover {
+      transform: scale(1.08) !important;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
+
+  <!-- Chatbase AI Chatbot Embed Script (Chuẩn hóa tham số args) -->
+  <script>
+    (function(){
+      if(!window.chatbase || window.chatbase("getState") !== "initialized"){
+        window.chatbase = function(...args){
+          if(!window.chatbase.q){
+            window.chatbase.q = [];
+          }
+          window.chatbase.q.push(args);
+        };
+        window.chatbase = new Proxy(window.chatbase, {
+          get(target, prop){
+            if(prop === "q"){
+              return target.q;
+            }
+            return function(...args){
+              return target(prop, ...args);
+            };
+          }
+        });
+      }
+      const onLoad = function(){
+        const script = document.createElement("script");
+        script.src = "https://www.chatbase.co/embed.min.js";
+        script.id = "DUcVY4pyPWLxUHooyJRf0";
+        script.domain = "www.chatbase.co";
+        document.body.appendChild(script);
+      };
+      if(document.readyState === "complete"){
+        onLoad();
+      } else {
+        window.addEventListener("load", onLoad);
+      }
+    })();
+  </script>
 </body>
 </html>

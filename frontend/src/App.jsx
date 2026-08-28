@@ -20,6 +20,7 @@ import GrammarExercisePracticeView from './features/grammar/GrammarExercisePract
 import QuestionBankWorkspace from './features/question-bank/QuestionBankWorkspace';
 import Navbar from './components/common/Navbar';
 import CourseCatalogPage from './features/courses/CourseCatalogPage';
+import CourseLearningPage from './features/courses/CourseLearningPage';
 import PaymentReturnView from './features/courses/components/PaymentReturnView';
 import FreeCoursesPage from './features/free-courses/FreeCoursesPage';
 import StudentVocabularyView from './features/vocabulary/StudentVocabularyView';
@@ -43,6 +44,7 @@ export default function App() {
 
   const [currentView, setCurrentView] = useState('home');
   const [readingArticle, setReadingArticle] = useState(null);
+  const [studyingCourse, setStudyingCourse] = useState(null);
   const [previousView, setPreviousView] = useState('culture_reader');
 
   const [authModalMode, setAuthModalMode] = useState(null); // 'login' | 'register' | null
@@ -127,6 +129,11 @@ export default function App() {
     setCurrentView('article_detail');
   };
 
+  const handleOpenCourseLearning = (course) => {
+    setStudyingCourse(course);
+    setCurrentView('course_learning');
+  };
+
 // Chặn khách vãng lai (Guest) không được vào trang Vocabulary
   useEffect(() => {
     if (!currentUser && (currentView === 'vocab' || currentView === 'vocab-decks')) {
@@ -188,7 +195,19 @@ export default function App() {
         <CourseCatalogPage
           currentUser={currentUser}
           onNavigate={handleNavigate}
+          onOpenCourseLearning={handleOpenCourseLearning}
           onOpenAuth={(mode) => setAuthModalMode(mode)}
+          onViewProfile={() => setShowProfileModal(true)}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {/* 2.15. Cổng Trời Tri Thức & Lớp Học 5 Bài Demo (Torii Gate Course Learning) */}
+      {currentView === 'course_learning' && (
+        <CourseLearningPage
+          course={studyingCourse}
+          currentUser={currentUser}
+          onNavigate={handleNavigate}
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
         />
@@ -199,13 +218,14 @@ export default function App() {
         <PaymentReturnView
           currentUser={currentUser}
           onNavigate={handleNavigate}
+          onOpenCourseLearning={handleOpenCourseLearning}
           onViewProfile={() => setShowProfileModal(true)}
           onLogout={handleLogout}
         />
       )}
 
       {/* 2.5. Trang Khóa Học & Tài Liệu Miễn Phí Tổng Hợp (Free Courses Hub) */}
-      {(currentView === 'free_courses' || currentView === 'grammar_reader' || currentView === 'vocab' || currentView === 'kanji' || currentView === 'kanji-decks' || currentView === 'exercise_practice') && (
+      {(currentView === 'free_courses' || currentView === 'grammar_reader' || currentView === 'vocab' || currentView === 'kanji' || currentView === 'exercise_practice') && (
         <FreeCoursesPage
           currentUser={currentUser}
           onNavigate={handleNavigate}
@@ -215,7 +235,6 @@ export default function App() {
           initialTab={
             currentView === 'vocab' ? 'vocabulary' :
             currentView === 'kanji' ? 'kanji' :
-            currentView === 'kanji-decks' ? 'kanji-decks' :
             currentView === 'exercise_practice' ? 'quiz' : 'grammar'
           }
         />

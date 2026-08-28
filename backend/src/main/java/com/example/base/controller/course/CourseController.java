@@ -95,8 +95,8 @@ public class CourseController {
     }
 
     @PostMapping("/{id}/enroll-free")
-    @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Self-enroll in free course (Price = 0)")
+    @PreAuthorize("hasAnyAuthority('Student', 'ROLE_Student', 'ROLE_STUDENT', 'student')")
+    @Operation(summary = "Self-enroll in free course (Price = 0, Student only)")
     public ResponseEntity<ApiResponse<Void>> enrollFreeCourse(
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal currentUser) {

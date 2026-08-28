@@ -5,6 +5,7 @@ import Navbar from '../../../components/common/Navbar';
 export default function PaymentReturnView({
   currentUser,
   onNavigate,
+  onOpenCourseLearning,
   onViewProfile,
   onLogout
 }) {
@@ -38,6 +39,17 @@ export default function PaymentReturnView({
 
   const formatVND = (num) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num || 0);
+  };
+
+  const handleGoToLearning = () => {
+    if (onOpenCourseLearning) {
+      onOpenCourseLearning({
+        courseId: paymentResult?.courseId,
+        title: paymentResult?.courseTitle
+      });
+    } else if (onNavigate) {
+      onNavigate('course_learning');
+    }
   };
 
   return (
@@ -88,8 +100,12 @@ export default function PaymentReturnView({
                 <button className="btn-secondary-glass" onClick={() => onNavigate('courses')}>
                   Xem Khóa Học Khác
                 </button>
-                <button className="btn-primary-purple" onClick={() => onNavigate('kanji')}>
-                  Vào Học Ngay →
+                <button
+                  className="btn-primary-purple"
+                  style={{ background: 'linear-gradient(135deg, #b91c1c 0%, #dc2626 100%)', boxShadow: '0 4px 14px rgba(185, 28, 28, 0.28)' }}
+                  onClick={handleGoToLearning}
+                >
+                  ⛩️ Vào Học Ngay →
                 </button>
               </div>
             </div>

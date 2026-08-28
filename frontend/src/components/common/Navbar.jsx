@@ -41,7 +41,7 @@ export default function Navbar({
               onClick={() => onNavigate('courses')}
               title="Explore and enroll in JLPT Japanese courses"
             >
-              Courses
+              Pro Courses
             </a>
           </li>
 
@@ -113,48 +113,24 @@ export default function Navbar({
                 className={`nav-link highlight-tab ${currentView === 'culture_articles' ? 'active' : ''}`}
                 onClick={() => onNavigate('culture_articles')}
                 style={{ whiteSpace: 'nowrap' }}
+                title="Author Workspace for Cultural Articles"
               >
-                Author Workspace
+                ✍️ Author Workspace
               </a>
             </li>
           )}
-          
-          {(currentUser?.role === 'Lecturer' || currentUser?.role === 'Manager') && (
-            <>
-              <li>
-                <a
-                  className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}
-                  onClick={() => onNavigate('materials')}
-                  style={{ whiteSpace: 'nowrap' }}
-                >
-                  Learning Materials
-                </a>
-              </li>
 
-              <li>
-                <a
-                  className="nav-link"
-                  onClick={() => onNavigate('error-reports')}
-                  title="Manage Student Error Reports"
-                  style={{
-                    whiteSpace: 'nowrap',
-                    color: '#e11d48',
-                    backgroundColor: currentView === 'error-reports' ? '#ffe4e6' : '#fff1f2',
-                    border: `1px solid ${currentView === 'error-reports' ? '#fb7185' : '#fecdd3'}`,
-                    fontWeight: '700',
-                    borderRadius: '20px',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '0.4rem 0.8rem',
-                    fontSize: '0.85rem'
-                  }}
-                >
-                  🚨 Error Reports
-                </a>
-              </li>
-            </>
+          {currentUser?.role === 'Lecturer' && (
+            <li>
+              <a
+                className={`nav-link highlight-tab ${currentView === 'materials' ? 'active' : ''}`}
+                onClick={() => onNavigate('materials')}
+                style={{ whiteSpace: 'nowrap' }}
+                title="Manage Grammar, Exercises, Question Bank & Vocab"
+              >
+                📚 Learning Materials
+              </a>
+            </li>
           )}
           
           {currentUser?.role === 'Manager' && (
@@ -163,8 +139,9 @@ export default function Navbar({
                 className={`nav-link highlight-tab ${currentView === 'dashboard' ? 'active' : ''}`}
                 onClick={() => onNavigate('dashboard')}
                 style={{ whiteSpace: 'nowrap' }}
+                title="Manager System Dashboard"
               >
-                Manager Dashboard
+                👑 Manager Dashboard
               </a>
             </li>
           )}

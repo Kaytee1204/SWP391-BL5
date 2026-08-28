@@ -41,6 +41,12 @@ export default function EditArticleModal({ article, onClose, onSaveSuccess }) {
         status: status ? status.toLowerCase() : 'published'
       };
 
+      if (content.trim().length < 10) {
+        setError('Nội dung bài viết quá ngắn. Vui lòng nhập tối thiểu 10 ký tự!');
+        setLoading(false);
+        return;
+      }
+
       // Gửi request cập nhật bài viết lên Backend
       const res = await apiRequest(`/culture-articles/${article.articleId}`, 'PUT', body);
       alert('Cập nhật bài viết thành công!');
@@ -131,12 +137,20 @@ export default function EditArticleModal({ article, onClose, onSaveSuccess }) {
 
           {/* CHỈNH SỬA NỘI DUNG */}
           <div>
-            <label style={{ fontSize: '0.82rem', fontWeight: 700 }}>Article Content *</label>
+            <label style={{ fontSize: '0.82rem', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
+              <span>Article Content * (Min 10 - Max 50,000 chars)</span>
+              <span style={{ color: content.trim().length > 0 && content.trim().length < 10 ? '#e11d48' : 'var(--text-muted)', fontWeight: 600 }}>
+                {content.length}/50,000
+              </span>
+            </label>
             <textarea
               value={content}
               onChange={e => setContent(e.target.value)}
               className="form-textarea"
-              style={{ minHeight: '180px' }}
+              style={{
+                minHeight: '180px',
+                borderColor: content.trim().length > 0 && content.trim().length < 10 ? '#f43f5e' : undefined
+              }}
               required
             />
           </div>

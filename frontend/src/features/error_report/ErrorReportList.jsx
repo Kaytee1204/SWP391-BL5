@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Edit2, XCircle, Clock, CheckCircle, AlertCircle, X, PlusCircle } from 'lucide-react';
+import { Edit2, XCircle, Clock, CheckCircle, AlertCircle, X } from 'lucide-react';
 import { apiRequest } from '../../api/apiRequest';
 
 export const ErrorReportList = () => {
@@ -12,12 +12,6 @@ export const ErrorReportList = () => {
   const [newDescription, setNewDescription] = useState('');
   const [descError, setDescError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
-
-  // State for Create Report Modal
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [createForm, setCreateForm] = useState({ targetType: 'GRAMMAR', targetId: '', description: '' });
-  const [createError, setCreateError] = useState('');
-  const [createLoading, setCreateLoading] = useState(false);
 
   useEffect(() => {
     fetchMyReports();
@@ -36,37 +30,6 @@ export const ErrorReportList = () => {
       setError(err.message || 'Unable to connect to the server');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleCreateReport = async (e) => {
-    e.preventDefault();
-    if (!createForm.targetId || !createForm.description.trim()) {
-      setCreateError('Please enter content ID and error description.');
-      return;
-    }
-    setCreateLoading(true);
-    try {
-      const payload = {
-        targetType: createForm.targetType,
-        targetId: parseInt(createForm.targetId, 10),
-        description: createForm.description.trim()
-      };
-
-      const data = await apiRequest('/error-reports', 'POST', payload);
-
-      if (data?.data) {
-        setReports([data.data, ...reports]); 
-        setIsCreateModalOpen(false);
-        setCreateForm({ targetType: 'GRAMMAR', targetId: '', description: '' });
-        setCreateError('');
-      } else {
-        setCreateError('Failed to create report.');
-      }
-    } catch (err) {
-      setCreateError(err.message || 'Error while creating report');
-    } finally {
-      setCreateLoading(false);
     }
   };
 
@@ -89,8 +52,17 @@ export const ErrorReportList = () => {
 
   const handleUpdateDescription = async (e) => {
     e.preventDefault();
-    if (!newDescription.trim()) {
+    const description = newDescription.trim();
+    if (!description) {
       setDescError('Description cannot be empty.');
+      return;
+    }
+    if (description.length > 500) {
+      setDescError('Description cannot exceed 500 characters.');
+      return;
+    }
+    if (!/^[^\p{Cc}<>]*$/u.test(description)) {
+      setDescError('Description contains invalid characters.');
       return;
     }
     setActionLoading(true);
@@ -98,11 +70,11 @@ export const ErrorReportList = () => {
       const payload = {
         targetType: editingReport.targetType,
         targetId: editingReport.targetId,
-        description: newDescription.trim()
+        description
       };
 
       await apiRequest(`/error-reports/${editingReport.reportId}`, 'PUT', payload);
-      setReports(reports.map(r => r.reportId === editingReport.reportId ? { ...r, description: newDescription.trim() } : r));
+      setReports(reports.map(r => r.reportId === editingReport.reportId ? { ...r, description } : r));
       setEditingReport(null);
     } catch (err) {
       alert(err.message || 'Network error while updating');
@@ -138,14 +110,6 @@ export const ErrorReportList = () => {
           <p style={{ color: '#64748b', margin: 0 }}>Track the status of content issues you have reported to administrators.</p>
         </div>
 
-        <button 
-          onClick={() => setIsCreateModalOpen(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.6rem 1.25rem', background: '#e11d48', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', transition: 'background 0.2s', boxShadow: '0 4px 6px -1px rgba(225, 29, 72, 0.2)' }}
-          onMouseOver={e => e.currentTarget.style.background = '#be123c'}
-          onMouseOut={e => e.currentTarget.style.background = '#e11d48'}
-        >
-          <PlusCircle size={18} /> Create New Report
-        </button>
       </div>
 
       {/* Cards List Grid */}
@@ -182,6 +146,12 @@ export const ErrorReportList = () => {
                 {report.description}
               </div>
 
+              {report.reviewerNote && (
+                <div style={{ background: '#f8fafc', borderLeft: '3px solid #64748b', padding: '0.6rem 0.75rem', marginBottom: '1rem', color: '#475569', fontSize: '0.85rem', wordBreak: 'break-word' }}>
+                  <strong>Reviewer response:</strong> {report.reviewerNote}
+                </div>
+              )}
+
               <div style={{ fontSize: '0.8rem', color: '#94a3b8', borderTop: '1px dashed #cbd5e1', paddingTop: '1rem', marginBottom: '1rem' }}>
                 Submitted on: {new Date(report.createdAt).toLocaleDateString()}
               </div>
@@ -207,74 +177,6 @@ export const ErrorReportList = () => {
         </div>
       )}
 
-      {/* CREATE REPORT MODAL */}
-      {isCreateModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '500px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            
-            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#1e293b' }}>Create New Error Report</h3>
-              <button onClick={() => setIsCreateModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px' }}>
-                <X size={20} />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateReport} style={{ padding: '1.5rem' }}>
-              
-              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#334155', marginBottom: '0.5rem' }}>Content Type</label>
-                  <select 
-                    value={createForm.targetType}
-                    onChange={(e) => setCreateForm({...createForm, targetType: e.target.value})}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }}
-                  >
-                    <option value="GRAMMAR">Grammar</option>
-                    <option value="CULTURE_ARTICLE">Culture Article</option>
-                    <option value="KANJI">Kanji</option>
-                    <option value="FLASHCARD">Flashcard</option>
-                  </select>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#334155', marginBottom: '0.5rem' }}>Content ID</label>
-                  <input 
-                    type="number"
-                    value={createForm.targetId}
-                    onChange={(e) => setCreateForm({...createForm, targetId: e.target.value})}
-                    placeholder="e.g. 12"
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#334155', marginBottom: '0.5rem' }}>
-                  Detailed Description
-                </label>
-                <textarea 
-                  value={createForm.description}
-                  onChange={(e) => setCreateForm({...createForm, description: e.target.value})}
-                  maxLength={1000}
-                  rows={4}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: `1px solid ${createError ? '#e11d48' : '#cbd5e1'}`, fontSize: '0.95rem', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
-                  placeholder="Spelling error, translation issue, or layout bug..."
-                />
-                {createError && <div style={{ color: '#e11d48', fontSize: '0.8rem', marginTop: '4px' }}>{createError}</div>}
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                <button type="button" onClick={() => setIsCreateModalOpen(false)} style={{ padding: '0.5rem 1.25rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: 'white', color: '#475569', fontWeight: '600', cursor: 'pointer' }}>
-                  Cancel
-                </button>
-                <button type="submit" disabled={createLoading} style={{ padding: '0.5rem 1.25rem', borderRadius: '8px', border: 'none', background: '#e11d48', color: 'white', fontWeight: '600', cursor: createLoading ? 'not-allowed' : 'pointer' }}>
-                  {createLoading ? 'Submitting...' : 'Submit Report'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* EDIT MODAL */}
       {editingReport && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '1rem' }}>
@@ -296,17 +198,17 @@ export const ErrorReportList = () => {
                   value={newDescription}
                   onChange={(e) => {
                     setNewDescription(e.target.value);
-                    if (e.target.value.length >= 1000) setDescError('Reached 1000 character limit');
+                    if (e.target.value.length >= 500) setDescError('Reached 500 character limit');
                     else setDescError('');
                   }}
-                  maxLength={1000}
+                  maxLength={500}
                   rows={5}
                   style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: `1px solid ${descError ? '#e11d48' : '#cbd5e1'}`, fontSize: '0.95rem', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
                   placeholder="Describe the issue in detail..."
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '0.5rem' }}>
                   <span style={{ color: '#e11d48' }}>{descError}</span>
-                  <span style={{ color: '#94a3b8' }}>{newDescription.length}/1000</span>
+                  <span style={{ color: '#94a3b8' }}>{newDescription.length}/500</span>
                 </div>
               </div>
 

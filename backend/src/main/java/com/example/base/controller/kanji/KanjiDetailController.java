@@ -38,7 +38,7 @@ public class KanjiDetailController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     public ApiResponse<KanjiDetailDto> create(@Valid @RequestBody KanjiDetailRequest request,
                                                @AuthenticationPrincipal UserPrincipal principal) {
         // Principal do JwtAuthenticationFilter nạp từ token, không lấy Lecturer từ request.
@@ -46,7 +46,7 @@ public class KanjiDetailController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     public ApiResponse<KanjiDetailDto> update(@PathVariable Long id, @Valid @RequestBody KanjiDetailRequest request,
                                                @AuthenticationPrincipal UserPrincipal principal) {
         // version trong request giúp phát hiện form đã cũ trước khi ghi đè dữ liệu mới.
@@ -54,7 +54,7 @@ public class KanjiDetailController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         // Không xóa trực tiếp repository tại đây vì service còn phải bảo vệ deck cá nhân.
         kanjiService.deleteKanji(id);

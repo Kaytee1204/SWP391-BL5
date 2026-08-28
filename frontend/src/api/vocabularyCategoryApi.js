@@ -11,20 +11,28 @@ const getAuthHeaders = () => {
     };
 };
 
-// Đọc body thành text trước: DELETE có thể trả body rỗng, gọi response.json() trực tiếp sẽ phát sinh SyntaxError.
 const handleResponse = async (response) => {
     const text = await response.text();
     if (!text || text.trim() === "") {
+        if (!response.ok) {
+            throw new Error(`Request failed (${response.status})`);
+        }
         return { code: response.status, message: "Success (No Content)" };
     }
+
+    let data;
     try {
-        return JSON.parse(text);
+        data = JSON.parse(text);
     } catch (error) {
         console.error("Phản hồi từ server không phải định dạng JSON hợp lệ:", text);
         throw new Error(text || "Lỗi phản hồi từ server");
     }
-};
 
+    if (!response.ok) {
+        throw new Error(data.message || `Request failed (${response.status})`);
+    }
+    return data;
+};
 export const vocabularyCategoryApi = {
     getAll: async () => {
         const response = await fetch(BASE_URL, { headers: getAuthHeaders() });

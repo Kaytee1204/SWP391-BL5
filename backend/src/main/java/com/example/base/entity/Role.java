@@ -4,5 +4,11 @@ public enum Role {
     Student,
     Lecturer,
     Manager,
-    Author
+    Author,
+    Admin,
+    STUDENT,
+    LECTURER,
+    MANAGER,
+    AUTHOR,
+    ADMIN
 }

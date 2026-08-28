@@ -19,6 +19,7 @@ public class CultureArticleUpdateRequest {
     @Schema(description = "Tiêu đề mới của bài viết", example = "Nghệ thuật giao tiếp Omotenashi (Cập nhật 2026)")
     private String title;
 
+    @Size(min = 10, max = 50000, message = "Nội dung bài viết phải có độ dài từ 10 đến 50.000 ký tự")
     @Schema(description = "Nội dung mới của bài viết (NVARCHAR(MAX))")
     private String content;
 

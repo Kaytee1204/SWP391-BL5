@@ -107,7 +107,7 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
             className="search-pill-input"
           />
 
-          {currentUser?.role === 'Author' && (
+          {(currentUser?.role === 'Author' || currentUser?.role === 'Manager') && (
             <select
               value={authorFilter}
               onChange={e => { setAuthorFilter(e.target.value); setPage(0); }}
@@ -128,7 +128,7 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
             <option value="draft">Draft</option>
           </select>
 
-          {currentUser?.role === 'Author' && (
+          {(currentUser?.role === 'Author' || currentUser?.role === 'Manager') && (
             <button className="btn-dash btn-dash-primary" onClick={() => setShowCreateModal(true)}>
               + Viết Bài Mới
             </button>
@@ -159,6 +159,7 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
             ) : (
               articles.map(art => {
                 const isAuthorOwner = currentUser?.role === 'Author' && art.authorId === currentUser?.accountId;
+                const canEdit = isAuthorOwner || currentUser?.role === 'Manager';
                 const canDelete = isAuthorOwner || currentUser?.role === 'Manager';
                 return (
                   <tr key={art.articleId}>
@@ -206,11 +207,11 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
                           📖 Đọc bài
                         </button>
 
-                        {isAuthorOwner && (
+                        {canEdit && (
                           <button
                             className="btn-action-edit"
                             onClick={() => setEditingArticle(art)}
-                            title="Sửa nội dung bài viết"
+                            title={currentUser?.role === 'Manager' ? 'Quản lý sửa nội dung bài viết' : 'Tác giả sửa nội dung bài viết'}
                           >
                             ✏️ Edit
                           </button>

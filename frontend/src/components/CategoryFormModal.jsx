@@ -1,49 +1,59 @@
 import React, { useState, useEffect } from 'react';
+import {
+    validateVocabularyCategory,
+    NAME_MAX,
+    DESCRIPTION_MAX
+} from '../utils/vocabularyCategoryValidation';
 
 const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
-    // Một form được tái sử dụng cho cả hai chế độ. initialData có giá trị nghĩa là sửa;
-    // không có initialData nghĩa là tạo mới với các giá trị mặc định bên dưới.
     const [formData, setFormData] = useState({
         jlptLevel: 'N5',
         name: '',
-        description: '',
-        createdById: 6 
+        description: ''
     });
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
-        // Mỗi lần modal mở hoặc bản ghi cần sửa thay đổi, đồng bộ dữ liệu từ component cha
-        // vào state của form. Việc reset này tránh giữ lại dữ liệu của lần mở modal trước.
         if (initialData) {
             setFormData({
                 jlptLevel: initialData.jlptLevel || 'N5',
                 name: initialData.name || '',
-                description: initialData.description || '',
-                createdById: initialData.createdById || 6
+                description: initialData.description || ''
             });
         } else {
-            setFormData({ jlptLevel: 'N5', name: '', description: '', createdById: 6 });
+            setFormData({ jlptLevel: 'N5', name: '', description: '' });
         }
+        setErrorMessage('');
     }, [initialData, isOpen]);
 
     const handleChange = (e) => {
-        // name của input trùng với khóa trong formData, nên một hàm có thể cập nhật mọi
-        // trường mà vẫn giữ nguyên các trường còn lại bằng toán tử spread.
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Modal chỉ thu thập dữ liệu. Component cha chọn API create/update, xử lý lỗi
-        // và tải lại danh sách sau khi backend lưu thành công.
-        onSubmit(formData);
+        const name = formData.name.trim();
+        const description = formData.description.trim();
+
+        const validationError = validateVocabularyCategory({ name, description });
+        if (validationError) {
+            setErrorMessage(validationError);
+            return;
+        }
+
+        setErrorMessage('');
+        onSubmit({
+            jlptLevel: formData.jlptLevel,
+            name,
+            description: description || null
+        });
     };
 
     if (!isOpen) return null;
 
-    // Common input styling
     const inputStyle = {
-        padding: '12px 14px', 
+        padding: '12px 14px',
         marginTop: '6px',
         borderRadius: '8px',
         border: '1px solid #cbd5e1',
@@ -57,24 +67,37 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     return (
         <div style={{
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(15, 23, 42, 0.6)', 
+            backgroundColor: 'rgba(15, 23, 42, 0.6)',
             backdropFilter: 'blur(4px)',
             display: 'flex', justifyContent: 'center', alignItems: 'center',
             zIndex: 1000
         }}>
-            <div style={{ 
-                backgroundColor: 'white', 
-                padding: '32px', 
-                borderRadius: '16px', 
+            <div style={{
+                backgroundColor: 'white',
+                padding: '32px',
+                borderRadius: '16px',
                 width: '420px',
                 boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
             }}>
                 <h2 style={{ marginTop: 0, marginBottom: '24px', color: '#0f172a', fontSize: '1.5rem', fontWeight: 800 }}>
                     {initialData ? 'Edit Category' : 'Add New Category'}
                 </h2>
-                
+
+                {errorMessage && (
+                    <div style={{
+                        backgroundColor: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        color: '#991b1b',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        marginBottom: '8px'
+                    }}>
+                        {errorMessage}
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    
                     <label style={{ display: 'flex', flexDirection: 'column', color: '#475569', fontWeight: 600, fontSize: '0.9rem' }}>
                         JLPT Level:
                         <select name="jlptLevel" value={formData.jlptLevel} onChange={handleChange} required style={inputStyle}>
@@ -88,12 +111,35 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
 
                     <label style={{ display: 'flex', flexDirection: 'column', color: '#475569', fontWeight: 600, fontSize: '0.9rem' }}>
                         Category Name:
-                        <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="e.g. Lesson 1 Vocabulary..." style={inputStyle}/>
+                        <input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            maxLength={NAME_MAX}
+                            placeholder="e.g. Lesson 1 Vocabulary..."
+                            style={inputStyle}
+                        />
+                        <span style={{ marginTop: '4px', fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500 }}>
+                            {formData.name.length}/{NAME_MAX}
+                        </span>
                     </label>
 
                     <label style={{ display: 'flex', flexDirection: 'column', color: '#475569', fontWeight: 600, fontSize: '0.9rem' }}>
                         Description (Optional):
-                        <textarea name="description" value={formData.description} onChange={handleChange} rows="3" placeholder="Enter a brief description..." style={{...inputStyle, resize: 'none'}}></textarea>
+                        <textarea
+                            name="description"
+                            value={formData.description}
+                            onChange={handleChange}
+                            maxLength={DESCRIPTION_MAX}
+                            rows="3"
+                            placeholder="Enter a brief description..."
+                            style={{ ...inputStyle, resize: 'none' }}
+                        />
+                        <span style={{ marginTop: '4px', fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500 }}>
+                            {formData.description.length}/{DESCRIPTION_MAX}
+                        </span>
                     </label>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>

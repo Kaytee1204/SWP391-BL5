@@ -94,15 +94,22 @@ public class CourseServiceImpl implements CourseService {
             throw new AppException(ErrorCode.BAD_REQUEST, "Tên khóa học '" + cleanTitle + "' đã tồn tại trong hệ thống. Vui lòng chọn tên khác!");
         }
 
+        // Check Price
+        Long price = request.getPrice() != null ? request.getPrice() : 0L;
+        if (price < 0L) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Giá khóa học không được nhỏ hơn 0 VNĐ");
+        }
+        if (price > 20000000L) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Giá khóa học không được vượt quá 20.000.000 VNĐ");
+        }
+
         Account creator = accountRepository.findByEmail(creatorEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "email", creatorEmail));
 
         Course course = courseMapper.toEntity(request);
         course.setTitle(cleanTitle);
         course.setCreatedBy(creator);
-        if (course.getPrice() == null) {
-            course.setPrice(0L);
-        }
+        course.setPrice(price);
 
         Course saved = courseRepository.save(course);
         log.info("Created course id={}, title='{}', price={} VND by user {}", saved.getCourseId(), saved.getTitle(), saved.getPrice(), creatorEmail);
@@ -133,10 +140,19 @@ public class CourseServiceImpl implements CourseService {
             throw new AppException(ErrorCode.BAD_REQUEST, "Tên khóa học '" + cleanTitle + "' đã được sử dụng bởi khóa học khác!");
         }
 
+        // Kiểm tra giới hạn giá tiền khóa học (0 VNĐ <= price <= 20.000.000 VNĐ)
+        Long price = request.getPrice() != null ? request.getPrice() : 0L;
+        if (price < 0L) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Giá khóa học không được nhỏ hơn 0 VNĐ");
+        }
+        if (price > 20000000L) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Giá khóa học không được vượt quá 20.000.000 VNĐ");
+        }
+
         course.setTitle(cleanTitle);
         course.setJlptLevel(request.getJlptLevel());
         course.setDescription(request.getDescription());
-        course.setPrice(request.getPrice() != null ? request.getPrice() : 0L);
+        course.setPrice(price);
 
         Course updated = courseRepository.save(course);
         log.info("Updated course id={}, title='{}', price={} VND by user {}", updated.getCourseId(), updated.getTitle(), updated.getPrice(), userEmail);
@@ -182,6 +198,10 @@ public class CourseServiceImpl implements CourseService {
 
         Account student = accountRepository.findByEmail(studentEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "email", studentEmail));
+
+        if (student.getRole() != Role.Student) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Chỉ tài khoản Học viên (Student) mới có thể đăng ký tham gia khóa học!");
+        }
 
         if (enrollmentRepository.existsByStudent_AccountIdAndCourse_CourseId(student.getAccountId(), courseId)) {
             throw new AppException(ErrorCode.BAD_REQUEST, "Bạn đã đăng ký khóa học này rồi!");

@@ -8,6 +8,7 @@ import SePayCheckoutModal from './components/SePayCheckoutModal';
 export default function CourseCatalogPage({
   currentUser,
   onNavigate,
+  onOpenCourseLearning,
   onOpenAuth,
   onViewProfile,
   onLogout
@@ -43,14 +44,29 @@ export default function CourseCatalogPage({
 
   const handleEnrollOrBuy = async (course) => {
     if (!currentUser) {
-      alert('Vui lòng đăng nhập tài khoản để đăng ký hoặc mua khóa học!');
+      alert('Vui lòng đăng nhập với tài khoản Học viên (Student) để đăng ký hoặc mua khóa học!');
       onOpenAuth && onOpenAuth('login');
       return;
     }
 
+    // Nếu người dùng không phải là Student (ví dụ: Lecturer, Author, Manager)
+    if (currentUser.role !== 'Student') {
+      alert(`ℹ️ Tài khoản của bạn có vai trò "${currentUser.role}" (Chế độ xem). Hệ thống sẽ chuyển bạn đến lộ trình xem trước các bài học!`);
+      if (onOpenCourseLearning) {
+        onOpenCourseLearning(course);
+      } else if (onNavigate) {
+        onNavigate('kanji');
+      }
+      return;
+    }
+
     if (course.isEnrolled) {
-      // Đã sở hữu -> chuyển vào màn hình học
-      onNavigate && onNavigate('kanji');
+      // Đã sở hữu -> chuyển vào màn hình Cổng Trời học tập
+      if (onOpenCourseLearning) {
+        onOpenCourseLearning(course);
+      } else if (onNavigate) {
+        onNavigate('kanji');
+      }
       return;
     }
 
@@ -59,8 +75,11 @@ export default function CourseCatalogPage({
       try {
         const res = await courseApi.enrollFree(course.courseId);
         if (res.code === 200 || res.code === 201) {
-          alert('🎉 Chúc mừng! Bạn đã đăng ký khóa học miễn phí thành công.');
+          alert('🎉 Chúc mừng! Bạn đã đăng ký khóa học miễn phí thành công. Đang đưa bạn vào lớp học...');
           fetchCourses();
+          if (onOpenCourseLearning) {
+            onOpenCourseLearning(course);
+          }
         }
       } catch (err) {
         alert(err.message || 'Không thể đăng ký khóa học.');
@@ -220,15 +239,19 @@ export default function CourseCatalogPage({
                       width: '100%',
                       padding: '0.75rem',
                       fontSize: '0.92rem',
-                      background: course.isEnrolled
+                      background: (currentUser && currentUser.role !== 'Student')
+                        ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)'
+                        : course.isEnrolled
                         ? '#059669'
                         : course.price === 0
                         ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                         : 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)'
                     }}
                   >
-                    {course.isEnrolled
-                      ? '📖 Vào Học Ngay →'
+                    {currentUser && currentUser.role !== 'Student'
+                      ? `👁️ Xem Lộ Trình (${currentUser.role})`
+                      : course.isEnrolled
+                      ? '⛩️ Vào Học Ngay →'
                       : course.price === 0
                       ? '🎁 Đăng Ký Học Miễn Phí'
                       : '💳 Mua Khóa Học (VietQR / SePay)'}
@@ -249,7 +272,15 @@ export default function CourseCatalogPage({
             fetchCourses();
           }}
           onNavigateLearning={() => {
-            onNavigate('kanji');
+            setActivePaymentData(null);
+            if (onOpenCourseLearning) {
+              onOpenCourseLearning({
+                courseId: activePaymentData?.courseId,
+                title: activePaymentData?.courseTitle
+              });
+            } else if (onNavigate) {
+              onNavigate('kanji');
+            }
           }}
         />
       )}

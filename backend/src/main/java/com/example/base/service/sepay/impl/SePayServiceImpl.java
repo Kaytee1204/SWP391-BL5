@@ -20,6 +20,15 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * =========================================================================================
+ * SePayServiceImpl: Dịch vụ tích hợp trực tiếp với cổng thanh toán SePay VietQR (VietinBank).
+ * =========================================================================================
+ * Các chức năng chính:
+ * 1. Sinh link ảnh mã VietQR chuẩn động `https://qr.sepay.vn/img?...`
+ * 2. Bóc tách mã đơn hàng `orderCode` từ chuỗi tin nhắn ngân hàng bằng Regular Expression.
+ * 3. Gọi Open API của SePay (`https://my.sepay.vn/userapi/transactions/list`) để kiểm tra sao kê dự phòng.
+ */
 @Slf4j
 @Getter
 @Service
@@ -39,18 +48,27 @@ public class SePayServiceImpl implements SePayService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    // Ưu tiên 1: Bắt chính xác tiền tố SEVQR hoặc JLMS hoặc DH hoặc ORDER
+    // Regex ưu tiên 1: Bắt chính xác tiền tố SEVQR hoặc JLMS hoặc DH hoặc ORDER kèm theo số đơn hàng
     private static final Pattern PREFIX_PATTERN = Pattern.compile("(?:SEVQR|JLMS|DH|ORDER)\\s*(\\d{4,12})", Pattern.CASE_INSENSITIVE);
 
+    /**
+     * =====================================================================================
+     * 1. SINH LINK ẢNH MÃ VIETQR TỪ MÁY CHỦ SEPAY
+     * =====================================================================================
+     * @param amount: Số tiền của khóa học (VND)
+     * @param transferContent: Nội dung chuyển khoản (Ví dụ: "SEVQR 894215")
+     * @return URL ảnh mã QR chuẩn Napas247 của SePay
+     */
     @Override
     public String generateQrCodeUrl(Long amount, String transferContent) {
         try {
             String cleanAcc = (accountNumber != null && !accountNumber.isBlank()) ? accountNumber.trim() : "103874683969";
             String cleanBank = (bankCode != null && !bankCode.isBlank()) ? bankCode.trim() : "VietinBank";
 
+            // URL Encode nội dung chuyển khoản để nhúng an toàn vào URL
             String encodedDes = URLEncoder.encode(transferContent, StandardCharsets.UTF_8);
 
-            // Sử dụng chuẩn mã QR chính thức từ máy chủ SePay
+            // Mẫu mã QR compact chính thức từ SePay
             return String.format("https://qr.sepay.vn/img?acc=%s&bank=%s&amount=%d&des=%s&template=compact",
                     cleanAcc, cleanBank, amount, encodedDes);
         } catch (Exception e) {
@@ -60,13 +78,20 @@ public class SePayServiceImpl implements SePayService {
         }
     }
 
+    /**
+     * =====================================================================================
+     * 2. BÓC TÁCH MÃ ĐƠN HÀNG (orderCode) TỪ NỘI DUNG CHUYỂN KHOẢN NGÂN HÀNG
+     * =====================================================================================
+     * Ví dụ nội dung SMS từ ngân hàng: "CT den 103874683969 SEVQR 894215 NGUYEN VAN A chuyen tien"
+     * -> Hàm sẽ dùng Regex trích xuất ra đúng số: `894215`
+     */
     @Override
     public Long extractOrderCodeFromContent(String content) {
         if (content == null || content.isBlank()) {
             return null;
         }
 
-        // Bước 1: Tìm theo tiền tố rõ ràng (SEVQR, JLMS...)
+        // Bước 1: Tìm theo tiền tố chuẩn (SEVQR, JLMS...)
         Matcher matcher = PREFIX_PATTERN.matcher(content.trim());
         if (matcher.find()) {
             try {
@@ -76,7 +101,7 @@ public class SePayServiceImpl implements SePayService {
             }
         }
 
-        // Bước 2: Thử tìm chuỗi số liên tiếp 6-10 chữ số
+        // Bước 2: Thử tìm chuỗi số liên tiếp 6-10 chữ số nếu người dùng lỡ xóa tiền tố SEVQR
         Pattern numberPattern = Pattern.compile("(\\d{6,10})");
         Matcher numMatcher = numberPattern.matcher(content);
         while (numMatcher.find()) {
@@ -88,6 +113,11 @@ public class SePayServiceImpl implements SePayService {
         return null;
     }
 
+    /**
+     * =====================================================================================
+     * 3. LẤY DANH SÁCH SAO KÊ GIAO DỊCH GẦN NHẤT TỪ SEPAY OPEN API
+     * =====================================================================================
+     */
     @Override
     public List<Map<String, Object>> fetchRecentTransactionsFromApi(int limit) {
         if (apiKey == null || apiKey.isBlank() || apiKey.contains("SEPAY_API_KEY")) {
@@ -117,6 +147,12 @@ public class SePayServiceImpl implements SePayService {
         return Collections.emptyList();
     }
 
+    /**
+     * =====================================================================================
+     * 4. CƠ CHẾ DỰ PHÒNG (FALLBACK): ĐỐI SOÁT ĐƠN HÀNG QUA SEPAY API
+     * =====================================================================================
+     * Khi webhook bị trễ, hàm này sẽ quét danh sách giao dịch gần nhất từ API để tìm đơn khớp.
+     */
     @Override
     public boolean checkRecentTransactionsViaApi(Long orderCode, Long expectedAmount) {
         List<Map<String, Object>> transactions = fetchRecentTransactionsFromApi(30);
@@ -129,6 +165,7 @@ public class SePayServiceImpl implements SePayService {
             if (extractedCode != null && extractedCode.equals(orderCode)) {
                 Object amountInObj = tx.get("amount_in");
                 double amountIn = amountInObj != null ? Double.parseDouble(amountInObj.toString()) : 0;
+                // Đối soát số tiền nhận được >= số tiền yêu cầu
                 if (amountIn >= (expectedAmount != null ? expectedAmount : 0)) {
                     log.info("Matched transaction from SePay API for orderCode={}: amount={}", orderCode, amountIn);
                     return true;

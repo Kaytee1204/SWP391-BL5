@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { flashcardDeckApi } from '../../api/flashcardDeckApi';
-import { vocabularyCategoryApi } from '../../api/vocabularyCategoryApi';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import FlashcardDeckItemsModal from './components/FlashcardDeckItemsModal';
 
@@ -9,9 +8,6 @@ export default function FlashcardDeckManagementPage({ currentUser }) {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
-
-  // State for vocabulary categories dropdown
-  const [categories, setCategories] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDeck, setEditingDeck] = useState(null);
@@ -37,22 +33,9 @@ export default function FlashcardDeckManagementPage({ currentUser }) {
     }
   }, []);
 
-  // Fetch vocabulary categories for dropdown
-  const fetchCategories = useCallback(async () => {
-    try {
-      const response = await vocabularyCategoryApi.getAll();
-      if (response && (response.code === 200 || response.code === 201)) {
-        setCategories(response.data || []);
-      }
-    } catch (error) {
-      console.error("Error loading vocabulary categories:", error);
-    }
-  }, []);
-
   useEffect(() => {
     fetchDecks(0);
-    fetchCategories();
-  }, [fetchDecks, fetchCategories]);
+  }, [fetchDecks]);
 
   const handleAddNew = () => {
     setEditingDeck(null);
@@ -80,22 +63,38 @@ export default function FlashcardDeckManagementPage({ currentUser }) {
 
   const handleSubmitForm = async (e) => {
     e.preventDefault();
-    
-    if (!formData.title || !formData.title.trim()) {
+
+    const title = formData.title.trim();
+    const description = formData.description.trim();
+    const titlePattern = /^[\p{L}\p{N}]+(?:[ \u00a0]+[\p{L}\p{N}]+)*$/u;
+
+    if (!title) {
       alert("Please select or enter a title for the Flashcard Deck!");
       return;
     }
 
-    if (formData.description && formData.description.length > 200) {
-      alert("Description cannot exceed 200 characters! Please enter a shorter description.");
+    if (title.length > 150) {
+      alert("Title cannot exceed 150 characters!");
       return;
     }
 
+    if (!titlePattern.test(title)) {
+      alert("Title may contain only letters, numbers, and spaces!");
+      return;
+    }
+
+    if (description.length > 500) {
+      alert("Description cannot exceed 500 characters! Please enter a shorter description.");
+      return;
+    }
+
+    const payload = { title, description: description || null };
+
     try {
       if (editingDeck) {
-        await flashcardDeckApi.update(editingDeck.deckId, formData);
+        await flashcardDeckApi.update(editingDeck.deckId, payload);
       } else {
-        await flashcardDeckApi.create(formData);
+        await flashcardDeckApi.create(payload);
       }
 
       setIsModalOpen(false);
@@ -227,26 +226,22 @@ export default function FlashcardDeckManagementPage({ currentUser }) {
             <form onSubmit={handleSubmitForm} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', marginBottom: '6px', color: '#334155' }}>Deck Title *</label>
-                <select 
+                <input
+                  type="text"
                   value={formData.title} 
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })} 
+                  placeholder="Enter flashcard deck title..."
+                  maxLength={150}
                   required
                   style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', backgroundColor: '#fff' }}
-                >
-                  <option value="">-- Select or link a category --</option>
-                  {categories.map((cat) => (
-                    <option key={cat.categoryId || cat.id} value={cat.name}>
-                      [{cat.jlptLevel}] {cat.name}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
 
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                   <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#334155' }}>Description</label>
-                  <span style={{ fontSize: '0.75rem', color: formData.description.length > 200 ? '#dc2626' : '#64748b' }}>
-                    {formData.description.length}/200 chars
+                  <span style={{ fontSize: '0.75rem', color: formData.description.length > 500 ? '#dc2626' : '#64748b' }}>
+                    {formData.description.length}/500 chars
                   </span>
                 </div>
                 <textarea 
@@ -254,7 +249,7 @@ export default function FlashcardDeckManagementPage({ currentUser }) {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
                   placeholder="Short description for this deck..." 
                   rows={3}
-                  maxLength={200}
+                  maxLength={500}
                   style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }}
                 />
               </div>

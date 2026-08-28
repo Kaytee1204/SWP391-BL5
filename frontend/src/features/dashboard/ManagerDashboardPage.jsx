@@ -16,6 +16,11 @@ import CategoryItemsModal from '../../components/vocabulary_category/CategoryIte
 import FlashcardDeckManagementPage from '../flashcard_deck/FlashcardDeckManagementPage';
 import CourseManagementView from '../courses/CourseManagementView';
 import ManagerErrorReportView from '../error_report/ManagerErrorReportView';
+import ReadingPassageManagementView from '../reading-passages/ReadingPassageManagementView';
+import ListeningExerciseManagementView from '../listening-exercises/ListeningExerciseManagementView';
+import VocabularyManagementView from '../materials/VocabularyManagementView';
+import KanjiModuleManagementView from '../materials/KanjiModuleManagementView';
+import { KanjiPage } from '../../pages/KanjiPage';
 
 export default function ManagerDashboardPage({
   currentUser,
@@ -168,7 +173,11 @@ export default function ManagerDashboardPage({
             <span>›</span>
           </div>
           <div className={`nav-item ${activeTab === 'culture_articles' ? 'active' : ''}`} onClick={() => setActiveTab('culture_articles')}>
-            <div className="nav-item-left"><span>⛩️</span><span>Cultural Articles</span></div>
+            <div className="nav-item-left"><span>⛩️</span><span>Cultural Articles (Author Workspace)</span></div>
+            <span>›</span>
+          </div>
+          <div className={`nav-item ${activeTab === 'error_reports' ? 'active' : ''}`} onClick={() => setActiveTab('error_reports')}>
+            <div className="nav-item-left"><span>🚨</span><span>Student Error Reports</span></div>
             <span>›</span>
           </div>
           <div className={`nav-item ${activeTab === 'payment_report' ? 'active' : ''}`} onClick={() => setActiveTab('payment_report')}>
@@ -222,14 +231,17 @@ export default function ManagerDashboardPage({
         {activeTab === 'materials' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div style={{
-              display: 'flex', gap: '0.75rem', background: '#fff', padding: '0.5rem', borderRadius: '14px', border: '1px solid #e2e8f0', width: 'fit-content', flexWrap: 'wrap'
+              display: 'flex', gap: '0.6rem', background: '#fff', padding: '0.5rem', borderRadius: '14px', border: '1px solid #e2e8f0', width: 'fit-content', flexWrap: 'wrap'
             }}>
-              <button onClick={() => setMaterialSubTab('grammar_patterns')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'grammar_patterns' ? '#7C3AED' : 'transparent', color: materialSubTab === 'grammar_patterns' ? '#fff' : 'var(--text-body)' }}>📖 Grammar Patterns</button>
-              <button onClick={() => setMaterialSubTab('grammar_exercises')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'grammar_exercises' ? '#0d9488' : 'transparent', color: materialSubTab === 'grammar_exercises' ? '#fff' : 'var(--text-body)' }}>📝 Grammar Exercises</button>
-              <button onClick={() => setMaterialSubTab('question_bank')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'question_bank' ? '#d97706' : 'transparent', color: materialSubTab === 'question_bank' ? '#fff' : 'var(--text-body)' }}>🗂️ Question Bank</button>
-              <button onClick={() => setMaterialSubTab('vocabulary_categories')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'vocabulary_categories' ? '#10b981' : 'transparent', color: materialSubTab === 'vocabulary_categories' ? '#fff' : 'var(--text-body)' }}>📚 Vocabulary Categories</button>
-              <button onClick={() => setMaterialSubTab('flashcard_decks')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'flashcard_decks' ? '#3b82f6' : 'transparent', color: materialSubTab === 'flashcard_decks' ? '#fff' : 'var(--text-body)' }}>🃏 Flashcard Decks</button>
-              <button onClick={() => setMaterialSubTab('error_reports')} style={{ padding: '0.5rem 1.15rem', borderRadius: '10px', border: materialSubTab === 'error_reports' ? 'none' : '1px solid #fecdd3', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'error_reports' ? '#e11d48' : 'transparent', color: materialSubTab === 'error_reports' ? '#fff' : '#e11d48' }}>⚠️ Error Reports</button>
+              <button onClick={() => setMaterialSubTab('grammar_patterns')} style={{ padding: '0.5rem 1.1rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'grammar_patterns' ? '#7C3AED' : 'transparent', color: materialSubTab === 'grammar_patterns' ? '#fff' : 'var(--text-body)' }}>📖 Grammar Patterns</button>
+              <button onClick={() => setMaterialSubTab('grammar_exercises')} style={{ padding: '0.5rem 1.1rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'grammar_exercises' ? '#0d9488' : 'transparent', color: materialSubTab === 'grammar_exercises' ? '#fff' : 'var(--text-body)' }}>📝 Grammar Exercises</button>
+              <button onClick={() => setMaterialSubTab('question_bank')} style={{ padding: '0.5rem 1.1rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'question_bank' ? '#d97706' : 'transparent', color: materialSubTab === 'question_bank' ? '#fff' : 'var(--text-body)' }}>🗂️ Question Bank</button>
+              <button onClick={() => setMaterialSubTab('vocabulary_management')} style={{ padding: '0.5rem 1.1rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'vocabulary_management' ? '#10b981' : 'transparent', color: materialSubTab === 'vocabulary_management' ? '#fff' : 'var(--text-body)' }}>📚 Vocabulary</button>
+              <button onClick={() => setMaterialSubTab('kanji_modules')} style={{ padding: '0.5rem 1.1rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'kanji_modules' ? '#0284c7' : 'transparent', color: materialSubTab === 'kanji_modules' ? '#fff' : 'var(--text-body)' }}>🏮 Kanji Modules</button>
+              <button onClick={() => setMaterialSubTab('reading_passages')} style={{ padding: '0.5rem 1.1rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'reading_passages' ? '#0f766e' : 'transparent', color: materialSubTab === 'reading_passages' ? '#fff' : 'var(--text-body)' }}>📖 Reading Passages</button>
+              <button onClick={() => setMaterialSubTab('listening_exercises')} style={{ padding: '0.5rem 1.1rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'listening_exercises' ? '#2563eb' : 'transparent', color: materialSubTab === 'listening_exercises' ? '#fff' : 'var(--text-body)' }}>🎧 Listening</button>
+              <button onClick={() => setMaterialSubTab('flashcard_decks')} style={{ padding: '0.5rem 1.1rem', borderRadius: '10px', border: 'none', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'flashcard_decks' ? '#3b82f6' : 'transparent', color: materialSubTab === 'flashcard_decks' ? '#fff' : 'var(--text-body)' }}>🃏 Flashcard Decks</button>
+              <button onClick={() => setMaterialSubTab('error_reports')} style={{ padding: '0.5rem 1.1rem', borderRadius: '10px', border: materialSubTab === 'error_reports' ? 'none' : '1px solid #fecdd3', fontWeight: 800, cursor: 'pointer', background: materialSubTab === 'error_reports' ? '#e11d48' : 'transparent', color: materialSubTab === 'error_reports' ? '#fff' : '#e11d48' }}>🚨 Error Reports</button>
             </div>
 
             {materialSubTab === 'grammar_patterns' && (
@@ -241,116 +253,28 @@ export default function ManagerDashboardPage({
             {materialSubTab === 'question_bank' && (
               <QuestionBankWorkspace currentUser={currentUser} />
             )}
-            {materialSubTab === 'vocabulary_categories' && (
-              <div style={{ backgroundColor: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '32px 24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                  <div>
-                    <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.75rem', fontWeight: '800' }}>Vocabulary Categories Management</h2>
-                    <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Add, update, delete, and manage vocabulary items by JLPT level</p>
-                  </div>
-                  <button 
-                    onClick={handleAddNew}
-                    style={{ padding: '10px 20px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.3)' }}
-                  >
-                    + Add New
-                  </button>
-                </div>
-
-                {/* JLPT Level Filter */}
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
-                  {['ALL', 'N5', 'N4', 'N3', 'N2', 'N1'].map((level) => (
-                    <button
-                      key={level}
-                      onClick={() => setFilterLevel(level)}
-                      style={{
-                        padding: '6px 14px',
-                        borderRadius: '8px',
-                        border: 'none',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        backgroundColor: filterLevel === level ? '#10b981' : '#f1f5f9',
-                        color: filterLevel === level ? '#ffffff' : '#475569',
-                        fontSize: '0.85rem'
-                      }}
-                    >
-                      {level === 'ALL' ? 'All Levels' : level}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Cards Grid View */}
-                {filteredCategories.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '50px', color: '#94a3b8', fontStyle: 'italic' }}>
-                    No vocabulary categories found.
-                  </div>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-                    {filteredCategories.map((cat) => {
-                      const itemCount = cat.items ? cat.items.length : 0;
-                      return (
-                        <div 
-                          key={cat.categoryId}
-                          style={{
-                            backgroundColor: '#ffffff',
-                            borderRadius: '12px',
-                            padding: '20px',
-                            border: '1px solid #e2e8f0',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between'
-                          }}
-                        >
-                          <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                              <span style={getJlptBadgeStyle(cat.jlptLevel)}>{cat.jlptLevel}</span>
-                              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>#{cat.categoryId}</span>
-                            </div>
-                            <h3 style={{ margin: '0 0 6px 0', color: '#0f172a', fontSize: '1.15rem', fontWeight: '700' }}>{cat.name}</h3>
-                            <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem', lineHeight: '1.4' }}>
-                              {cat.description || <span style={{ fontStyle: 'italic', color: '#cbd5e1' }}>No description</span>}
-                            </p>
-                          </div>
-
-                          <div style={{ marginTop: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <button
-                              onClick={() => setSelectedCategoryForItems(cat)}
-                              style={{ backgroundColor: '#e0e7ff', color: '#3730a3', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' }}
-                            >
-                              📚 View ({itemCount} words)
-                            </button>
-                            <div style={{ display: 'flex', gap: '6px' }}>
-                              <button onClick={() => handleEdit(cat)} style={{ padding: '6px 10px', backgroundColor: '#fef3c7', color: '#d97706', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.75rem' }}>Edit</button>
-                              <button onClick={() => handleDelete(cat.categoryId)} style={{ padding: '6px 10px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.75rem' }}>Delete</button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                <CategoryFormModal 
-                  isOpen={isModalOpen} 
-                  onClose={() => setIsModalOpen(false)} 
-                  onSubmit={handleFormSubmit}
-                  initialData={editingCategory}
-                />
-
-                <CategoryItemsModal 
-                  category={selectedCategoryForItems}
-                  onClose={() => setSelectedCategoryForItems(null)}
-                  currentUser={currentUser}
-                />
+            {materialSubTab === 'vocabulary_management' && (
+              <VocabularyManagementView currentUser={currentUser} />
+            )}
+            {materialSubTab === 'kanji_modules' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <KanjiModuleManagementView currentUser={currentUser} />
+                <KanjiPage currentUser={currentUser} onNavigate={onNavigate} />
               </div>
             )}
-
+            {materialSubTab === 'reading_passages' && (
+              <ReadingPassageManagementView currentUser={currentUser} />
+            )}
+            {materialSubTab === 'listening_exercises' && (
+              <ListeningExerciseManagementView currentUser={currentUser} />
+            )}
             {materialSubTab === 'flashcard_decks' && <FlashcardDeckManagementPage currentUser={currentUser} />}
             {materialSubTab === 'error_reports' && <ManagerErrorReportView />}
           </div>
         )}
 
         {activeTab === 'culture_articles' && <CultureArticleManagementView currentUser={currentUser} onReadArticle={(art) => onOpenArticleDetail(art, 'dashboard')} />}
+        {activeTab === 'error_reports' && <ManagerErrorReportView />}
         {activeTab === 'payment_report' && <PaymentReportView />}
         {activeTab === 'refund_info' && <RefundInfoView />}
       </main>

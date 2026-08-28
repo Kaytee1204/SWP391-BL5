@@ -9,5 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FlashcardDeckRepository extends JpaRepository<FlashcardDeck, Long> {
     boolean existsByTitle(String title);
+    boolean existsByTitleIgnoreCase(String title);
     Page<FlashcardDeck> findAll(Pageable pageable);
 }

@@ -134,7 +134,7 @@ public class QuestionSetServiceImpl implements QuestionSetService {
         boolean levelChanged = set.getJlptLevel() != request.getJlptLevel();
         boolean changedToSingleSkill = set.getSkillType() != request.getSkillType()
                 && request.getSkillType() != QuestionSkillType.mixed;
-        if((levelChanged || changedToSingleSkill) && questionCount > 0){
+        if(changedToSingleSkill && questionCount > 0){
             throw new AppException(
                     ErrorCode.CONFLICT, "Không thể đổi skill hoặc level khi bộ câu hỏi đã có câu hỏi"
             );

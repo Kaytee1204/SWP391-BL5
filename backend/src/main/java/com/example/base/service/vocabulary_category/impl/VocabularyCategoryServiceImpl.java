@@ -48,26 +48,34 @@ public class VocabularyCategoryServiceImpl implements VocabularyCategoryService 
     }
 
     @Override
-    @Transactional
-    public VocabularyCategoryResponse createCategory(VocabularyCategoryCreateRequest request, Long creatorId) {
-        // creatorId do controller lấy từ JWT, không tin createdById do frontend tự gửi.
-        Account creator = accountRepository.findByAccountIdAndDeletedAtIsNull(creatorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Account", "id", creatorId));
-        VocabularyCategory category = mapper.toEntity(request);
-        category.setName(request.getName().trim());
-        category.setCreatedBy(creator);
-        return toResponse(repository.save(category));
+@Transactional
+public VocabularyCategoryResponse createCategory(VocabularyCategoryCreateRequest request, Long creatorId) {
+    Account creator = accountRepository.findByAccountIdAndDeletedAtIsNull(creatorId)
+            .orElseThrow(() -> new ResourceNotFoundException("Account", "id", creatorId));
+    VocabularyCategory category = mapper.toEntity(request);
+    category.setName(request.getName().trim());
+    category.setDescription(normalizeDescription(request.getDescription()));
+    category.setCreatedBy(creator);
+    return toResponse(repository.save(category));
+}
+
+@Override
+@Transactional
+public VocabularyCategoryResponse updateCategory(Long id, VocabularyCategoryUpdateRequest request) {
+    VocabularyCategory category = getCategory(id);
+    category.setJlptLevel(request.getJlptLevel());
+    category.setName(request.getName().trim());
+    category.setDescription(normalizeDescription(request.getDescription()));
+    return toResponse(repository.save(category));
+}
+
+private String normalizeDescription(String description) {
+    if (description == null) {
+        return null;
     }
-    @Override
-    @Transactional
-    public VocabularyCategoryResponse updateCategory(Long id, VocabularyCategoryUpdateRequest request) {
-        // Chỉ cập nhật các field nghiệp vụ được cho phép; creator và createdAt vẫn giữ nguyên.
-        VocabularyCategory category = getCategory(id);
-        category.setJlptLevel(request.getJlptLevel());
-        category.setName(request.getName().trim());
-        category.setDescription(request.getDescription());
-        return toResponse(repository.save(category));
-    }
+    String trimmed = description.trim();
+    return trimmed.isEmpty() ? null : trimmed;
+}
     @Override
     @Transactional
     public void deleteCategory(Long id) {

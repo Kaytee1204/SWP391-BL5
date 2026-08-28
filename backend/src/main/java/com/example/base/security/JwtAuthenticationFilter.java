@@ -52,6 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // BƯỚC 6: Lưu Authentication vào SecurityContext (để Controller có thể lấy qua @AuthenticationPrincipal)
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.info("JWT Auth Success: user={}, authorities={}", email, userDetails.getAuthorities());
             }
         } catch (Exception ex) {
             log.error("Không thể xác thực người dùng trong Security Context", ex);

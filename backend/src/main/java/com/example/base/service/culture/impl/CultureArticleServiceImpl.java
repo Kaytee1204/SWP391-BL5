@@ -146,8 +146,8 @@ public class CultureArticleServiceImpl implements CultureArticleService {
         CultureArticle article = cultureArticleRepository.findById(articleId)
                 .orElseThrow(() -> new ResourceNotFoundException("CultureArticle", "id", articleId));
 
-        // BƯỚC 3: Kiểm tra quyền sở hữu (Chỉ người viết ra bài này mới được sửa)
-        validateOwnership(article, currentUser);
+        // BƯỚC 3: Kiểm tra quyền sở hữu (Tác giả bài viết HOẶC Manager có quyền sửa)
+        validateOwnershipOrManager(article, currentUser);
 
         // BƯỚC 4: Kiểm tra tiêu đề không trùng với bài viết khác
         String cleanTitle = request.getTitle() != null ? request.getTitle().trim() : "";

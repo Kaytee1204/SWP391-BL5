@@ -1,7 +1,6 @@
 // src/main/java/com/example/base/entity/ErrorReport.java
 package com.example.base.entity;
 
-import com.example.base.entity.ReportStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -37,6 +36,15 @@ public class ErrorReport {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private ReportStatus status;
+
+    @Column(name = "reviewer_note", length = 500)
+    private String reviewerNote;
+
+    @Column(name = "reviewed_by")
+    private Long reviewedBy;
+
+    @Column(name = "reviewed_at")
+    private LocalDateTime reviewedAt;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false) // Thêm name

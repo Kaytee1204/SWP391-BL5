@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,12 +30,32 @@ public class UserPrincipal implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
 
     public static UserPrincipal create(Account account) {
-        List<GrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority("ROLE_" + account.getRole().name()),
-                new SimpleGrantedAuthority(account.getRole().name())
-        );
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        if (account.getRole() != null) {
+            String roleName = account.getRole().name();
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + roleName));
+            authorities.add(new SimpleGrantedAuthority(roleName));
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + roleName.toUpperCase()));
+            authorities.add(new SimpleGrantedAuthority(roleName.toUpperCase()));
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + roleName.toLowerCase()));
+            authorities.add(new SimpleGrantedAuthority(roleName.toLowerCase()));
 
-        boolean isEnabled = account.getStatus() == AccountStatus.active && account.getDeletedAt() == null;
+            if (roleName.equalsIgnoreCase("Manager") || roleName.equalsIgnoreCase("Admin")) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_Manager"));
+                authorities.add(new SimpleGrantedAuthority("Manager"));
+                authorities.add(new SimpleGrantedAuthority("ROLE_MANAGER"));
+                authorities.add(new SimpleGrantedAuthority("MANAGER"));
+                authorities.add(new SimpleGrantedAuthority("ROLE_Admin"));
+                authorities.add(new SimpleGrantedAuthority("Admin"));
+                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                authorities.add(new SimpleGrantedAuthority("ADMIN"));
+            }
+        }
+
+        boolean isEnabled = (account.getStatus() == null 
+                || (!account.getStatus().name().equalsIgnoreCase("inactive") 
+                    && !account.getStatus().name().equalsIgnoreCase("deleted")))
+                && account.getDeletedAt() == null;
 
         return UserPrincipal.builder()
                 .accountId(account.getAccountId())

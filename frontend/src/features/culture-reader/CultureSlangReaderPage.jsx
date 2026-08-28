@@ -71,6 +71,25 @@ export default function CultureSlangReaderPage({
         <p className="culture-page-sub">
           Kho bài đọc thực tế về văn hóa ứng xử công sở, ngôn ngữ giới trẻ (若者言葉), văn hóa trà đạo, và chiến lược phát triển sự nghiệp tại Nhật Bản từ các Tác giả và Giảng viên JLMS.
         </p>
+
+        {(currentUser?.role === 'Author' || currentUser?.role === 'Manager') && (
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.25rem' }}>
+            {/* <button
+              className="btn-primary-purple"
+              style={{
+                background: 'linear-gradient(135deg, #db2777 0%, #be185d 100%)',
+                padding: '0.65rem 1.4rem',
+                fontSize: '0.92rem',
+                fontWeight: 800,
+                borderRadius: '12px',
+                boxShadow: '0 4px 14px rgba(219, 39, 119, 0.3)'
+              }}
+              onClick={() => onNavigate('culture_articles')}
+            >
+              ✍️ Đến Author Workspace Để Viết Bài Mới
+            </button> */}
+          </div>
+        )}
       </header>
 
       {loading ? (
@@ -84,9 +103,9 @@ export default function CultureSlangReaderPage({
           <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🌸</div>
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-heading)' }}>Chưa có bài viết nào được đăng tải</h3>
           <p style={{ color: 'var(--text-body)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
-            Hệ thống chưa có bài viết văn hóa. Bạn có thể đăng nhập bằng tài khoản <strong>Author</strong> để đăng bài viết đầu tiên nhé!
+            Hệ thống chưa có bài viết văn hóa. Bạn có thể đăng nhập bằng tài khoản <strong>Author</strong> hoặc <strong>Manager</strong> để đăng bài viết đầu tiên nhé!
           </p>
-          {currentUser?.role === 'Author' ? (
+          {(currentUser?.role === 'Author' || currentUser?.role === 'Manager') ? (
             <button
               className="btn-primary-purple"
               style={{ marginTop: '1.5rem', background: 'linear-gradient(135deg, #db2777 0%, #be185d 100%)' }}

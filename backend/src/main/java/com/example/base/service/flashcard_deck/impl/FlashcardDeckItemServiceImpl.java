@@ -41,19 +41,23 @@ public class FlashcardDeckItemServiceImpl implements FlashcardDeckItemService {
                 .orElseThrow(() -> new IllegalArgumentException("Flashcard deck not found."));
 
         Long generatedItemId = request.getItemId() != null ? request.getItemId() : System.currentTimeMillis();
-
         FlashcardDeckItemId id = new FlashcardDeckItemId(
-                request.getDeckId(),
-                request.getItemType(),
-                generatedItemId
+                request.getDeckId(), request.getItemType(), generatedItemId
         );
+        String word = request.getWord().trim();
+        boolean duplicateWord = itemRepository.findById_DeckId(request.getDeckId()).stream()
+                .anyMatch(existing -> existing.getWord() != null
+                        && existing.getWord().trim().equalsIgnoreCase(word));
+        if (itemRepository.existsById(id) || duplicateWord) {
+            throw new IllegalArgumentException("This item already exists in the flashcard deck.");
+        }
 
         FlashcardDeckItem item = new FlashcardDeckItem();
         item.setId(id);
         item.setFlashcardDeck(deck);
-        item.setWord(request.getWord());
-        item.setMeaning(request.getMeaning());
-        item.setReading(request.getReading());
+        item.setWord(word);
+        item.setMeaning(request.getMeaning().trim());
+        item.setReading(trimToNull(request.getReading()));
 
         itemRepository.save(item);
 
@@ -69,6 +73,9 @@ public class FlashcardDeckItemServiceImpl implements FlashcardDeckItemService {
 
     @Override
     public FlashcardDeckItemResponse updateItemInDeck(FlashcardDeckItemCreateRequest request) {
+                if (request.getItemId() == null) {
+                        throw new IllegalArgumentException("Item ID is required when updating a flashcard item.");
+                }
         FlashcardDeckItemId id = new FlashcardDeckItemId(
                 request.getDeckId(),
                 request.getItemType(),
@@ -79,9 +86,17 @@ public class FlashcardDeckItemServiceImpl implements FlashcardDeckItemService {
                 .orElseThrow(() -> new IllegalArgumentException("Item not found in the deck."));
 
         // Cập nhật các thông tin mới
-        item.setWord(request.getWord());
-        item.setMeaning(request.getMeaning());
-        item.setReading(request.getReading());
+        String word = request.getWord().trim();
+        boolean duplicateWord = itemRepository.findById_DeckId(request.getDeckId()).stream()
+                .anyMatch(existing -> !existing.getId().equals(id)
+                        && existing.getWord() != null
+                        && existing.getWord().trim().equalsIgnoreCase(word));
+        if (duplicateWord) {
+            throw new IllegalArgumentException("This item already exists in the flashcard deck.");
+        }
+        item.setWord(word);
+        item.setMeaning(request.getMeaning().trim());
+        item.setReading(trimToNull(request.getReading()));
 
         itemRepository.save(item);
 
@@ -104,4 +119,12 @@ public class FlashcardDeckItemServiceImpl implements FlashcardDeckItemService {
 
         itemRepository.deleteById(id); // Xóa chính xác theo khóa phức hợp
     }
+
+        private String trimToNull(String value) {
+                if (value == null) {
+                        return null;
+                }
+                String trimmed = value.trim();
+                return trimmed.isEmpty() ? null : trimmed;
+        }
 }
