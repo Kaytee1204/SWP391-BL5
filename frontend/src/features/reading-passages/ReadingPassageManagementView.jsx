@@ -16,7 +16,7 @@ import ReadingPassageDetailModal from './ReadingPassageDetailModal';
 import ReadingPassageFormModal from './ReadingPassageFormModal';
 import './readingPassage.css';
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 10;
 
 const formatDate = (value) => {
   if (!value) return '—';

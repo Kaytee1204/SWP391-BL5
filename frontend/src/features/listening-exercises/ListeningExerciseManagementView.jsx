@@ -6,7 +6,7 @@ import ListeningExerciseDetailModal from './ListeningExerciseDetailModal';
 import ListeningExerciseFormModal from './ListeningExerciseFormModal';
 import './listeningExercise.css';
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 10;
 
 const formatDate = (value) => {
   if (!value) return '—';

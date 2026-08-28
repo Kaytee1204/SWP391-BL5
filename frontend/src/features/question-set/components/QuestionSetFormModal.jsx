@@ -115,7 +115,7 @@ export default function QuestionSetFormModal({ questionSet, onClose, onSaved }) 
             <div className="qs-form-grid">
               <label className="qs-field">
                 <span>Kỹ năng <b>*</b></span>
-                <select name="skillType" value={form.skillType} onChange={updateField}>
+                <select name="skillType" value={form.skillType} onChange={updateField} disabled={classificationLocked}>
                   {QUESTION_SET_SKILLS.filter((skill) => skill.value)
                     .filter((skill) => !classificationLocked || skill.value === form.skillType || skill.value === 'mixed')
                     .map((skill) => (
@@ -126,7 +126,7 @@ export default function QuestionSetFormModal({ questionSet, onClose, onSaved }) 
 
               <label className="qs-field">
                 <span>JLPT level <b>*</b></span>
-                <select name="jlptLevel" value={form.jlptLevel} onChange={updateField} disabled={classificationLocked}>
+                <select name="jlptLevel" value={form.jlptLevel} onChange={updateField}>
                   {QUESTION_SET_LEVELS.filter(Boolean).map((level) => (
                     <option key={level} value={level}>{level}</option>
                   ))}
