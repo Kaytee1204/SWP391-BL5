@@ -61,3 +61,11 @@ export const deckApi = {
   updateKanjiNote: (deckId, kanjiId, data) => axiosClient.put(`/personal/kanji-decks/${deckId}/items/${kanjiId}`, data),
   removeKanjiFromDeck: (deckId, kanjiId) => axiosClient.delete(`/personal/kanji-decks/${deckId}/items/${kanjiId}`),
 };
+
+export const errorReportApi = {
+  createReport: (data) => axiosClient.post('/error-reports', data),
+  getMyReports: (params) => axiosClient.get('/error-reports/my-reports', { params }),
+  updateReport: (id, data) => axiosClient.put(`/error-reports/${id}`, data),
+  cancelReport: (id) => axiosClient.patch(`/error-reports/${id}/cancel`),
+};
+

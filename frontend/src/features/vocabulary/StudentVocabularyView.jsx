@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { vocabApi, deckApi } from '../../api';
+import { vocabApi, deckApi, errorReportApi } from '../../api';
 import { Modal } from '../../components/Modal';
-import { BookmarkPlus, Search, Folder, Sparkles, BookOpen, Layers, CheckCircle2 } from 'lucide-react';
+import { BookmarkPlus, Search, Folder, Sparkles, BookOpen, Layers, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 const JLPT_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
@@ -20,6 +20,12 @@ export default function StudentVocabularyView({ currentUser, onNavigate }) {
   const [selectedItemForDeck, setSelectedItemForDeck] = useState(null);
   const [myDecks, setMyDecks] = useState([]);
   const [targetDeckId, setTargetDeckId] = useState('');
+
+  // Report Issue modal state
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [selectedItemForReport, setSelectedItemForReport] = useState(null);
+  const [reportDescription, setReportDescription] = useState('');
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -65,6 +71,34 @@ export default function StudentVocabularyView({ currentUser, onNavigate }) {
       setIsAddToDeckModalOpen(false);
     } catch (err) {
       setFeedback({ type: 'error', msg: 'Lưu vào deck thất bại: ' + err.message });
+    }
+  };
+
+  const openReportModal = (item) => {
+    setSelectedItemForReport(item);
+    setReportDescription('');
+    setIsReportModalOpen(true);
+  };
+
+  const submitReport = async () => {
+    if (!reportDescription.trim()) {
+      setFeedback({ type: 'error', msg: 'Vui lòng nhập mô tả lỗi' });
+      return;
+    }
+    
+    setIsSubmittingReport(true);
+    try {
+      await errorReportApi.createReport({
+        targetType: 'FLASHCARD',
+        targetId: selectedItemForReport.itemId,
+        description: reportDescription
+      });
+      setFeedback({ type: 'success', msg: 'Cảm ơn bạn đã báo cáo lỗi!' });
+      setIsReportModalOpen(false);
+    } catch (err) {
+      setFeedback({ type: 'error', msg: 'Gửi báo cáo lỗi thất bại: ' + (err.response?.data?.message || err.message) });
+    } finally {
+      setIsSubmittingReport(false);
     }
   };
 
@@ -412,16 +446,37 @@ export default function StudentVocabularyView({ currentUser, onNavigate }) {
                   </div>
                 )}
 
-                {/* Save to Deck Action Button */}
+                {/* Action Buttons */}
                 {isStudent && (
                   <div style={{
                     display: 'flex',
-                    justifyContent: 'flex-end',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
                     borderTop: '1px solid #f1f5f9',
                     paddingTop: '0.75rem',
                     marginTop: 'auto'
                   }}>
+                    <button
+                      onClick={() => openReportModal(item)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        padding: '0.45rem 0.6rem',
+                        background: '#fee2e2',
+                        color: '#b91c1c',
+                        border: '1px solid #fca5a5',
+                        borderRadius: '8px',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      title="Báo cáo lỗi nội dung"
+                    >
+                      <AlertTriangle size={14} /> Báo lỗi
+                    </button>
+
                     <button
                       onClick={() => openAddToDeck(item)}
                       style={{
@@ -435,7 +490,8 @@ export default function StudentVocabularyView({ currentUser, onNavigate }) {
                         borderRadius: '8px',
                         fontSize: '0.78rem',
                         fontWeight: 700,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
                       }}
                     >
                       <BookmarkPlus size={14} /> Lưu vào Deck
@@ -505,6 +561,63 @@ export default function StudentVocabularyView({ currentUser, onNavigate }) {
               <BookmarkPlus size={16} /> Lưu vào Deck
             </button>
           )}
+        </div>
+      </Modal>
+
+      {/* Modal Report Issue */}
+      <Modal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        title="⚠️ Báo cáo lỗi nội dung"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <p style={{ color: '#475569', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+            Bạn đang báo cáo lỗi cho từ vựng: <strong>{selectedItemForReport?.word}</strong>
+          </p>
+          <div className="form-group">
+            <label className="form-label" style={{ fontWeight: 700 }}>Mô tả chi tiết lỗi <span style={{color: 'red'}}>*</span></label>
+            <textarea
+              className="form-input"
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+              placeholder="Ví dụ: Từ này viết sai Hiragana, Nghĩa tiếng Việt chưa chính xác..."
+              rows={4}
+              maxLength={500}
+              style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1', resize: 'vertical' }}
+            />
+            <div style={{ textAlign: 'right', fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem' }}>
+              {reportDescription.length}/500
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setIsReportModalOpen(false)}
+            disabled={isSubmittingReport}
+            style={{ padding: '0.55rem 1.2rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer' }}
+          >
+            Hủy
+          </button>
+          <button
+            onClick={submitReport}
+            disabled={isSubmittingReport}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0.55rem 1.4rem',
+              borderRadius: '8px',
+              border: 'none',
+              background: '#ef4444',
+              color: '#fff',
+              fontWeight: 700,
+              cursor: isSubmittingReport ? 'not-allowed' : 'pointer',
+              opacity: isSubmittingReport ? 0.7 : 1
+            }}
+          >
+            {isSubmittingReport ? 'Đang gửi...' : 'Gửi báo cáo'}
+          </button>
         </div>
       </Modal>
 
