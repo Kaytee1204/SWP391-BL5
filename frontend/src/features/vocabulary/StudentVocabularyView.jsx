@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { vocabApi, deckApi } from '../../api';
 import { Modal } from '../../components/Modal';
 import { BookmarkPlus, Search, Folder, Sparkles, BookOpen, Layers, CheckCircle2 } from 'lucide-react';
+import InlineErrorReport from '../../components/common/InlineErrorReport';
 
 const JLPT_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
@@ -412,16 +413,23 @@ export default function StudentVocabularyView({ currentUser, onNavigate }) {
                   </div>
                 )}
 
-                {/* Save to Deck Action Button */}
+                {/* Actions: Report Error & Save to Deck */}
                 {isStudent && (
                   <div style={{
                     display: 'flex',
-                    justifyContent: 'flex-end',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
                     borderTop: '1px solid #f1f5f9',
                     paddingTop: '0.75rem',
-                    marginTop: 'auto'
+                    marginTop: 'auto',
+                    gap: '0.5rem',
+                    flexWrap: 'wrap'
                   }}>
+                    <InlineErrorReport 
+                      targetType="VOCABULARY" 
+                      targetId={item.itemId} 
+                      title={`Từ vựng: ${item.word || item.kanji}`} 
+                    />
                     <button
                       onClick={() => openAddToDeck(item)}
                       style={{

@@ -73,10 +73,15 @@ public class ReadingPassageController {
         hasAnyAuthority(
             'Lecturer',
             'ROLE_Lecturer',
-            'ROLE_LECTURER'
+            'ROLE_LECTURER',
+            'lecturer',
+            'Manager',
+            'ROLE_Manager',
+            'ROLE_MANAGER',
+            'manager'
         )
         """)
-    @Operation(summary = "View passages created by current Lecturer")
+    @Operation(summary = "View passages created by current Lecturer or Manager")
     public ResponseEntity<
             ApiResponse<PageResponse<ReadingPassageResponse>>
             > getMyPassages(
@@ -108,9 +113,11 @@ public class ReadingPassageController {
             'Lecturer',
             'ROLE_Lecturer',
             'ROLE_LECTURER',
+            'lecturer',
             'Manager',
             'ROLE_Manager',
-            'ROLE_MANAGER'
+            'ROLE_MANAGER',
+            'manager'
         )
         """)
     @Operation(summary = "View reading passage detail")
@@ -128,7 +135,12 @@ public class ReadingPassageController {
         hasAnyAuthority(
             'Lecturer',
             'ROLE_Lecturer',
-            'ROLE_LECTURER'
+            'ROLE_LECTURER',
+            'lecturer',
+            'Manager',
+            'ROLE_Manager',
+            'ROLE_MANAGER',
+            'manager'
         )
         """)
     @Operation(summary = "Create a reading passage")

@@ -107,7 +107,7 @@ export default function CultureArticleManagementView({ currentUser, onReadArticl
             className="search-pill-input"
           />
 
-          {currentUser?.role === 'Author' && (
+          {(currentUser?.role === 'Author' || currentUser?.role === 'Manager') && (
             <select
               value={authorFilter}
               onChange={e => { setAuthorFilter(e.target.value); setPage(0); }}

@@ -21,7 +21,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -35,7 +39,34 @@ public class AccountManagementServiceImpl implements AccountManagementService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<AccountResponse> searchAccounts(String keyword, Role role, AccountStatus status, Pageable pageable) {
-        Page<Account> page = accountRepository.searchAccounts(keyword, role, status, pageable);
+        Specification<Account> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String pattern = "%" + keyword.trim().toLowerCase() + "%";
+                Predicate nameMatch = cb.like(cb.lower(root.get("fullName")), pattern);
+                Predicate emailMatch = cb.like(cb.lower(root.get("email")), pattern);
+                predicates.add(cb.or(nameMatch, emailMatch));
+            }
+
+            if (role != null) {
+                predicates.add(cb.equal(root.get("role"), role));
+            }
+
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            } else {
+                // Don't show deleted accounts unless explicitly requested
+                predicates.add(cb.or(
+                    cb.isNull(root.get("deletedAt")),
+                    cb.notEqual(root.get("status"), AccountStatus.deleted)
+                ));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<Account> page = accountRepository.findAll(spec, pageable);
         return PageResponse.from(page.map(accountMapper::toResponse));
     }
 

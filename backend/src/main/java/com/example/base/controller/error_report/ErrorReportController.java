@@ -35,10 +35,13 @@ public class ErrorReportController {
     private final ErrorReportService reportService;
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('Student', 'ROLE_Student', 'ROLE_STUDENT', 'student')")
-    @Operation(summary = "Create Content Error Report (Student only)")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Create Content Error Report")
     public ResponseEntity<ApiResponse<ErrorReportResponse>> createReport(@Valid @RequestBody ErrorReportRequest request,
                                                                          @AuthenticationPrincipal UserPrincipal currentUser){
+        if (currentUser == null) {
+            throw new RuntimeException("Vui lòng đăng nhập để gửi báo cáo lỗi");
+        }
         ErrorReportResponse response = reportService.createReport(request, currentUser.getAccountId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Gửi báo cáo lỗi thành công", response));

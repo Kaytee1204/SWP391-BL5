@@ -11,7 +11,7 @@ import lombok.*;
 public class ErrorReportRequest {
     @NotBlank(message = "Loại nội dung không được để trống")
     @Pattern(
-            regexp = "^(GRAMMAR|CULTURE_ARTICLE|KANJI|FLASHCARD)$",
+            regexp = "(?i)^(GRAMMAR|CULTURE_ARTICLE|KANJI|FLASHCARD|VOCABULARY|VOCAB|EXERCISE|QUESTION|COURSE|READING|LISTENING|GENERAL)$",
             message = "Loại nội dung không hợp lệ"
     )
     private String targetType;
@@ -21,7 +21,7 @@ public class ErrorReportRequest {
     private Long targetId;
 
     @NotBlank(message = "Mô tả lỗi không được để trống")
-    @Size(max=500, message = "Mô tả không được vượt quá 500 ký tự")
-    @Pattern(regexp = "^[^\\p{Cntrl}<>]*$", message = "Mô tả chứa ký tự không hợp lệ")
+    @Size(min = 1, max = 2000, message = "Mô tả không được vượt quá 2000 ký tự")
     private String description;
 }
+

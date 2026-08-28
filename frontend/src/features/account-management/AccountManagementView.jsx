@@ -23,6 +23,8 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
   // --- STATE QUẢN LÝ DỮ LIỆU ---
   const [accounts, setAccounts] = useState([]); // Danh sách tài khoản hiển thị trên trang hiện tại
   const [pageInfo, setPageInfo] = useState({ page: 0, size: 10, totalPages: 1, totalElements: 0 }); // Thông tin phân trang từ Backend
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   // --- STATE BỘ LỌC VÀ TÌM KIẾM ---
   const [keyword, setKeyword] = useState('');       // Từ khóa tìm kiếm (họ tên hoặc email)
@@ -41,6 +43,8 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
    */
   const fetchAccounts = useCallback(async () => {
     try {
+      setLoading(true);
+      setErrorMsg(null);
       const params = new URLSearchParams();
       if (keyword.trim()) params.append('keyword', keyword.trim());
       if (roleFilter) params.append('role', roleFilter);
@@ -50,15 +54,22 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
       params.append('sort', 'createdAt,desc');
 
       const res = await apiRequest(`/accounts?${params.toString()}`);
-      setAccounts(res.data.content || []);
-      setPageInfo({
-        page: res.data.page,
-        size: res.data.size,
-        totalPages: res.data.totalPages,
-        totalElements: res.data.totalElements
-      });
+      if (res && res.data) {
+        setAccounts(res.data.content || []);
+        setPageInfo({
+          page: res.data.page ?? 0,
+          size: res.data.size ?? 10,
+          totalPages: res.data.totalPages ?? 1,
+          totalElements: res.data.totalElements ?? 0
+        });
+      } else {
+        setAccounts([]);
+      }
     } catch (e) {
       console.error('Lỗi khi tải danh sách tài khoản:', e);
+      setErrorMsg(e.message || 'Không thể tải danh sách tài khoản từ máy chủ.');
+    } finally {
+      setLoading(false);
     }
   }, [keyword, roleFilter, statusFilter, page]);
 
@@ -147,7 +158,24 @@ export default function AccountManagementView({ currentUser, onAccountUpdated })
             </tr>
           </thead>
           <tbody>
-            {accounts.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⏳</div>
+                  <div>Đang tải danh sách tài khoản...</div>
+                </td>
+              </tr>
+            ) : errorMsg ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '2.5rem', color: '#e11d48' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⚠️</div>
+                  <div style={{ fontWeight: 700 }}>{errorMsg}</div>
+                  <button onClick={fetchAccounts} style={{ marginTop: '0.75rem', padding: '0.4rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', fontWeight: 600 }}>
+                    Thử lại
+                  </button>
+                </td>
+              </tr>
+            ) : accounts.length === 0 ? (
               /* Trạng thái không tìm thấy tài khoản nào */
               <tr>
                 <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>

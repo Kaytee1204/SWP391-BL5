@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
 import { X, Plus, Edit2, Trash2 } from 'lucide-react';
+import InlineErrorReport from '../common/InlineErrorReport';
 
 export default function CategoryItemsModal({ category, onClose, currentUser }) {
     const [items, setItems] = useState([]);
@@ -10,7 +10,8 @@ export default function CategoryItemsModal({ category, onClose, currentUser }) {
     const [formError, setFormError] = useState('');
 
     // Kiểm tra quyền (Manager, Lecturer, Student, Admin)
-    const isManagerOrLecturer = Boolean(currentUser);
+    const isManagerOrLecturer = currentUser?.role === 'Manager' || currentUser?.role === 'Lecturer' || currentUser?.role === 'Admin';
+    const isStudent = currentUser?.role === 'Student';
 
     const resetForm = () => {
         setEditingIndex(null);
@@ -167,6 +168,15 @@ export default function CategoryItemsModal({ category, onClose, currentUser }) {
                                             </div>
 
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                {/* Báo lỗi cho học sinh */}
+                                                {isStudent && (
+                                                    <InlineErrorReport
+                                                        targetType="VOCABULARY"
+                                                        targetId={item.itemId || (category.categoryId * 1000 + index + 1)}
+                                                        title={`Từ vựng: ${wordText}`}
+                                                    />
+                                                )}
+
                                                 {/* Các nút Sửa, Xóa */}
                                                 {isManagerOrLecturer && (
                                                     <>

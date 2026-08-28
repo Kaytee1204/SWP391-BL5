@@ -37,7 +37,7 @@ public class ListeningExerciseController {
     }
 
     @GetMapping("/my-exercises")
-    @PreAuthorize("hasAnyAuthority('Lecturer','ROLE_Lecturer')")
+    @PreAuthorize("hasAnyAuthority('Lecturer','ROLE_Lecturer','ROLE_LECTURER','lecturer','Manager','ROLE_Manager','ROLE_MANAGER','manager')")
     public ResponseEntity<ApiResponse<PageResponse<ListeningExerciseResponse>>> searchMine(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) JlptLevel jlptLevel,
@@ -50,13 +50,13 @@ public class ListeningExerciseController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Lecturer','ROLE_Lecturer','Manager','ROLE_Manager')")
+    @PreAuthorize("hasAnyAuthority('Lecturer','ROLE_Lecturer','ROLE_LECTURER','lecturer','Manager','ROLE_Manager','ROLE_MANAGER','manager')")
     public ResponseEntity<ApiResponse<ListeningExerciseResponse>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(service.getById(id)));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyAuthority('Lecturer','ROLE_Lecturer')")
+    @PreAuthorize("hasAnyAuthority('Lecturer','ROLE_Lecturer','ROLE_LECTURER','lecturer','Manager','ROLE_Manager','ROLE_MANAGER','manager')")
     public ResponseEntity<ApiResponse<ListeningExerciseResponse>> create(
             @Valid @RequestPart("data") ListeningExerciseCreateRequest request,
             @RequestPart("audio") MultipartFile audio,

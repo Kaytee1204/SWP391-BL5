@@ -30,19 +30,40 @@ public class AccountManagementController {
     private final AccountManagementService accountManagementService;
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Admin', 'ROLE_Admin', 'ROLE_ADMIN', 'admin') or hasAnyRole('Manager', 'MANAGER', 'manager', 'Admin', 'ADMIN', 'admin')")
     @Operation(summary = "View Account List with filters by role, status, and keyword")
     public ResponseEntity<ApiResponse<PageResponse<AccountResponse>>> getAccountList(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Role role,
-            @RequestParam(required = false) AccountStatus status,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status,
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        PageResponse<AccountResponse> pageResponse = accountManagementService.searchAccounts(keyword, role, status, pageable);
+
+        Role roleEnum = null;
+        if (role != null && !role.isBlank()) {
+            for (Role r : Role.values()) {
+                if (r.name().equalsIgnoreCase(role.trim())) {
+                    roleEnum = r;
+                    break;
+                }
+            }
+        }
+
+        AccountStatus statusEnum = null;
+        if (status != null && !status.isBlank()) {
+            for (AccountStatus s : AccountStatus.values()) {
+                if (s.name().equalsIgnoreCase(status.trim())) {
+                    statusEnum = s;
+                    break;
+                }
+            }
+        }
+
+        PageResponse<AccountResponse> pageResponse = accountManagementService.searchAccounts(keyword, roleEnum, statusEnum, pageable);
         return ResponseEntity.ok(ApiResponse.success(pageResponse));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager') or authentication.principal.id == #id or authentication.principal.username == #id")
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Admin', 'ROLE_Admin', 'ROLE_ADMIN', 'admin') or hasAnyRole('Manager', 'MANAGER', 'manager', 'Admin', 'ADMIN', 'admin') or authentication.principal.id == #id or authentication.principal.username == #id")
     @Operation(summary = "View Account Details by ID")
     public ResponseEntity<ApiResponse<AccountResponse>> getAccountById(@PathVariable Long id) {
         AccountResponse response = accountManagementService.getAccountById(id);
@@ -50,7 +71,7 @@ public class AccountManagementController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Admin', 'ROLE_Admin', 'ROLE_ADMIN', 'admin') or hasAnyRole('Manager', 'MANAGER', 'manager', 'Admin', 'ADMIN', 'admin')")
     @Operation(summary = "Create Account manually (Student, Lecturer, Manager, Author)")
     public ResponseEntity<ApiResponse<AccountResponse>> createAccount(@Valid @RequestBody AccountCreateRequest request) {
         AccountResponse response = accountManagementService.createAccount(request);
@@ -59,7 +80,7 @@ public class AccountManagementController {
     }
 
     @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.POST})
-    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager') or authentication.principal.id == #id or authentication.principal.username == #id")
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Admin', 'ROLE_Admin', 'ROLE_ADMIN', 'admin') or hasAnyRole('Manager', 'MANAGER', 'manager', 'Admin', 'ADMIN', 'admin') or authentication.principal.id == #id or authentication.principal.username == #id")
     @Operation(summary = "Update Account details, Avatar, and Role")
     public ResponseEntity<ApiResponse<AccountResponse>> updateAccount(
             @PathVariable Long id,
@@ -69,7 +90,7 @@ public class AccountManagementController {
     }
 
     @RequestMapping(value = "/{id}/status", method = {RequestMethod.PATCH, RequestMethod.PUT, RequestMethod.POST})
-    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Admin', 'ROLE_Admin', 'ROLE_ADMIN', 'admin') or hasAnyRole('Manager', 'MANAGER', 'manager', 'Admin', 'ADMIN', 'admin')")
     @Operation(summary = "Active / Deactivate Account status")
     public ResponseEntity<ApiResponse<AccountResponse>> updateAccountStatus(
             @PathVariable Long id,
@@ -79,7 +100,7 @@ public class AccountManagementController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @PreAuthorize("hasAnyAuthority('Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager', 'Admin', 'ROLE_Admin', 'ROLE_ADMIN', 'admin') or hasAnyRole('Manager', 'MANAGER', 'manager', 'Admin', 'ADMIN', 'admin')")
     @Operation(summary = "Remove / Soft delete an account from the system")
     public ResponseEntity<ApiResponse<Void>> deleteAccount(@PathVariable Long id) {
         accountManagementService.deleteAccount(id);

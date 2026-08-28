@@ -36,7 +36,7 @@ public class KanjiModuleController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     public ApiResponse<KanjiModuleDto> create(@Valid @RequestBody KanjiModuleRequest request,
                                                @AuthenticationPrincipal UserPrincipal principal) {
         // Người tạo lấy từ JWT, không nhận createdById do client gửi lên.
@@ -44,7 +44,7 @@ public class KanjiModuleController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     public ApiResponse<KanjiModuleDto> update(@PathVariable Long id,
                                                @Valid @RequestBody KanjiModuleRequest request,
                                                @AuthenticationPrincipal UserPrincipal principal) {
@@ -54,7 +54,7 @@ public class KanjiModuleController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         // Service sẽ chặn nếu Kanji con đang được lưu trong personal deck của học viên.
         kanjiService.deleteModule(id);

@@ -39,7 +39,7 @@ public class VocabularyItemController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     public ApiResponse<VocabItemDto> create(@Valid @RequestBody VocabItemRequest request,
                                              @AuthenticationPrincipal UserPrincipal principal) {
         // Principal do JwtAuthenticationFilter nạp từ token; client không thể tự nhận là người tạo.
@@ -47,7 +47,7 @@ public class VocabularyItemController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     public ApiResponse<VocabItemDto> update(@PathVariable Long id, @Valid @RequestBody VocabItemRequest request,
                                              @AuthenticationPrincipal UserPrincipal principal) {
         // Request mang version mà frontend đã đọc; service từ chối nếu database đã có bản mới hơn.
@@ -55,7 +55,7 @@ public class VocabularyItemController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('Lecturer', 'Manager')")
+    @PreAuthorize("hasAnyAuthority('Lecturer', 'ROLE_Lecturer', 'ROLE_LECTURER', 'lecturer', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         // Service tìm entity trước khi xóa để ID không tồn tại trả 404 thay vì thành công giả.
         vocabularyService.deleteItem(id);

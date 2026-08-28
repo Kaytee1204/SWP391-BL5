@@ -39,10 +39,10 @@ public class CultureArticleController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // 2. Tác giả xem danh sách các bài do chính mình viết
+    // 2. Tác giả & Quản lý xem danh sách các bài do chính mình viết
     @GetMapping("/my-articles")
-    @PreAuthorize("hasAnyAuthority('Author', 'ROLE_Author', 'ROLE_AUTHOR', 'author')")
-    @Operation(summary = "View Articles authored by the current logged-in Author")
+    @PreAuthorize("hasAnyAuthority('Author', 'ROLE_Author', 'ROLE_AUTHOR', 'author', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @Operation(summary = "View Articles authored by the current logged-in Author or Manager")
     public ResponseEntity<ApiResponse<PageResponse<CultureArticleResponse>>> getMyArticles(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
@@ -60,14 +60,14 @@ public class CultureArticleController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // 4. Đăng bài viết mới (Chỉ dành riêng cho role Author)
+    // 4. Đăng bài viết mới (Author & Manager)
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('Author', 'ROLE_Author', 'ROLE_AUTHOR', 'author')")
-    @Operation(summary = "Publish a new Culture Article (Author only)")
+    @PreAuthorize("hasAnyAuthority('Author', 'ROLE_Author', 'ROLE_AUTHOR', 'author', 'Manager', 'ROLE_Manager', 'ROLE_MANAGER', 'manager')")
+    @Operation(summary = "Publish a new Culture Article (Author & Manager)")
     public ResponseEntity<ApiResponse<CultureArticleResponse>> createArticle(
             @Valid @RequestBody CultureArticleCreateRequest request,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        // Gọi Service xử lý lưu bài và truyền thông tin Author đang đăng nhập
+        // Gọi Service xử lý lưu bài và truyền thông tin Author/Manager đang đăng nhập
         CultureArticleResponse response = cultureArticleService.createArticle(request, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Article published successfully", response));
